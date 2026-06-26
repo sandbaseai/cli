@@ -43,16 +43,19 @@ release:
   prerelease: auto
   name_template: "v{{.Version}}"
 
-brews:
-  - repository:
-      owner: sandbaseai
-      name: homebrew-tap
-    name: sandbase
-    homepage: "https://sandbase.ai"
-    description: "SandBase AI platform CLI"
-    license: "MIT"
-    install: |
-      bin.install "sandbase"
+# brews:
+#   Uncomment once HOMEBREW_TAP_TOKEN secret is configured.
+#   Create a PAT with 'repo' scope, add it as a secret named HOMEBREW_TAP_TOKEN.
+#   - repository:
+#       owner: sandbaseai
+#       name: homebrew-tap
+#       token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+#     name: sandbase
+#     homepage: "https://sandbase.ai"
+#     description: "SandBase AI platform CLI"
+#     license: "MIT"
+#     install: |
+#       bin.install "sandbase"
 
 changelog:
   sort: asc
