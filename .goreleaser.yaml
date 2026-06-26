@@ -1,0 +1,71 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+project_name: sandbase
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: sandbase
+    main: .
+    binary: sandbase
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/sandbaseai/cli/cmd.Version={{.Version}}
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        format: zip
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: sandbaseai
+    name: cli
+  draft: false
+  prerelease: auto
+  name_template: "v{{.Version}}"
+
+brews:
+  - repository:
+      owner: sandbaseai
+      name: homebrew-tap
+    name: sandbase
+    homepage: "https://sandbase.ai"
+    description: "SandBase AI platform CLI"
+    license: "MIT"
+    install: |
+      bin.install "sandbase"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+  groups:
+    - title: Features
+      regexp: "^feat"
+    - title: Bug Fixes
+      regexp: "^fix"
+    - title: Performance
+      regexp: "^perf"

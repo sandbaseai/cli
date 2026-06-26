@@ -1,0 +1,23 @@
+# Binary
+sandbase
+sandbase.exe
+
+# goreleaser
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+coverage.out
+/tmp/
+
+# npm wrapper binary cache
+npm/bin/sandbase
+npm/bin/sandbase.exe
