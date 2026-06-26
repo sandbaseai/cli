@@ -2,12 +2,26 @@ package cmd
 
 import (
 	"fmt"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 )
 
 // Version is set at build time via ldflags.
 var Version = "dev"
+
+func versionString() string {
+	if Version != "" && Version != "dev" {
+		return Version
+	}
+
+	info, ok := debug.ReadBuildInfo()
+	if !ok || info.Main.Version == "" || info.Main.Version == "(devel)" {
+		return Version
+	}
+
+	return info.Main.Version
+}
 
 // NewRootCmd creates and returns the root cobra.Command for the sandbase CLI.
 // It implements a two-phase lifecycle:
@@ -24,7 +38,7 @@ func NewRootCmd() *cobra.Command {
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			// Check for --version flag
 			if v, _ := cmd.Flags().GetBool("version"); v {
-				fmt.Fprintln(cmd.OutOrStdout(), "sandbase "+Version)
+				fmt.Fprintln(cmd.OutOrStdout(), "sandbase "+versionString())
 				return nil
 			}
 			return app.init()

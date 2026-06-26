@@ -2,8 +2,18 @@
 set -e
 
 REPO="sandbaseai/cli"
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="${SANDBASE_INSTALL_DIR:-/usr/local/bin}"
 BINARY_NAME="sandbase"
+
+if ! command -v curl >/dev/null 2>&1; then
+  echo "Error: curl is required to install sandbase" >&2
+  exit 1
+fi
+
+if ! command -v tar >/dev/null 2>&1; then
+  echo "Error: tar is required to install sandbase" >&2
+  exit 1
+fi
 
 # Detect OS
 OS="$(uname -s)"
@@ -27,8 +37,12 @@ case "$ARCH" in
     ;;
 esac
 
-# Get latest version from GitHub
-VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')"
+if [ -n "${SANDBASE_VERSION:-}" ]; then
+  VERSION="${SANDBASE_VERSION#v}"
+else
+  # Get latest version from GitHub
+  VERSION="$(curl -fsSL "https://api.github.com/repos/${REPO}/releases/latest" | grep '"tag_name"' | sed -E 's/.*"v([^"]+)".*/\1/')"
+fi
 
 if [ -z "$VERSION" ]; then
   echo "Error: Failed to determine latest version" >&2
@@ -52,6 +66,11 @@ tar -xzf "${TMP_DIR}/${ARCHIVE}" -C "$TMP_DIR"
 if [ -w "$INSTALL_DIR" ]; then
   mv "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 else
+  if ! command -v sudo >/dev/null 2>&1; then
+    echo "Error: ${INSTALL_DIR} is not writable and sudo is not available" >&2
+    echo "Set SANDBASE_INSTALL_DIR to a writable directory and retry." >&2
+    exit 1
+  fi
   sudo mv "${TMP_DIR}/${BINARY_NAME}" "${INSTALL_DIR}/${BINARY_NAME}"
 fi
 chmod +x "${INSTALL_DIR}/${BINARY_NAME}"

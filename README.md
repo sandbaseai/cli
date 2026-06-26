@@ -18,6 +18,13 @@ npm install -g @sandbase/cli
 go install github.com/sandbaseai/cli@latest
 ```
 
+curl 安装支持固定版本和自定义安装目录：
+
+```bash
+SANDBASE_VERSION=0.1.1 sh -c "$(curl -fsSL https://raw.githubusercontent.com/sandbaseai/cli/main/install.sh)"
+SANDBASE_INSTALL_DIR="$HOME/.local/bin" sh -c "$(curl -fsSL https://raw.githubusercontent.com/sandbaseai/cli/main/install.sh)"
+```
+
 ## 快速上手
 
 ```bash
@@ -141,7 +148,7 @@ go build -o sandbase .
 go test ./...
 
 # 带版本号构建
-go build -ldflags "-X github.com/sandbase/cli/cmd.Version=0.1.0" -o sandbase .
+go build -ldflags "-X github.com/sandbaseai/cli/cmd.Version=0.1.0" -o sandbase .
 
 # goreleaser 本地快照
 goreleaser release --snapshot --clean
