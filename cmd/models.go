@@ -88,6 +88,7 @@ func newModelsCmd(app *App) *cobra.Command {
 
 	// Add get subcommand
 	modelsCmd.AddCommand(newModelsGetCmd(app))
+	modelsCmd.AddCommand(newModelsPricingCmd(app))
 
 	return modelsCmd
 }
@@ -220,4 +221,40 @@ func formatModelDetail(m ModelDetail) string {
 	}
 
 	return strings.TrimSpace(sb.String())
+}
+
+func newModelsPricingCmd(app *App) *cobra.Command {
+	return &cobra.Command{
+		Use:   "pricing <slug>",
+		Short: "Show model pricing information",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := app.EnsureClient(); err != nil {
+				return err
+			}
+			// Get full model detail which includes model_card with pricing
+			path := fmt.Sprintf("/v1/models/%s", url.PathEscape(args[0]))
+			var detail map[string]any
+			if err := app.Client.Request(cmd.Context(), http.MethodGet, path, nil, &detail); err != nil {
+				return err
+			}
+			// Extract pricing from model_card if available
+			data, _ := detail["data"].(map[string]any)
+			if data == nil {
+				data = detail
+			}
+			modelCard, _ := data["model_card"].(map[string]any)
+			if modelCard == nil {
+				modelCard = map[string]any{"message": "no pricing information available"}
+			}
+			result := map[string]any{
+				"model":      args[0],
+				"model_card": modelCard,
+			}
+			app.Output.Data(result, func(payload any) string {
+				return formatKeyValue(result)
+			})
+			return nil
+		},
+	}
 }
