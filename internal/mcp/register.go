@@ -24,7 +24,7 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 
 	// --- Run toolset ---
 	r.Register(ToolDef{
-		Name: "sandbase_run_submit", Description: "Submit multimodal generation job",
+		Name: "sandbase_run_submit", Description: "Submit multimodal generation job. Waits up to ~50s for completion; if the job takes longer, returns a job_id to poll with sandbase_run_status.",
 		InputSchema: ObjectSchema(map[string]any{
 			"model":  StringProp("Model slug"),
 			"params": ObjectProp("Model input parameters"),

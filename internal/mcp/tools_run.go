@@ -5,9 +5,16 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/sandbaseai/cli/internal/poller"
 )
+
+// maxMCPWait bounds how long sandbase_run_submit will block while polling.
+// MCP clients (Claude, Cursor) typically time out requests within ~60s, so
+// blocking longer risks an orphaned job. When this bound is hit, we return the
+// job ID and let the LLM poll via sandbase_run_status instead.
+const maxMCPWait = 50 * time.Second
 
 // RunSubmitHandler submits a generation job and optionally waits for completion.
 func RunSubmitHandler(svc *AppServices) ToolHandler {
@@ -17,7 +24,7 @@ func RunSubmitHandler(svc *AppServices) ToolHandler {
 			return errResult, nil
 		}
 
-		// Check model type
+		// Fetch schema to guard model type and validate params.
 		s, err := svc.Schema.Fetch(ctx, model)
 		if err != nil {
 			return ErrorResultf("failed to fetch model schema: %v", err), nil
@@ -31,6 +38,13 @@ func RunSubmitHandler(svc *AppServices) ToolHandler {
 			runParams = make(map[string]any)
 		}
 
+		// Validate required params against schema before submitting.
+		if s != nil {
+			if v := svc.Schema.Validate(s, runParams); !v.Valid {
+				return ErrorResultf("missing required parameters: %s", strings.Join(v.Missing, ", ")), nil
+			}
+		}
+
 		var submitResp struct {
 			ID     string `json:"id"`
 			Status string `json:"status"`
@@ -42,11 +56,22 @@ func RunSubmitHandler(svc *AppServices) ToolHandler {
 
 		wait := OptionalBool(params, "wait", true)
 		if !wait {
-			return TextResult(fmt.Sprintf("Job submitted: %s (status: %s)", submitResp.ID, submitResp.Status)), nil
+			return TextResult(fmt.Sprintf("Job submitted: %s (status: %s). Use sandbase_run_status to check progress.", submitResp.ID, submitResp.Status)), nil
 		}
 
-		result, err := svc.Poller.Poll(ctx, submitResp.ID, nil)
+		// Bounded wait: poll up to maxMCPWait, then hand off to the LLM.
+		pollCtx, cancel := context.WithTimeout(ctx, maxMCPWait)
+		defer cancel()
+
+		result, err := svc.Poller.Poll(pollCtx, submitResp.ID, nil)
 		if err != nil {
+			// Timeout/cancellation: job is still running, return its ID so the
+			// LLM can poll instead of leaving the call hanging.
+			if pollCtx.Err() != nil && ctx.Err() == nil {
+				return TextResult(fmt.Sprintf(
+					"Job %s is still running after %s. Use sandbase_run_status with job_id=%q to check progress.",
+					submitResp.ID, maxMCPWait, submitResp.ID)), nil
+			}
 			return ErrorResultf("polling failed: %v", err), nil
 		}
 		if result.Status == "failed" {
