@@ -1,0 +1,142 @@
+package mcp
+
+import (
+	"context"
+	"net/http"
+	"net/url"
+)
+
+// SkillListHandler searches/browses skills.
+func SkillListHandler(svc *AppServices) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		query := url.Values{}
+		if q := OptionalString(params, "query"); q != "" {
+			query.Set("q", q)
+		}
+		if cat := OptionalString(params, "category"); cat != "" {
+			query.Set("category", cat)
+		}
+		result, err := svc.Resource.List(ctx, "skills", query)
+		if err != nil {
+			return ErrorResultf("list skills failed: %v", err), nil
+		}
+		return JSONResult(result), nil
+	}
+}
+
+// SkillGetHandler gets skill details by ID.
+func SkillGetHandler(svc *AppServices) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		id, errResult := RequireString(params, "skill_id")
+		if errResult != nil {
+			return errResult, nil
+		}
+		result, err := svc.Resource.Get(ctx, "skills", id)
+		if err != nil {
+			return ErrorResultf("get skill failed: %v", err), nil
+		}
+		return JSONResult(result), nil
+	}
+}
+
+// SkillMineHandler lists the current user's skills.
+func SkillMineHandler(svc *AppServices) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		result, err := svc.Resource.List(ctx, "skills/mine", nil)
+		if err != nil {
+			return ErrorResultf("list my skills failed: %v", err), nil
+		}
+		return JSONResult(result), nil
+	}
+}
+
+// SkillCreateHandler creates a skill via JSON (requires pre-uploaded file URLs).
+func SkillCreateHandler(svc *AppServices) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		name, errResult := RequireString(params, "name")
+		if errResult != nil {
+			return errResult, nil
+		}
+		skillFileURL, errResult := RequireString(params, "skill_file_url")
+		if errResult != nil {
+			return errResult, nil
+		}
+
+		body := map[string]any{
+			"name":           name,
+			"skill_file_url": skillFileURL,
+		}
+		if desc := OptionalString(params, "description"); desc != "" {
+			body["description"] = desc
+		}
+		if urls, ok := params["preview_urls"]; ok {
+			body["preview_urls"] = urls
+		}
+		if cats := OptionalString(params, "categories"); cats != "" {
+			body["categories"] = params["categories"]
+		}
+		if gitURL := OptionalString(params, "git_url"); gitURL != "" {
+			body["git_url"] = gitURL
+		}
+		if envID := OptionalString(params, "environment_id"); envID != "" {
+			body["environment_id"] = envID
+		}
+
+		result, err := svc.Resource.Create(ctx, "skills", body)
+		if err != nil {
+			return ErrorResultf("create skill failed: %v", err), nil
+		}
+		return JSONResult(result), nil
+	}
+}
+
+// SkillUpdateHandler updates a skill via JSON.
+func SkillUpdateHandler(svc *AppServices) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		id, errResult := RequireString(params, "skill_id")
+		if errResult != nil {
+			return errResult, nil
+		}
+		name, errResult := RequireString(params, "name")
+		if errResult != nil {
+			return errResult, nil
+		}
+
+		body := map[string]any{"name": name}
+		if desc := OptionalString(params, "description"); desc != "" {
+			body["description"] = desc
+		}
+		if cats, ok := params["categories"]; ok {
+			body["categories"] = cats
+		}
+		if u := OptionalString(params, "skill_file_url"); u != "" {
+			body["skill_file_url"] = u
+		}
+		if urls, ok := params["preview_urls"]; ok {
+			body["preview_urls"] = urls
+		}
+		if envID := OptionalString(params, "environment_id"); envID != "" {
+			body["environment_id"] = envID
+		}
+
+		result, err := svc.Resource.Update(ctx, "skills", id, body)
+		if err != nil {
+			return ErrorResultf("update skill failed: %v", err), nil
+		}
+		return JSONResult(result), nil
+	}
+}
+
+// SkillDeleteHandler deletes a skill.
+func SkillDeleteHandler(svc *AppServices) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		id, errResult := RequireString(params, "skill_id")
+		if errResult != nil {
+			return errResult, nil
+		}
+		if err := svc.Client.Request(ctx, http.MethodDelete, "/v1/skills/"+url.PathEscape(id), nil, nil); err != nil {
+			return ErrorResultf("delete skill failed: %v", err), nil
+		}
+		return TextResult("skill deleted: " + id), nil
+	}
+}

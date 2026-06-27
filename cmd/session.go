@@ -32,6 +32,7 @@ func newSessionCmd(app *App) *cobra.Command {
 
 func newSessionCreateCmd(app *App) *cobra.Command {
 	var agentID string
+	var environmentID string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -42,7 +43,10 @@ func newSessionCreateCmd(app *App) *cobra.Command {
 			}
 			body := map[string]any{}
 			if agentID != "" {
-				body["agent_id"] = agentID
+				body["agent"] = agentID
+			}
+			if environmentID != "" {
+				body["environment_id"] = environmentID
 			}
 			result, err := app.Resource.Create(cmd.Context(), "sessions", body)
 			if err != nil {
@@ -55,6 +59,7 @@ func newSessionCreateCmd(app *App) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringVar(&agentID, "agent", "", "Agent ID")
+	cmd.Flags().StringVar(&environmentID, "environment", "", "Environment ID")
 	return cmd
 }
 
@@ -199,8 +204,14 @@ func newSessionSendCmd(app *App) *cobra.Command {
 				return err
 			}
 			body := map[string]any{
-				"type":    "message",
-				"content": args[1],
+				"events": []map[string]any{
+					{
+						"type": "user.message",
+						"content": []map[string]any{
+							{"type": "text", "text": args[1]},
+						},
+					},
+				},
 			}
 			result, err := app.Resource.Action(cmd.Context(), "sessions", args[0], "events", body)
 			if err != nil {

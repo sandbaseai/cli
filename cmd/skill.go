@@ -15,6 +15,8 @@ func newSkillCmd(app *App) *cobra.Command {
 	skillCmd.AddCommand(
 		newSkillCreateCmd(app),
 		newSkillListCmd(app),
+		newSkillGetCmd(app),
+		newSkillMineCmd(app),
 		newSkillUpdateCmd(app),
 		newSkillDeleteCmd(app),
 	)
@@ -57,6 +59,47 @@ func newSkillListCmd(app *App) *cobra.Command {
 				return err
 			}
 			result, err := app.Resource.List(cmd.Context(), "skills", nil)
+			if err != nil {
+				return err
+			}
+			app.Output.Data(result, func(payload any) string {
+				return formatGenericList(result, "skills")
+			})
+			return nil
+		},
+	}
+}
+
+func newSkillGetCmd(app *App) *cobra.Command {
+	return &cobra.Command{
+		Use:   "get <id>",
+		Short: "Get skill details",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := app.EnsureClient(); err != nil {
+				return err
+			}
+			result, err := app.Resource.Get(cmd.Context(), "skills", args[0])
+			if err != nil {
+				return err
+			}
+			app.Output.Data(result, func(payload any) string {
+				return formatKeyValue(result)
+			})
+			return nil
+		},
+	}
+}
+
+func newSkillMineCmd(app *App) *cobra.Command {
+	return &cobra.Command{
+		Use:   "mine",
+		Short: "List my skills",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := app.EnsureClient(); err != nil {
+				return err
+			}
+			result, err := app.Resource.List(cmd.Context(), "skills/mine", nil)
 			if err != nil {
 				return err
 			}

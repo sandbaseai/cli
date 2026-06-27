@@ -11,13 +11,12 @@ import (
 func newAccountCmd(app *App) *cobra.Command {
 	accountCmd := &cobra.Command{
 		Use:   "account",
-		Short: "Account management (balance, history, pricing)",
+		Short: "Account management (balance, history)",
 	}
 
 	accountCmd.AddCommand(
 		newAccountBalanceCmd(app),
 		newAccountHistoryCmd(app),
-		newAccountPricingCmd(app),
 	)
 
 	return accountCmd
@@ -69,27 +68,6 @@ func newAccountHistoryCmd(app *App) *cobra.Command {
 	}
 	cmd.Flags().IntVar(&limit, "limit", 0, "Maximum number of entries to return")
 	return cmd
-}
-
-func newAccountPricingCmd(app *App) *cobra.Command {
-	return &cobra.Command{
-		Use:   "pricing <slug>",
-		Short: "Show model pricing",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := app.EnsureClient(); err != nil {
-				return err
-			}
-			result, err := app.Resource.Get(cmd.Context(), "account/pricing", args[0])
-			if err != nil {
-				return err
-			}
-			app.Output.Data(result, func(payload any) string {
-				return formatKeyValue(result)
-			})
-			return nil
-		},
-	}
 }
 
 func formatAccountBalance(m map[string]any) string {
