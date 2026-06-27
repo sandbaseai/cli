@@ -7,10 +7,11 @@ import (
 func newMcpCmd(app *App) *cobra.Command {
 	mcpCmd := &cobra.Command{
 		Use:   "mcp",
-		Short: "MCP server discovery",
+		Short: "MCP server commands",
 	}
 
 	mcpCmd.AddCommand(newMcpListCmd(app))
+	mcpCmd.AddCommand(newMcpServeCmd(app))
 
 	return mcpCmd
 }
