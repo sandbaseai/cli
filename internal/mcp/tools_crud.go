@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
 )
 
 // CRUDConfig describes a resource's API paths.
@@ -111,7 +112,7 @@ func SessionSendHandler(svc *AppServices) ToolHandler {
 			return errResult, nil
 		}
 		body := map[string]any{"type": "message", "content": message}
-		path := fmt.Sprintf("/v1/sessions/%s/events", sessionID)
+		path := fmt.Sprintf("/v1/sessions/%s/events", url.PathEscape(sessionID))
 		var result map[string]any
 		if err := svc.Client.Request(ctx, http.MethodPost, path, body, &result); err != nil {
 			return ErrorResultf("send message failed: %v", err), nil

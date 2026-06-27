@@ -73,6 +73,8 @@ func (r *Registry) ListTools() []ToolDef {
 
 // Dispatch routes a tool call to the appropriate handler.
 // Returns an error if the tool is not found or not enabled.
+// Note: In production, mcp-go SDK dispatches via AddTool callbacks directly.
+// Dispatch is retained for unit testing and potential future transports.
 func (r *Registry) Dispatch(ctx context.Context, name string, params map[string]any) (*ToolResult, error) {
 	r.mu.RLock()
 	def, exists := r.tools[name]

@@ -72,7 +72,11 @@ func (s *Server) Run(ctx context.Context) error {
 	// Start transport
 	switch s.config.Transport {
 	case "stdio", "":
-		return server.ServeStdio(s.mcpServer)
+		return server.ServeStdio(s.mcpServer,
+			server.WithStdioContextFunc(func(_ context.Context) context.Context {
+				return ctx // Propagate Cobra's signal-aware context
+			}),
+		)
 	case "http":
 		return fmt.Errorf("http transport not yet implemented")
 	default:
