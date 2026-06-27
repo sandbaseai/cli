@@ -11,7 +11,7 @@ import (
 func newAccountCmd(app *App) *cobra.Command {
 	accountCmd := &cobra.Command{
 		Use:   "account",
-		Short: "Account management (balance, history, pricing)",
+		Short: "Account management (balance, history)",
 	}
 
 	accountCmd.AddCommand(

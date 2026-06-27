@@ -226,35 +226,53 @@ func formatModelDetail(m ModelDetail) string {
 func newModelsPricingCmd(app *App) *cobra.Command {
 	return &cobra.Command{
 		Use:   "pricing <slug>",
-		Short: "Show model pricing information",
+		Short: "Show model pricing",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := app.EnsureClient(); err != nil {
 				return err
 			}
-			// Get full model detail which includes model_card with pricing
-			path := fmt.Sprintf("/v1/models/%s", url.PathEscape(args[0]))
+			path := fmt.Sprintf("/v1/models/slug/%s", args[0])
 			var detail map[string]any
 			if err := app.Client.Request(cmd.Context(), http.MethodGet, path, nil, &detail); err != nil {
 				return err
 			}
-			// Extract pricing from model_card if available
-			data, _ := detail["data"].(map[string]any)
-			if data == nil {
-				data = detail
-			}
-			modelCard, _ := data["model_card"].(map[string]any)
-			if modelCard == nil {
-				modelCard = map[string]any{"message": "no pricing information available"}
-			}
-			result := map[string]any{
-				"model":      args[0],
-				"model_card": modelCard,
-			}
-			app.Output.Data(result, func(payload any) string {
-				return formatKeyValue(result)
+			// Extract model_card pricing info
+			app.Output.Data(detail, func(payload any) string {
+				return formatModelPricing(detail)
 			})
 			return nil
 		},
 	}
+}
+
+func formatModelPricing(m map[string]any) string {
+	var sb strings.Builder
+
+	name, _ := m["name"].(string)
+	sb.WriteString(fmt.Sprintf("Model: %s\n", name))
+
+	data, _ := m["data"].(map[string]any)
+	if data != nil {
+		m = data
+	}
+
+	if mc, ok := m["model_card"].(map[string]any); ok {
+		if p, ok := mc["prompt_token_price"]; ok {
+			sb.WriteString(fmt.Sprintf("  Input:  $%v / 1K tokens\n", p))
+		}
+		if p, ok := mc["completion_token_price"]; ok {
+			sb.WriteString(fmt.Sprintf("  Output: $%v / 1K tokens\n", p))
+		}
+		if p, ok := mc["base_price"]; ok && p != nil && p != float64(0) {
+			sb.WriteString(fmt.Sprintf("  Base:   $%v / call\n", p))
+		}
+		if f, ok := mc["price_formula"].(string); ok && f != "" {
+			sb.WriteString(fmt.Sprintf("  Formula: %s\n", f))
+		}
+	} else {
+		sb.WriteString("  (no pricing info available)\n")
+	}
+
+	return strings.TrimSpace(sb.String())
 }
