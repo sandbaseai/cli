@@ -165,24 +165,41 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillMineHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_run", Description: "Run a skill (submit execution by vendor/slug)",
-		InputSchema: ObjectSchema(map[string]any{"slug": StringProp("Skill identifier (vendor/slug)")}, []string{"slug"}),
-		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillRunHandler(svc),
-	})
-	r.Register(ToolDef{
-		Name: "sandbase_skill_run_status", Description: "Get skill run status and artifacts",
-		InputSchema: ObjectSchema(map[string]any{"run_id": StringProp("Run ID")}, []string{"run_id"}),
-		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillRunStatusHandler(svc),
-	})
-	r.Register(ToolDef{
-		Name: "sandbase_skill_favorite", Description: "Favorite a skill",
+		Name: "sandbase_skill_manage", Description: "Get skill editable fields (owner only)",
 		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID")}, []string{"skill_id"}),
-		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillFavoriteHandler(svc),
+		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillManageHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_unfavorite", Description: "Unfavorite a skill",
+		Name: "sandbase_skill_create", Description: "Upload a new skill (requires skill_file or git_url + preview_image)",
+		InputSchema: ObjectSchema(map[string]any{
+			"name":          StringProp("Skill name"),
+			"description":   StringProp("Skill description (optional)"),
+			"categories":    StringProp("Comma-separated categories (optional)"),
+			"skill_file":    StringProp("Local path to skill file (zip)"),
+			"git_url":       StringProp("GitHub directory URL (alternative to skill_file)"),
+			"preview_image": StringProp("Local path to preview image"),
+		}, []string{"name"}),
+		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillCreateHandler(svc),
+	})
+	r.Register(ToolDef{
+		Name: "sandbase_skill_update", Description: "Update a skill (owner only, multipart)",
+		InputSchema: ObjectSchema(map[string]any{
+			"skill_id":       StringProp("Skill ID"),
+			"name":           StringProp("Skill name"),
+			"description":    StringProp("Description (optional)"),
+			"categories":     StringProp("Categories (optional)"),
+			"environment_id": StringProp("Environment ID (optional)"),
+			"agent_model":    StringProp("Agent LLM model (optional)"),
+			"agent_system":   StringProp("Agent system prompt (optional)"),
+			"skill_file":     StringProp("New skill file path (optional)"),
+			"preview_image":  StringProp("New preview image path (optional)"),
+		}, []string{"skill_id", "name"}),
+		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillUpdateHandler(svc),
+	})
+	r.Register(ToolDef{
+		Name: "sandbase_skill_delete", Description: "Delete a skill",
 		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID")}, []string{"skill_id"}),
-		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillUnfavoriteHandler(svc),
+		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillDeleteHandler(svc),
 	})
 
 	// --- MCP toolset ---
