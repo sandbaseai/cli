@@ -146,26 +146,43 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 	})
 
 	// --- Skill toolset ---
-	skillCfg := CRUDConfig{Resource: "skill", IDParam: "skill_id", BasePath: "skills"}
 	r.Register(ToolDef{
-		Name: "sandbase_skill_list", Description: "List skills",
+		Name: "sandbase_skill_list", Description: "Search and browse skills in the marketplace",
+		InputSchema: ObjectSchema(map[string]any{
+			"query":    StringProp("Search query (optional)"),
+			"category": StringProp("Filter by category (optional)"),
+		}, nil),
+		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillListHandler(svc),
+	})
+	r.Register(ToolDef{
+		Name: "sandbase_skill_get", Description: "Get skill details by vendor/slug",
+		InputSchema: ObjectSchema(map[string]any{"slug": StringProp("Skill identifier (vendor/slug)")}, []string{"slug"}),
+		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillGetHandler(svc),
+	})
+	r.Register(ToolDef{
+		Name: "sandbase_skill_mine", Description: "List my uploaded skills",
 		InputSchema: ObjectSchema(map[string]any{}, nil),
-		Toolset: ToolsetSkill, ReadOnly: true, Handler: MakeListHandler(svc, skillCfg),
+		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillMineHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_create", Description: "Create skill",
-		InputSchema: ObjectSchema(map[string]any{"name": StringProp("Skill name"), "config": ObjectProp("Configuration")}, []string{"name"}),
-		Toolset: ToolsetSkill, ReadOnly: false, Handler: MakeCreateHandler(svc, skillCfg),
+		Name: "sandbase_skill_run", Description: "Run a skill (submit execution by vendor/slug)",
+		InputSchema: ObjectSchema(map[string]any{"slug": StringProp("Skill identifier (vendor/slug)")}, []string{"slug"}),
+		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillRunHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_update", Description: "Update skill",
-		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID"), "config": ObjectProp("Config")}, []string{"skill_id"}),
-		Toolset: ToolsetSkill, ReadOnly: false, Handler: MakeUpdateHandler(svc, skillCfg),
+		Name: "sandbase_skill_run_status", Description: "Get skill run status and artifacts",
+		InputSchema: ObjectSchema(map[string]any{"run_id": StringProp("Run ID")}, []string{"run_id"}),
+		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillRunStatusHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_delete", Description: "Delete skill",
+		Name: "sandbase_skill_favorite", Description: "Favorite a skill",
 		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID")}, []string{"skill_id"}),
-		Toolset: ToolsetSkill, ReadOnly: false, Handler: MakeDeleteHandler(svc, skillCfg),
+		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillFavoriteHandler(svc),
+	})
+	r.Register(ToolDef{
+		Name: "sandbase_skill_unfavorite", Description: "Unfavorite a skill",
+		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID")}, []string{"skill_id"}),
+		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillUnfavoriteHandler(svc),
 	})
 
 	// --- MCP toolset ---
