@@ -2,12 +2,11 @@ package mcp
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"net/url"
 )
 
-// SkillListHandler searches/browses skills in the marketplace.
+// SkillListHandler searches/browses skills.
 func SkillListHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
 		query := url.Values{}
@@ -25,14 +24,14 @@ func SkillListHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillGetHandler gets skill details by vendor/slug identifier.
+// SkillGetHandler gets skill details by ID.
 func SkillGetHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
-		slug, errResult := RequireString(params, "slug")
+		id, errResult := RequireString(params, "skill_id")
 		if errResult != nil {
 			return errResult, nil
 		}
-		result, err := svc.Resource.Get(ctx, "skills", slug)
+		result, err := svc.Resource.Get(ctx, "skills", id)
 		if err != nil {
 			return ErrorResultf("get skill failed: %v", err), nil
 		}
@@ -40,7 +39,7 @@ func SkillGetHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillMineHandler lists the current user's uploaded skills.
+// SkillMineHandler lists the current user's skills.
 func SkillMineHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
 		result, err := svc.Resource.List(ctx, "skills/mine", nil)
@@ -51,57 +50,39 @@ func SkillMineHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillManageHandler gets skill editable fields (owner only).
-func SkillManageHandler(svc *AppServices) ToolHandler {
-	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
-		skillID, errResult := RequireString(params, "skill_id")
-		if errResult != nil {
-			return errResult, nil
-		}
-		result, err := svc.Resource.SubList(ctx, "skills", skillID, "manage")
-		if err != nil {
-			return ErrorResultf("get skill manage failed: %v", err), nil
-		}
-		return JSONResult(result), nil
-	}
-}
-
-// SkillCreateHandler uploads a new skill (multipart: name + skill_file/git_url + preview_image).
+// SkillCreateHandler creates a skill via JSON (requires pre-uploaded file URLs).
 func SkillCreateHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
 		name, errResult := RequireString(params, "name")
 		if errResult != nil {
 			return errResult, nil
 		}
+		skillFileURL, errResult := RequireString(params, "skill_file_url")
+		if errResult != nil {
+			return errResult, nil
+		}
 
-		fields := map[string]string{"name": name}
+		body := map[string]any{
+			"name":           name,
+			"skill_file_url": skillFileURL,
+		}
 		if desc := OptionalString(params, "description"); desc != "" {
-			fields["description"] = desc
+			body["description"] = desc
+		}
+		if urls, ok := params["preview_urls"]; ok {
+			body["preview_urls"] = urls
 		}
 		if cats := OptionalString(params, "categories"); cats != "" {
-			fields["categories"] = cats
+			body["categories"] = params["categories"]
 		}
 		if gitURL := OptionalString(params, "git_url"); gitURL != "" {
-			fields["git_url"] = gitURL
+			body["git_url"] = gitURL
+		}
+		if envID := OptionalString(params, "environment_id"); envID != "" {
+			body["environment_id"] = envID
 		}
 
-		files := map[string]string{}
-		if sf := OptionalString(params, "skill_file"); sf != "" {
-			files["skill_file"] = sf
-		}
-		if pi := OptionalString(params, "preview_image"); pi != "" {
-			files["preview_image"] = pi
-		}
-
-		// Require at least one source
-		if files["skill_file"] == "" && fields["git_url"] == "" {
-			return ErrorResult("skill_file or git_url is required"), nil
-		}
-		if files["preview_image"] == "" {
-			return ErrorResult("preview_image is required"), nil
-		}
-
-		result, err := svc.File.UploadMultipart(ctx, "/v1/skills", fields, files)
+		result, err := svc.Resource.Create(ctx, "skills", body)
 		if err != nil {
 			return ErrorResultf("create skill failed: %v", err), nil
 		}
@@ -109,10 +90,10 @@ func SkillCreateHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillUpdateHandler updates a skill (multipart PUT: name required, other fields optional).
+// SkillUpdateHandler updates a skill via JSON.
 func SkillUpdateHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
-		skillID, errResult := RequireString(params, "skill_id")
+		id, errResult := RequireString(params, "skill_id")
 		if errResult != nil {
 			return errResult, nil
 		}
@@ -121,33 +102,24 @@ func SkillUpdateHandler(svc *AppServices) ToolHandler {
 			return errResult, nil
 		}
 
-		fields := map[string]string{"name": name}
+		body := map[string]any{"name": name}
 		if desc := OptionalString(params, "description"); desc != "" {
-			fields["description"] = desc
+			body["description"] = desc
 		}
-		if cats := OptionalString(params, "categories"); cats != "" {
-			fields["categories"] = cats
+		if cats, ok := params["categories"]; ok {
+			body["categories"] = cats
+		}
+		if u := OptionalString(params, "skill_file_url"); u != "" {
+			body["skill_file_url"] = u
+		}
+		if urls, ok := params["preview_urls"]; ok {
+			body["preview_urls"] = urls
 		}
 		if envID := OptionalString(params, "environment_id"); envID != "" {
-			fields["environment_id"] = envID
-		}
-		if model := OptionalString(params, "agent_model"); model != "" {
-			fields["agent_model"] = model
-		}
-		if sys := OptionalString(params, "agent_system"); sys != "" {
-			fields["agent_system"] = sys
+			body["environment_id"] = envID
 		}
 
-		files := map[string]string{}
-		if sf := OptionalString(params, "skill_file"); sf != "" {
-			files["skill_file"] = sf
-		}
-		if pi := OptionalString(params, "preview_image"); pi != "" {
-			files["preview_image"] = pi
-		}
-
-		path := fmt.Sprintf("/v1/skills/%s", url.PathEscape(skillID))
-		result, err := svc.File.UploadMultipartPut(ctx, path, fields, files)
+		result, err := svc.Resource.Update(ctx, "skills", id, body)
 		if err != nil {
 			return ErrorResultf("update skill failed: %v", err), nil
 		}
@@ -155,19 +127,16 @@ func SkillUpdateHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillDeleteHandler deletes a skill. Note: currently uses disable via PATCH if available,
-// otherwise returns unsupported. (API may not expose DELETE at this time.)
+// SkillDeleteHandler deletes a skill.
 func SkillDeleteHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
-		skillID, errResult := RequireString(params, "skill_id")
+		id, errResult := RequireString(params, "skill_id")
 		if errResult != nil {
 			return errResult, nil
 		}
-		// Try DELETE; the API may return 404/405 if not supported
-		path := fmt.Sprintf("/v1/skills/%s", url.PathEscape(skillID))
-		if err := svc.Client.Request(ctx, http.MethodDelete, path, nil, nil); err != nil {
+		if err := svc.Client.Request(ctx, http.MethodDelete, "/v1/skills/"+url.PathEscape(id), nil, nil); err != nil {
 			return ErrorResultf("delete skill failed: %v", err), nil
 		}
-		return TextResult(fmt.Sprintf("Skill %s deleted.", skillID)), nil
+		return TextResult("skill deleted: " + id), nil
 	}
 }

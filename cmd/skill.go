@@ -17,9 +17,9 @@ func newSkillCmd(app *App) *cobra.Command {
 		newSkillListCmd(app),
 		newSkillGetCmd(app),
 		newSkillMineCmd(app),
-		newSkillManageCmd(app),
 		newSkillCreateCmd(app),
 		newSkillUpdateCmd(app),
+		newSkillDeleteCmd(app),
 	)
 
 	return skillCmd
@@ -37,7 +37,7 @@ func newSkillListCmd(app *App) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "list",
-		Short: "Browse and search skills marketplace",
+		Short: "Browse and search skills",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := app.EnsureClient(); err != nil {
 				return err
@@ -74,8 +74,8 @@ func newSkillListCmd(app *App) *cobra.Command {
 
 func newSkillGetCmd(app *App) *cobra.Command {
 	return &cobra.Command{
-		Use:   "get <vendor/slug>",
-		Short: "Get skill details (public)",
+		Use:   "get <id>",
+		Short: "Get skill details",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := app.EnsureClient(); err != nil {
@@ -113,49 +113,27 @@ func newSkillMineCmd(app *App) *cobra.Command {
 	}
 }
 
-func newSkillManageCmd(app *App) *cobra.Command {
-	return &cobra.Command{
-		Use:   "manage <id>",
-		Short: "Get skill editable fields (owner only)",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := app.EnsureClient(); err != nil {
-				return err
-			}
-			result, err := app.Resource.SubList(cmd.Context(), "skills", args[0], "manage")
-			if err != nil {
-				return err
-			}
-			app.Output.Data(result, func(payload any) string {
-				return formatKeyValue(result)
-			})
-			return nil
-		},
-	}
-}
-
-// --- Create (multipart upload) ---
+// --- Create (two-step: upload file first, then JSON create) ---
 
 func newSkillCreateCmd(app *App) *cobra.Command {
 	var (
-		name        string
-		description string
-		categories  string
-		skillFile   string
-		gitURL      string
-		previewImg  string
-		createAgent bool
+		name          string
+		description   string
+		categories    string
+		skillFile     string
+		gitURL        string
+		previewImg    string
+		environmentID string
 	)
 
 	cmd := &cobra.Command{
 		Use:   "create",
-		Short: "Upload a new skill (multipart)",
-		Long: `Upload a new skill to SandBase. Requires a skill file (local path or git URL)
-and at least one preview image.
+		Short: "Create a new skill",
+		Long: `Create a new skill. Files are uploaded first, then the skill is created via JSON.
 
 Examples:
   sandbase skill create --name "My Skill" --skill-file ./skill.zip --preview ./preview.png
-  sandbase skill create --name "My Skill" --git-url https://github.com/user/repo/tree/main/skill-dir --preview ./img.png`,
+  sandbase skill create --name "My Skill" --git-url https://github.com/user/repo/tree/main/skill --preview ./img.png`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := app.EnsureClient(); err != nil {
 				return err
@@ -170,33 +148,43 @@ Examples:
 				return fmt.Errorf("--preview is required")
 			}
 
-			// Build multipart form fields
-			fields := map[string]string{
-				"name": name,
-			}
-			if description != "" {
-				fields["description"] = description
-			}
-			if categories != "" {
-				fields["categories"] = categories
-			}
-			if gitURL != "" {
-				fields["git_url"] = gitURL
-			}
-			if createAgent {
-				fields["create_agent"] = "true"
-			}
-
-			// Files to upload
+			// Step 1: Upload files via POST /v1/skills/upload-file
 			files := map[string]string{}
 			if skillFile != "" {
 				files["skill_file"] = skillFile
 			}
-			if previewImg != "" {
-				files["preview_image"] = previewImg
+			files["preview_image"] = previewImg
+
+			uploadResult, err := app.File.UploadMultipart(cmd.Context(), "/v1/skills/upload-file", nil, files)
+			if err != nil {
+				return fmt.Errorf("upload failed: %w", err)
 			}
 
-			result, err := app.File.UploadMultipart(cmd.Context(), "/v1/skills", fields, files)
+			skillFileURL, _ := uploadResult["skill_file_url"].(string)
+			previewURLs, _ := uploadResult["preview_urls"].([]any)
+
+			// Step 2: Create skill via JSON POST /v1/skills
+			body := map[string]any{
+				"name":           name,
+				"skill_file_url": skillFileURL,
+			}
+			if len(previewURLs) > 0 {
+				body["preview_urls"] = previewURLs
+			}
+			if description != "" {
+				body["description"] = description
+			}
+			if categories != "" {
+				body["categories"] = splitCategories(categories)
+			}
+			if gitURL != "" {
+				body["git_url"] = gitURL
+			}
+			if environmentID != "" {
+				body["environment_id"] = environmentID
+			}
+
+			result, err := app.Resource.Create(cmd.Context(), "skills", body)
 			if err != nil {
 				return err
 			}
@@ -209,14 +197,14 @@ Examples:
 	cmd.Flags().StringVar(&name, "name", "", "Skill name (required)")
 	cmd.Flags().StringVar(&description, "description", "", "Skill description")
 	cmd.Flags().StringVar(&categories, "categories", "", "Comma-separated categories")
-	cmd.Flags().StringVar(&skillFile, "skill-file", "", "Path to skill file (zip/tar)")
+	cmd.Flags().StringVar(&skillFile, "skill-file", "", "Path to skill file")
 	cmd.Flags().StringVar(&gitURL, "git-url", "", "GitHub directory URL (alternative to --skill-file)")
-	cmd.Flags().StringVar(&previewImg, "preview", "", "Path to preview image")
-	cmd.Flags().BoolVar(&createAgent, "create-agent", false, "Also create an agent for this skill")
+	cmd.Flags().StringVar(&previewImg, "preview", "", "Path to preview image (required)")
+	cmd.Flags().StringVar(&environmentID, "environment-id", "", "Environment ID")
 	return cmd
 }
 
-// --- Update (multipart PUT) ---
+// --- Update ---
 
 func newSkillUpdateCmd(app *App) *cobra.Command {
 	var (
@@ -226,13 +214,11 @@ func newSkillUpdateCmd(app *App) *cobra.Command {
 		skillFile     string
 		previewImg    string
 		environmentID string
-		agentModel    string
-		agentSystem   string
 	)
 
 	cmd := &cobra.Command{
 		Use:   "update <id>",
-		Short: "Update a skill (owner only, multipart)",
+		Short: "Update a skill",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := app.EnsureClient(); err != nil {
@@ -242,35 +228,41 @@ func newSkillUpdateCmd(app *App) *cobra.Command {
 				return fmt.Errorf("--name is required")
 			}
 
-			fields := map[string]string{
+			body := map[string]any{
 				"name": name,
 			}
 			if description != "" {
-				fields["description"] = description
+				body["description"] = description
 			}
 			if categories != "" {
-				fields["categories"] = categories
+				body["categories"] = splitCategories(categories)
 			}
 			if environmentID != "" {
-				fields["environment_id"] = environmentID
-			}
-			if agentModel != "" {
-				fields["agent_model"] = agentModel
-			}
-			if agentSystem != "" {
-				fields["agent_system"] = agentSystem
+				body["environment_id"] = environmentID
 			}
 
-			files := map[string]string{}
-			if skillFile != "" {
-				files["skill_file"] = skillFile
-			}
-			if previewImg != "" {
-				files["preview_image"] = previewImg
+			// If files provided, upload them first
+			if skillFile != "" || previewImg != "" {
+				files := map[string]string{}
+				if skillFile != "" {
+					files["skill_file"] = skillFile
+				}
+				if previewImg != "" {
+					files["preview_image"] = previewImg
+				}
+				uploadResult, err := app.File.UploadMultipart(cmd.Context(), "/v1/skills/upload-file", nil, files)
+				if err != nil {
+					return fmt.Errorf("upload failed: %w", err)
+				}
+				if u, ok := uploadResult["skill_file_url"].(string); ok && u != "" {
+					body["skill_file_url"] = u
+				}
+				if urls, ok := uploadResult["preview_urls"].([]any); ok && len(urls) > 0 {
+					body["preview_urls"] = urls
+				}
 			}
 
-			path := fmt.Sprintf("/v1/skills/%s", args[0])
-			result, err := app.File.UploadMultipartPut(cmd.Context(), path, fields, files)
+			result, err := app.Resource.Update(cmd.Context(), "skills", args[0], body)
 			if err != nil {
 				return err
 			}
@@ -286,7 +278,88 @@ func newSkillUpdateCmd(app *App) *cobra.Command {
 	cmd.Flags().StringVar(&skillFile, "skill-file", "", "Path to new skill file (optional)")
 	cmd.Flags().StringVar(&previewImg, "preview", "", "Path to new preview image (optional)")
 	cmd.Flags().StringVar(&environmentID, "environment-id", "", "Environment ID")
-	cmd.Flags().StringVar(&agentModel, "agent-model", "", "Agent LLM model")
-	cmd.Flags().StringVar(&agentSystem, "agent-system", "", "Agent system prompt")
 	return cmd
+}
+
+// --- Delete ---
+
+func newSkillDeleteCmd(app *App) *cobra.Command {
+	return &cobra.Command{
+		Use:   "delete <id>",
+		Short: "Delete a skill",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := app.EnsureClient(); err != nil {
+				return err
+			}
+			if err := app.Resource.Delete(cmd.Context(), "skills", args[0]); err != nil {
+				return err
+			}
+			app.Output.Data(
+				map[string]any{"id": args[0], "deleted": true},
+				func(payload any) string {
+					return fmt.Sprintf("Skill %s deleted.", args[0])
+				},
+			)
+			return nil
+		},
+	}
+}
+
+// splitCategories splits a comma-separated string into a string slice.
+func splitCategories(s string) []string {
+	var result []string
+	for _, part := range splitAndTrim(s, ",") {
+		if part != "" {
+			result = append(result, part)
+		}
+	}
+	return result
+}
+
+func splitAndTrim(s, sep string) []string {
+	parts := make([]string, 0)
+	for _, p := range splitRaw(s, sep) {
+		p = trimSpace(p)
+		if p != "" {
+			parts = append(parts, p)
+		}
+	}
+	return parts
+}
+
+func splitRaw(s, sep string) []string {
+	if s == "" {
+		return nil
+	}
+	result := []string{}
+	for s != "" {
+		idx := indexOf(s, sep)
+		if idx < 0 {
+			result = append(result, s)
+			break
+		}
+		result = append(result, s[:idx])
+		s = s[idx+len(sep):]
+	}
+	return result
+}
+
+func indexOf(s, sub string) int {
+	for i := 0; i <= len(s)-len(sub); i++ {
+		if s[i:i+len(sub)] == sub {
+			return i
+		}
+	}
+	return -1
+}
+
+func trimSpace(s string) string {
+	for len(s) > 0 && (s[0] == ' ' || s[0] == '\t') {
+		s = s[1:]
+	}
+	for len(s) > 0 && (s[len(s)-1] == ' ' || s[len(s)-1] == '\t') {
+		s = s[:len(s)-1]
+	}
+	return s
 }

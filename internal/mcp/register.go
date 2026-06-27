@@ -147,7 +147,7 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 
 	// --- Skill toolset ---
 	r.Register(ToolDef{
-		Name: "sandbase_skill_list", Description: "Search and browse skills in the marketplace",
+		Name: "sandbase_skill_list", Description: "Search and browse skills",
 		InputSchema: ObjectSchema(map[string]any{
 			"query":    StringProp("Search query (optional)"),
 			"category": StringProp("Filter by category (optional)"),
@@ -155,8 +155,8 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillListHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_get", Description: "Get skill details by vendor/slug",
-		InputSchema: ObjectSchema(map[string]any{"slug": StringProp("Skill identifier (vendor/slug)")}, []string{"slug"}),
+		Name: "sandbase_skill_get", Description: "Get skill details by ID",
+		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID")}, []string{"skill_id"}),
 		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillGetHandler(svc),
 	})
 	r.Register(ToolDef{
@@ -165,34 +165,28 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillMineHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_manage", Description: "Get skill editable fields (owner only)",
-		InputSchema: ObjectSchema(map[string]any{"skill_id": StringProp("Skill ID")}, []string{"skill_id"}),
-		Toolset: ToolsetSkill, ReadOnly: true, Handler: SkillManageHandler(svc),
-	})
-	r.Register(ToolDef{
-		Name: "sandbase_skill_create", Description: "Upload a new skill (requires skill_file or git_url + preview_image)",
+		Name: "sandbase_skill_create", Description: "Create a skill (requires pre-uploaded skill_file_url and preview_urls from /v1/skills/upload-file)",
 		InputSchema: ObjectSchema(map[string]any{
-			"name":          StringProp("Skill name"),
-			"description":   StringProp("Skill description (optional)"),
-			"categories":    StringProp("Comma-separated categories (optional)"),
-			"skill_file":    StringProp("Local path to skill file (zip)"),
-			"git_url":       StringProp("GitHub directory URL (alternative to skill_file)"),
-			"preview_image": StringProp("Local path to preview image"),
-		}, []string{"name"}),
+			"name":           StringProp("Skill name"),
+			"description":    StringProp("Description (optional)"),
+			"skill_file_url": StringProp("Uploaded skill file URL (from upload-file endpoint)"),
+			"preview_urls":   map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Preview image URLs"},
+			"categories":     map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Category tags"},
+			"git_url":        StringProp("GitHub directory URL (optional)"),
+			"environment_id": StringProp("Environment ID (optional)"),
+		}, []string{"name", "skill_file_url"}),
 		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillCreateHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_update", Description: "Update a skill (owner only, multipart)",
+		Name: "sandbase_skill_update", Description: "Update a skill (JSON)",
 		InputSchema: ObjectSchema(map[string]any{
 			"skill_id":       StringProp("Skill ID"),
 			"name":           StringProp("Skill name"),
 			"description":    StringProp("Description (optional)"),
-			"categories":     StringProp("Categories (optional)"),
+			"skill_file_url": StringProp("New skill file URL (optional)"),
+			"preview_urls":   map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "New preview URLs (optional)"},
+			"categories":     map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Category tags (optional)"},
 			"environment_id": StringProp("Environment ID (optional)"),
-			"agent_model":    StringProp("Agent LLM model (optional)"),
-			"agent_system":   StringProp("Agent system prompt (optional)"),
-			"skill_file":     StringProp("New skill file path (optional)"),
-			"preview_image":  StringProp("New preview image path (optional)"),
 		}, []string{"skill_id", "name"}),
 		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillUpdateHandler(svc),
 	})
