@@ -29,7 +29,7 @@ SANDBASE_INSTALL_DIR="$HOME/.local/bin" sh -c "$(curl -fsSL https://raw.githubus
 
 ```bash
 # 登录（会校验密钥有效性）
-sandbase auth login --key sk-sb-xxxxxxxx
+sandbase auth login --key sk-xxxxxxxx
 
 # 搜索模型
 sandbase models flux
@@ -106,7 +106,7 @@ sandbase init
 
 ```json
 {
-  "$schema": "https://get.sandbase.ai/schema/sandbase.json",
+  "$schema": "https://raw.githubusercontent.com/sandbaseai/cli/main/install.sh/schema/sandbase.json",
   "defaultChatModel": "anthropic/claude-sonnet-4",
   "aliases": {
     "kling": "kwaivgi/kling-video/3.0/pro/image-to-video",
@@ -129,7 +129,7 @@ sandbase init
 
 ```bash
 # 环境变量（CI/CD 推荐）
-export SANDBASE_API_KEY=sk-sb-xxxxxxxx
+export SANDBASE_API_KEY=sk-xxxxxxxx
 
 # 交互式登录（本地开发）
 sandbase auth login

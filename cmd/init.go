@@ -9,7 +9,7 @@ import (
 )
 
 const sandbaseJSONTemplate = `{
-  "$schema": "https://get.sandbase.ai/schema/sandbase.json",
+  "$schema": "",
   "defaultChatModel": "",
   "aliases": {},
   "defaults": {}

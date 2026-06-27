@@ -91,7 +91,7 @@ func TestLoad_ProjectOverridesGlobal(t *testing.T) {
 	})
 
 	projectData, _ := json.Marshal(projectConfig{
-		APIKey:           "sk-sb-project123",
+		APIKey:           "sk-project123",
 		DefaultChatModel: "anthropic/claude-sonnet-4",
 		Aliases: map[string]string{
 			"flux": "black-forest-labs/flux-1.1-pro",
@@ -124,8 +124,8 @@ func TestLoad_ProjectOverridesGlobal(t *testing.T) {
 		t.Errorf("expected defaultChatModel %q, got %q", "anthropic/claude-sonnet-4", cfg.DefaultChatModel)
 	}
 	// APIKey from project
-	if cfg.APIKey != "sk-sb-project123" {
-		t.Errorf("expected APIKey %q, got %q", "sk-sb-project123", cfg.APIKey)
+	if cfg.APIKey != "sk-project123" {
+		t.Errorf("expected APIKey %q, got %q", "sk-project123", cfg.APIKey)
 	}
 	// Aliases from project
 	if cfg.Aliases["flux"] != "black-forest-labs/flux-1.1-pro" {

@@ -15,7 +15,7 @@ import (
 func newTestService(serverURL string) *Service {
 	c := &client.ApiClient{
 		BaseURL:    serverURL,
-		APIKey:     "sk-sb-test",
+		APIKey:     "sk-test",
 		HTTPClient: http.DefaultClient,
 		Stderr:     io.Discard,
 	}

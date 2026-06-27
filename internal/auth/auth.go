@@ -116,7 +116,7 @@ func (r *Resolver) Status(cwd string) (string, AuthSource, error) {
 	return MaskKey(resolved.APIKey), resolved.Source, nil
 }
 
-// MaskKey returns a masked version of the API key for display (e.g., "sk-sb-****abcd").
+// MaskKey returns a masked version of the API key for display (e.g., "sk-****abcd").
 func MaskKey(key string) string {
 	if len(key) <= 8 {
 		return "****"

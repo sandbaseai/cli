@@ -9,7 +9,7 @@ import (
 
 func TestResolve_EnvKey(t *testing.T) {
 	r := &Resolver{
-		EnvReader:     func(key string) string { return "sk-sb-env-key-1234" },
+		EnvReader:     func(key string) string { return "sk-env-key-1234" },
 		FileReader:    func(path string) ([]byte, error) { return nil, os.ErrNotExist },
 		ConfigFinder:  func(cwd string) string { return "" },
 		CredentialDir: t.TempDir(),
@@ -19,13 +19,13 @@ func TestResolve_EnvKey(t *testing.T) {
 	if result.Source != SourceEnv {
 		t.Errorf("expected source %q, got %q", SourceEnv, result.Source)
 	}
-	if result.APIKey != "sk-sb-env-key-1234" {
-		t.Errorf("expected key %q, got %q", "sk-sb-env-key-1234", result.APIKey)
+	if result.APIKey != "sk-env-key-1234" {
+		t.Errorf("expected key %q, got %q", "sk-env-key-1234", result.APIKey)
 	}
 }
 
 func TestResolve_ProjectKey(t *testing.T) {
-	projectConfig := `{"apiKey": "sk-sb-project-key-5678"}`
+	projectConfig := `{"apiKey": "sk-project-key-5678"}`
 
 	r := &Resolver{
 		EnvReader: func(key string) string { return "" },
@@ -43,8 +43,8 @@ func TestResolve_ProjectKey(t *testing.T) {
 	if result.Source != SourceProject {
 		t.Errorf("expected source %q, got %q", SourceProject, result.Source)
 	}
-	if result.APIKey != "sk-sb-project-key-5678" {
-		t.Errorf("expected key %q, got %q", "sk-sb-project-key-5678", result.APIKey)
+	if result.APIKey != "sk-project-key-5678" {
+		t.Errorf("expected key %q, got %q", "sk-project-key-5678", result.APIKey)
 	}
 }
 
@@ -52,7 +52,7 @@ func TestResolve_StoredKey(t *testing.T) {
 	tmpDir := t.TempDir()
 	credData, _ := json.Marshal(struct {
 		APIKey string `json:"apiKey"`
-	}{APIKey: "sk-sb-stored-key-9012"})
+	}{APIKey: "sk-stored-key-9012"})
 	os.WriteFile(filepath.Join(tmpDir, "credentials.json"), credData, 0600)
 
 	r := &Resolver{
@@ -66,8 +66,8 @@ func TestResolve_StoredKey(t *testing.T) {
 	if result.Source != SourceStored {
 		t.Errorf("expected source %q, got %q", SourceStored, result.Source)
 	}
-	if result.APIKey != "sk-sb-stored-key-9012" {
-		t.Errorf("expected key %q, got %q", "sk-sb-stored-key-9012", result.APIKey)
+	if result.APIKey != "sk-stored-key-9012" {
+		t.Errorf("expected key %q, got %q", "sk-stored-key-9012", result.APIKey)
 	}
 }
 
@@ -89,10 +89,10 @@ func TestResolve_NoneWhenAllEmpty(t *testing.T) {
 }
 
 func TestResolve_PriorityEnvOverProject(t *testing.T) {
-	projectConfig := `{"apiKey": "sk-sb-project-key"}`
+	projectConfig := `{"apiKey": "sk-project-key"}`
 
 	r := &Resolver{
-		EnvReader: func(key string) string { return "sk-sb-env-key" },
+		EnvReader: func(key string) string { return "sk-env-key" },
 		FileReader: func(path string) ([]byte, error) {
 			if filepath.Base(path) == "sandbase.json" {
 				return []byte(projectConfig), nil
@@ -113,10 +113,10 @@ func TestResolve_PriorityProjectOverStored(t *testing.T) {
 	tmpDir := t.TempDir()
 	credData, _ := json.Marshal(struct {
 		APIKey string `json:"apiKey"`
-	}{APIKey: "sk-sb-stored-key"})
+	}{APIKey: "sk-stored-key"})
 	os.WriteFile(filepath.Join(tmpDir, "credentials.json"), credData, 0600)
 
-	projectConfig := `{"apiKey": "sk-sb-project-key"}`
+	projectConfig := `{"apiKey": "sk-project-key"}`
 
 	r := &Resolver{
 		EnvReader: func(key string) string { return "" },
@@ -146,7 +146,7 @@ func TestStoreClearRoundtrip(t *testing.T) {
 	}
 
 	// Store
-	if err := r.Store("sk-sb-test-roundtrip"); err != nil {
+	if err := r.Store("sk-test-roundtrip"); err != nil {
 		t.Fatalf("Store failed: %v", err)
 	}
 
@@ -164,8 +164,8 @@ func TestStoreClearRoundtrip(t *testing.T) {
 	if result.Source != SourceStored {
 		t.Errorf("expected source %q after Store, got %q", SourceStored, result.Source)
 	}
-	if result.APIKey != "sk-sb-test-roundtrip" {
-		t.Errorf("expected key %q, got %q", "sk-sb-test-roundtrip", result.APIKey)
+	if result.APIKey != "sk-test-roundtrip" {
+		t.Errorf("expected key %q, got %q", "sk-test-roundtrip", result.APIKey)
 	}
 
 	// Clear
@@ -194,11 +194,11 @@ func TestMaskKey(t *testing.T) {
 		input    string
 		expected string
 	}{
-		{"sk-sb-abcdefghijklmnop", "sk-sb-****mnop"},
+		{"sk-abcdefghijklmnop", "sk-abc****mnop"},
 		{"short", "****"},
 		{"12345678", "****"},
 		{"123456789", "123456****6789"},
-		{"sk-sb-xxxxxxxxxxxxxxxxxxxxxxxx", "sk-sb-****xxxx"},
+		{"sk-xxxxxxxxxxxxxxxxxxxxxxxx", "sk-xxx****xxxx"},
 	}
 
 	for _, tt := range tests {
@@ -231,7 +231,7 @@ func TestStatus_ReturnsNoneWhenNoKey(t *testing.T) {
 
 func TestStatus_ReturnsMaskedKey(t *testing.T) {
 	r := &Resolver{
-		EnvReader:     func(key string) string { return "sk-sb-my-secret-key-12345" },
+		EnvReader:     func(key string) string { return "sk-my-secret-key-12345" },
 		FileReader:    func(path string) ([]byte, error) { return nil, os.ErrNotExist },
 		ConfigFinder:  func(cwd string) string { return "" },
 		CredentialDir: t.TempDir(),
@@ -244,7 +244,7 @@ func TestStatus_ReturnsMaskedKey(t *testing.T) {
 	if source != SourceEnv {
 		t.Errorf("expected SourceEnv, got %q", source)
 	}
-	if masked != "sk-sb-****2345" {
-		t.Errorf("expected masked key %q, got %q", "sk-sb-****2345", masked)
+	if masked != "sk-my-****2345" {
+		t.Errorf("expected masked key %q, got %q", "sk-my-****2345", masked)
 	}
 }

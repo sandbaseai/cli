@@ -62,7 +62,7 @@ func authLoginExec(ctx context.Context, app *App, keyFlag string, skipVerify boo
 		}
 
 		prompt := &survey.Password{
-			Message: "Enter your SandBase API key (sk-sb-...):",
+			Message: "Enter your SandBase API key (sk-...):",
 		}
 		if err := survey.AskOne(prompt, &apiKey); err != nil {
 			return fmt.Errorf("input cancelled: %w", err)

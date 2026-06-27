@@ -19,7 +19,7 @@ import (
 func newTestClient(serverURL string) *ApiClient {
 	return &ApiClient{
 		BaseURL:    serverURL,
-		APIKey:     "sk-sb-test-key",
+		APIKey:     "sk-test-key",
 		HTTPClient: http.DefaultClient,
 		Retry:      nil, // No retries in tests unless explicitly set
 		Verbose:    false,
@@ -41,7 +41,7 @@ func TestRequest_Success(t *testing.T) {
 		if r.URL.Path != "/v1/test" {
 			t.Errorf("expected /v1/test, got %s", r.URL.Path)
 		}
-		if auth := r.Header.Get("Authorization"); auth != "Bearer sk-sb-test-key" {
+		if auth := r.Header.Get("Authorization"); auth != "Bearer sk-test-key" {
 			t.Errorf("expected Bearer token, got %s", auth)
 		}
 		if ct := r.Header.Get("Content-Type"); ct != "application/json" {
@@ -190,7 +190,7 @@ func TestRequest_VerboseMode(t *testing.T) {
 		t.Error("verbose output should contain request method")
 	}
 	// Should mask the API key
-	if strings.Contains(output, "sk-sb-test-key") {
+	if strings.Contains(output, "sk-test-key") {
 		t.Error("verbose output should NOT contain the actual API key")
 	}
 	if !strings.Contains(output, "Bearer ****") {
@@ -267,7 +267,7 @@ func TestPostMultipart_Success(t *testing.T) {
 		if !strings.HasPrefix(r.Header.Get("Content-Type"), "multipart/form-data") {
 			t.Errorf("expected multipart content-type, got %s", r.Header.Get("Content-Type"))
 		}
-		if r.Header.Get("Authorization") != "Bearer sk-sb-test-key" {
+		if r.Header.Get("Authorization") != "Bearer sk-test-key" {
 			t.Errorf("expected Bearer token, got %s", r.Header.Get("Authorization"))
 		}
 

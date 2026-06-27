@@ -21,7 +21,7 @@ Add to `~/.config/claude/claude_desktop_config.json`:
       "command": "sandbase",
       "args": ["mcp", "serve"],
       "env": {
-        "SANDBASE_API_KEY": "sk-sb-xxx"
+        "SANDBASE_API_KEY": "sk-xxx"
       }
     }
   }
@@ -39,7 +39,7 @@ Add to `.cursor/mcp.json`:
       "command": "sandbase",
       "args": ["mcp", "serve"],
       "env": {
-        "SANDBASE_API_KEY": "sk-sb-xxx"
+        "SANDBASE_API_KEY": "sk-xxx"
       }
     }
   }
@@ -58,7 +58,7 @@ Add to `.vscode/mcp.json`:
       "command": "sandbase",
       "args": ["mcp", "serve"],
       "env": {
-        "SANDBASE_API_KEY": "sk-sb-xxx"
+        "SANDBASE_API_KEY": "sk-xxx"
       }
     }
   }
