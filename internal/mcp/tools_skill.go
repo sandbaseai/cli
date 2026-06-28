@@ -50,36 +50,36 @@ func SkillLibraryHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillCreateHandler creates a skill via JSON (requires pre-uploaded file URLs).
+// SkillCreateHandler creates a skill via JSON.
 func SkillCreateHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
 		name, errResult := RequireString(params, "name")
 		if errResult != nil {
 			return errResult, nil
 		}
-		skillFileURL, errResult := RequireString(params, "skill_file_url")
-		if errResult != nil {
-			return errResult, nil
+		skillFileURL := OptionalString(params, "skill_file_url")
+		gitURL := OptionalString(params, "git_url")
+		if skillFileURL == "" && gitURL == "" {
+			return ErrorResultf("create skill failed: provide either skill_file_url or git_url"), nil
 		}
 
 		body := map[string]any{
-			"name":           name,
-			"skill_file_url": skillFileURL,
+			"name": name,
+		}
+		if skillFileURL != "" {
+			body["skill_file_url"] = skillFileURL
+		}
+		if gitURL != "" {
+			body["git_url"] = gitURL
 		}
 		if desc := OptionalString(params, "description"); desc != "" {
 			body["description"] = desc
 		}
-		if urls, ok := params["preview_urls"]; ok {
-			body["preview_urls"] = urls
+		if urls, ok := params["preview_image_urls"]; ok {
+			body["preview_image_urls"] = urls
 		}
-		if cats := OptionalString(params, "categories"); cats != "" {
+		if _, ok := params["categories"]; ok {
 			body["categories"] = params["categories"]
-		}
-		if gitURL := OptionalString(params, "git_url"); gitURL != "" {
-			body["git_url"] = gitURL
-		}
-		if envID := OptionalString(params, "environment_id"); envID != "" {
-			body["environment_id"] = envID
 		}
 
 		result, err := svc.Resource.Create(ctx, "skills", body)
@@ -112,8 +112,8 @@ func SkillUpdateHandler(svc *AppServices) ToolHandler {
 		if u := OptionalString(params, "skill_file_url"); u != "" {
 			body["skill_file_url"] = u
 		}
-		if urls, ok := params["preview_urls"]; ok {
-			body["preview_urls"] = urls
+		if urls, ok := params["preview_image_urls"]; ok {
+			body["preview_image_urls"] = urls
 		}
 		if envID := OptionalString(params, "environment_id"); envID != "" {
 			body["environment_id"] = envID

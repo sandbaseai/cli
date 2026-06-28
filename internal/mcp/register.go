@@ -165,16 +165,15 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 		Toolset:     ToolsetSkill, ReadOnly: true, Handler: SkillLibraryHandler(svc),
 	})
 	r.Register(ToolDef{
-		Name: "sandbase_skill_create", Description: "Create a skill (requires pre-uploaded skill_file_url and preview_urls from /v1/skills/upload-file)",
+		Name: "sandbase_skill_create", Description: "Create an organization skill. Provide either skill_file_url from /v1/skills/files or git_url.",
 		InputSchema: ObjectSchema(map[string]any{
-			"name":           StringProp("Skill name"),
-			"description":    StringProp("Description (optional)"),
-			"skill_file_url": StringProp("Uploaded skill file URL (from upload-file endpoint)"),
-			"preview_urls":   map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Preview image URLs"},
-			"categories":     map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Category tags"},
-			"git_url":        StringProp("GitHub directory URL (optional)"),
-			"environment_id": StringProp("Environment ID (optional)"),
-		}, []string{"name", "skill_file_url"}),
+			"name":               StringProp("Skill name"),
+			"description":        StringProp("Description (optional)"),
+			"skill_file_url":     StringProp("Uploaded skill file URL from /v1/skills/files"),
+			"git_url":            StringProp("Public Git repository or directory URL"),
+			"preview_image_urls": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Preview image URLs"},
+			"categories":         map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Category tags"},
+		}, []string{"name"}),
 		Toolset: ToolsetSkill, ReadOnly: false, Handler: SkillCreateHandler(svc),
 	})
 	r.Register(ToolDef{
@@ -184,7 +183,7 @@ func RegisterAllTools(r *Registry, svc *AppServices) {
 			"name":           StringProp("Skill name"),
 			"description":    StringProp("Description (optional)"),
 			"skill_file_url": StringProp("New skill file URL (optional)"),
-			"preview_urls":   map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "New preview URLs (optional)"},
+			"preview_image_urls": map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "New preview image URLs (optional)"},
 			"categories":     map[string]any{"type": "array", "items": map[string]any{"type": "string"}, "description": "Category tags (optional)"},
 			"environment_id": StringProp("Environment ID (optional)"),
 		}, []string{"skill_id", "name"}),
