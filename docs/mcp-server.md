@@ -1,11 +1,29 @@
 # MCP Server
 
-The `sandbase mcp serve` command starts an MCP (Model Context Protocol) server that exposes SandBase platform capabilities as standardized tools. IDE and AI agent clients can connect to it via stdio.
+The `sandbase mcp serve` command starts an MCP (Model Context Protocol) server that exposes SandBase platform capabilities as standardized tools. IDE and AI agent clients can connect to it via stdio locally, or via Streamable HTTP when hosted.
 
 ## Quick Start
 
 ```bash
 sandbase mcp serve
+```
+
+Hosted HTTP:
+
+```bash
+sandbase mcp serve --transport http --addr :8080 --endpoint /mcp
+```
+
+Production hosted endpoint:
+
+```text
+https://mcp.sandbase.ai/mcp
+```
+
+Test hosted endpoint:
+
+```text
+https://mcp-test193f.sandbase.ai/mcp
 ```
 
 ## IDE Configuration
@@ -65,11 +83,33 @@ Add to `.vscode/mcp.json`:
 }
 ```
 
+### Remote MCP
+
+Use the hosted SandBase MCP server when the client supports Streamable HTTP:
+
+```json
+{
+  "mcpServers": {
+    "sandbase": {
+      "type": "http",
+      "url": "https://mcp.sandbase.ai/mcp",
+      "headers": {
+        "Authorization": "Bearer ${SANDBASE_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+The hosted server is stateless. Each HTTP request can pass a SandBase API key as a bearer token; the server forwards that token to the SandBase API for the tool call. If no bearer token is provided, only public/read-only API behavior should be expected.
+
 ## Options
 
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--transport` | `stdio` | Transport protocol (stdio, http) |
+| `--addr` | `:8080` | HTTP listen address when `--transport=http` |
+| `--endpoint` | `/mcp` | HTTP MCP endpoint path when `--transport=http` |
 | `--toolsets` | all | Comma-separated toolsets to enable |
 | `--read-only` | false | Only expose read-only tools |
 | `--verbose` | false | Log HTTP requests to stderr |
@@ -95,7 +135,8 @@ Add to `.vscode/mcp.json`:
 | `agent` | agent_list/get/create/update/archive | Agent management |
 | `session` | session_list/get/create/send/events/stop | Session execution |
 | `environment` | env_list/get/create/update/delete | Environment management |
-| `skill` | skill_list/create/update/delete | Skill management |
+| `skill` | skill_list/get/library/create/update/delete | Skill management |
+| `embed` | embed_list/get/create/update/delete/usage | Embed config management |
 | `mcp` | mcp_servers | Platform MCP discovery |
 | `account` | balance, history | Account info |
 
@@ -119,4 +160,7 @@ sandbase mcp serve --read-only
 
 # Verbose logging for debugging
 sandbase mcp serve --verbose
+
+# Hosted HTTP mode for model discovery, chat, generation, MCP discovery, and account info
+SANDBASE_MCP_TOOLSETS=models,mcp,chat,run,account sandbase mcp serve --transport http --addr :8080
 ```

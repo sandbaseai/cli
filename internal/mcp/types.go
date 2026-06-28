@@ -22,6 +22,7 @@ const (
 	ToolsetSession     Toolset = "session"
 	ToolsetEnvironment Toolset = "environment"
 	ToolsetSkill       Toolset = "skill"
+	ToolsetEmbed       Toolset = "embed"
 	ToolsetMCP         Toolset = "mcp"
 	ToolsetAccount     Toolset = "account"
 )
@@ -30,7 +31,7 @@ const (
 var AllToolsets = []Toolset{
 	ToolsetModels, ToolsetRun, ToolsetChat, ToolsetUpload,
 	ToolsetAgent, ToolsetSession, ToolsetEnvironment,
-	ToolsetSkill, ToolsetMCP, ToolsetAccount,
+	ToolsetSkill, ToolsetEmbed, ToolsetMCP, ToolsetAccount,
 }
 
 // ToolHandler is the function signature for a tool's execution logic.

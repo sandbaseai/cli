@@ -1,0 +1,20 @@
+name: Setup kubectl
+description: Configure kubectl with cluster credentials
+
+inputs:
+  kubeconfig:
+    description: Base64-encoded kubeconfig
+    required: true
+  k8s-server:
+    description: Kubernetes API server URL
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        mkdir -p ~/.kube
+        echo "${{ inputs.kubeconfig }}" | base64 -d > ~/.kube/config
+        chmod 600 ~/.kube/config
+        kubectl config set-cluster $(kubectl config get-clusters | tail -1) --server=${{ inputs.k8s-server }} --insecure-skip-tls-verify=true

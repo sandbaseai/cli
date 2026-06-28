@@ -56,6 +56,7 @@ func NewRootCmd() *cobra.Command {
 		newEnvironmentCmd(app),
 		newSessionCmd(app),
 		newSkillCmd(app),
+		newEmbedCmd(app),
 		newSandboxCmd(app),
 		newMcpCmd(app),
 		newUploadCmd(app),

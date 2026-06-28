@@ -1,0 +1,17 @@
+FROM golang:1.25-alpine AS builder
+WORKDIR /src
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+ARG VERSION=dev
+RUN go build -ldflags "-s -w -X github.com/sandbaseai/cli/cmd.Version=${VERSION}" -o /out/sandbase .
+
+FROM alpine:3.22
+RUN addgroup -S sandbase && adduser -S sandbase -G sandbase
+COPY --from=builder /out/sandbase /usr/local/bin/sandbase
+USER sandbase
+EXPOSE 8080
+ENV SANDBASE_MCP_TOOLSETS=models,mcp,chat,run,account,agent,session,environment,skill,embed,upload
+ENTRYPOINT ["sandbase", "mcp", "serve", "--transport", "http", "--addr", ":8080", "--endpoint", "/mcp"]

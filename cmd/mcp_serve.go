@@ -11,18 +11,21 @@ import (
 func newMcpServeCmd(app *App) *cobra.Command {
 	var (
 		transport string
+		addr      string
+		endpoint  string
 		toolsets  []string
 		readOnly  bool
 	)
 
 	cmd := &cobra.Command{
 		Use:   "serve",
-		Short: "Start MCP server (stdio)",
+		Short: "Start MCP server (stdio or HTTP)",
 		Long: `Start an MCP server that exposes SandBase platform capabilities as MCP tools.
 IDE/Agent clients spawn this as a subprocess and communicate via JSON-RPC over stdio.
 
 Examples:
   sandbase mcp serve                         # All tools, stdio transport
+  sandbase mcp serve --transport http        # Remote MCP over HTTP at :8080/mcp
   sandbase mcp serve --toolsets models,run   # Only model and run tools
   sandbase mcp serve --read-only             # Only read-only tools`,
 		SilenceUsage: true,
@@ -41,6 +44,8 @@ Examples:
 				Name:      "sandbase",
 				Version:   Version,
 				Transport: transport,
+				Addr:      addr,
+				Endpoint:  endpoint,
 				Toolsets:  resolvedToolsets,
 				ReadOnly:  resolvedReadOnly,
 			}
@@ -60,6 +65,8 @@ Examples:
 	}
 
 	cmd.Flags().StringVar(&transport, "transport", "stdio", "Transport protocol (stdio, http)")
+	cmd.Flags().StringVar(&addr, "addr", ":8080", "HTTP listen address when --transport=http")
+	cmd.Flags().StringVar(&endpoint, "endpoint", "/mcp", "HTTP MCP endpoint path when --transport=http")
 	cmd.Flags().StringSliceVar(&toolsets, "toolsets", nil, "Enabled toolsets, comma-separated (default: all)")
 	cmd.Flags().BoolVar(&readOnly, "read-only", false, "Only expose read-only tools")
 

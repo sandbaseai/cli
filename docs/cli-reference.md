@@ -168,11 +168,29 @@ sandbase session stream <id>
 ## skill — Skill 管理
 
 ```
-sandbase skill create --name <name>
+sandbase skill create --name <name> --file ./skill.yaml
+sandbase skill create --name <name> --skill-file-url https://media.sandbase.ai/_private/...
+sandbase skill create --name <name> --git-url https://github.com/acme/skills/tree/main/my-skill
 sandbase skill list
 sandbase skill update <id> --name <name>
 sandbase skill delete <id>
 ```
+
+---
+
+## embed — Embed 管理
+
+```
+sandbase embed create --name <name> --agent <agent_id> --environment <environment_id>
+sandbase embed create --name site-assistant --agent agent_xxx --environment env_xxx --origin https://www.sandbase.ai --title Sandy
+sandbase embed list
+sandbase embed get <id>
+sandbase embed update <id> --enabled=false
+sandbase embed usage <id>
+sandbase embed delete <id>
+```
+
+`embed create` 返回 `publishable_key` 和可直接放到网页里的 `embed_code`。管理面使用 `SANDBASE_API_KEY`；网页运行面使用 `publishable_key`。
 
 ---
 

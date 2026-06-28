@@ -63,6 +63,7 @@ sandbase status <job_id>
 | `environment create/list/get/update/delete` | 环境管理 |
 | `session create/list/get/update/stop/archive/delete/send/events/stream` | 会话管理 |
 | `skill create/list/update/delete` | Skill 管理 |
+| `embed create/list/get/update/delete/usage` | Embed 配置管理 |
 | `mcp list` | MCP Server 发现 |
 | `upload <file...>` | 上传文件 |
 | `download <url...>` | 下载文件 |

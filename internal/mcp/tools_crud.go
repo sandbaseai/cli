@@ -100,6 +100,20 @@ func MakeActionHandler(svc *AppServices, cfg CRUDConfig, action string) ToolHand
 	}
 }
 
+func MakeSubListHandler(svc *AppServices, cfg CRUDConfig, sub string) ToolHandler {
+	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
+		id, errResult := RequireString(params, cfg.IDParam)
+		if errResult != nil {
+			return errResult, nil
+		}
+		result, err := svc.Resource.SubList(ctx, cfg.BasePath, id, sub)
+		if err != nil {
+			return ErrorResultf("list %s %s failed: %v", cfg.Resource, sub, err), nil
+		}
+		return JSONResult(result), nil
+	}
+}
+
 // SessionSendHandler sends a message to a session.
 func SessionSendHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {

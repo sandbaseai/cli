@@ -97,7 +97,11 @@ func (c *ApiClient) Request(ctx context.Context, method, path string, body any, 
 			return nil, err
 		}
 		req.Header.Set("Content-Type", "application/json")
-		req.Header.Set("Authorization", "Bearer "+c.APIKey)
+		apiKey := c.APIKey
+		if scopedKey := apiKeyFromContext(ctx); scopedKey != "" {
+			apiKey = scopedKey
+		}
+		req.Header.Set("Authorization", "Bearer "+apiKey)
 		req.Header.Set("User-Agent", "sandbase-cli")
 		return req, nil
 	}
@@ -209,7 +213,11 @@ func (c *ApiClient) Stream(ctx context.Context, method, path string, body any) (
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	apiKey := c.APIKey
+	if scopedKey := apiKeyFromContext(ctx); scopedKey != "" {
+		apiKey = scopedKey
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Accept", "text/event-stream")
 	req.Header.Set("User-Agent", "sandbase-cli")
 
@@ -305,7 +313,11 @@ func (c *ApiClient) PostMultipart(ctx context.Context, path, field, filename str
 	}
 
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	apiKey := c.APIKey
+	if scopedKey := apiKeyFromContext(ctx); scopedKey != "" {
+		apiKey = scopedKey
+	}
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("User-Agent", "sandbase-cli")
 
 	resp, err := c.HTTPClient.Do(req)

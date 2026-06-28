@@ -1,0 +1,173 @@
+name: Deploy MCP
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment
+        required: true
+        type: choice
+        options: [test, prod]
+        default: prod
+  push:
+    branches:
+      - main
+    paths:
+      - '**/*.go'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Dockerfile.mcp'
+      - 'deploy/mcp/**'
+      - '.github/actions/setup-kubectl/**'
+      - '.github/workflows/deploy-mcp.yml'
+  schedule:
+    - cron: '17 3 * * 1'
+
+concurrency:
+  group: deploy-cli-mcp-${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'prod' }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    runs-on: self-hosted
+    outputs:
+      deploy_env: ${{ steps.env.outputs.deploy_env }}
+      namespace: ${{ steps.env.outputs.namespace }}
+      registry: ${{ steps.env.outputs.registry }}
+      registry_host: ${{ steps.env.outputs.registry_host }}
+      image_tag: ${{ steps.tag.outputs.image_tag }}
+      latest_tag: ${{ steps.env.outputs.latest_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: env
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            DEPLOY_ENV="${{ inputs.environment }}"
+          else
+            DEPLOY_ENV="prod"
+          fi
+
+          if [ "$DEPLOY_ENV" = "test" ]; then
+            echo "deploy_env=test" >> "$GITHUB_OUTPUT"
+            echo "namespace=sandbase-test" >> "$GITHUB_OUTPUT"
+            echo "registry=useccr.ccs.tencentyun.com/sandbase" >> "$GITHUB_OUTPUT"
+            echo "registry_host=useccr.ccs.tencentyun.com" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=test-latest" >> "$GITHUB_OUTPUT"
+          else
+            echo "deploy_env=prod" >> "$GITHUB_OUTPUT"
+            echo "namespace=sandbase" >> "$GITHUB_OUTPUT"
+            echo "registry=sgccr.ccs.tencentyun.com/sandbase" >> "$GITHUB_OUTPUT"
+            echo "registry_host=sgccr.ccs.tencentyun.com" >> "$GITHUB_OUTPUT"
+            echo "latest_tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
+      - id: tag
+        shell: bash
+        run: |
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "image_tag=scheduled-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          else
+            SAFE_REF="$(echo "${GITHUB_REF_NAME}" | tr '/_' '--' | tr -cd '[:alnum:].-')"
+            echo "image_tag=${SAFE_REF}-${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - run: go test ./...
+      - run: sh -n install.sh
+      - run: node --check npm/postinstall.js
+
+  build:
+    needs: [prepare, test]
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+        with:
+          driver: docker-container
+          name: sandbase-cli-mcp-builder
+          cleanup: false
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ needs.prepare.outputs.registry_host }}
+          username: ${{ secrets.CCR_USERNAME }}
+          password: ${{ secrets.CCR_PASSWORD }}
+      - name: Ensure cache dir
+        run: mkdir -p /tmp/.buildx-cache/cli-mcp
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.mcp
+          push: true
+          build-args: |
+            VERSION=${{ needs.prepare.outputs.image_tag }}
+          tags: |
+            ${{ needs.prepare.outputs.registry }}/mcp:${{ needs.prepare.outputs.image_tag }}
+            ${{ needs.prepare.outputs.registry }}/mcp:${{ needs.prepare.outputs.latest_tag }}
+          cache-from: type=local,src=/tmp/.buildx-cache/cli-mcp
+          cache-to: type=local,dest=/tmp/.buildx-cache/cli-mcp,mode=max
+          provenance: false
+
+  deploy:
+    needs: [prepare, build]
+    runs-on: self-hosted
+    env:
+      NS: ${{ needs.prepare.outputs.namespace }}
+      DEPLOY_ENV: ${{ needs.prepare.outputs.deploy_env }}
+      IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-kubectl
+        with:
+          kubeconfig: ${{ needs.prepare.outputs.deploy_env == 'test' && secrets.KUBECONFIG_TEST || secrets.KUBECONFIG_PROD }}
+          k8s-server: ${{ needs.prepare.outputs.deploy_env == 'test' && secrets.K8S_SERVER_TEST || secrets.K8S_SERVER }}
+
+      - name: Ensure namespace
+        run: kubectl get namespace "$NS" >/dev/null 2>&1 || kubectl create namespace "$NS"
+
+      - name: Create registry pull secret
+        run: |
+          kubectl create secret docker-registry registry-secret \
+            -n "$NS" \
+            --docker-server="${{ needs.prepare.outputs.registry_host }}" \
+            --docker-username="${{ secrets.CCR_USERNAME }}" \
+            --docker-password="${{ secrets.CCR_PASSWORD }}" \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply MCP manifests
+        run: |
+          sed "s|IMAGE_TAG|${IMAGE_TAG}|g" "deploy/mcp/${DEPLOY_ENV}.yaml" | kubectl apply -f -
+          kubectl rollout status deployment/sandbase-mcp -n "$NS" --timeout=180s
+
+      - name: Smoke test service inside cluster
+        run: |
+          kubectl run sandbase-mcp-smoke-${GITHUB_RUN_ID} \
+            -n "$NS" \
+            --rm -i --restart=Never \
+            --image=curlimages/curl:8.12.1 \
+            --command -- curl -fsS "http://sandbase-mcp:8080/healthz"
+
+  summary:
+    if: always()
+    needs: [prepare, test, build, deploy]
+    runs-on: self-hosted
+    steps:
+      - run: |
+          echo "## SandBase CLI MCP Deploy" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Parameter | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|-----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Environment | ${{ needs.prepare.outputs.deploy_env }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Namespace | ${{ needs.prepare.outputs.namespace }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Image | \`${{ needs.prepare.outputs.registry }}/mcp:${{ needs.prepare.outputs.image_tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Endpoint | ${{ needs.prepare.outputs.deploy_env == 'test' && 'https://mcp-test193f.sandbase.ai/mcp' || 'https://mcp.sandbase.ai/mcp' }} |" >> "$GITHUB_STEP_SUMMARY"

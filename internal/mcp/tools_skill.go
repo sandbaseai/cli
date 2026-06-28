@@ -39,12 +39,12 @@ func SkillGetHandler(svc *AppServices) ToolHandler {
 	}
 }
 
-// SkillMineHandler lists the current user's skills.
-func SkillMineHandler(svc *AppServices) ToolHandler {
+// SkillLibraryHandler lists the current organization's skills.
+func SkillLibraryHandler(svc *AppServices) ToolHandler {
 	return func(ctx context.Context, params map[string]any) (*ToolResult, error) {
-		result, err := svc.Resource.List(ctx, "skills/mine", nil)
+		result, err := svc.Resource.List(ctx, "skills", nil)
 		if err != nil {
-			return ErrorResultf("list my skills failed: %v", err), nil
+			return ErrorResultf("list organization skills failed: %v", err), nil
 		}
 		return JSONResult(result), nil
 	}
