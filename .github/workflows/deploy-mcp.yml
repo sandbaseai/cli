@@ -97,6 +97,15 @@ jobs:
           driver: docker-container
           name: sandbase-cli-mcp-builder
           cleanup: false
+      - name: Validate registry credentials
+        env:
+          CCR_USERNAME: ${{ secrets.CCR_USERNAME }}
+          CCR_PASSWORD: ${{ secrets.CCR_PASSWORD }}
+        run: |
+          if [ -z "$CCR_USERNAME" ] || [ -z "$CCR_PASSWORD" ]; then
+            echo "::error::Missing CCR_USERNAME or CCR_PASSWORD. Add them as repository secrets for sandbaseai/cli, or allow this repository to access the organization-level CCR secrets."
+            exit 1
+          fi
       - uses: docker/login-action@v3
         with:
           registry: ${{ needs.prepare.outputs.registry_host }}
