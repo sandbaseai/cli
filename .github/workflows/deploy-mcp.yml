@@ -134,6 +134,15 @@ jobs:
       IMAGE_TAG: ${{ needs.prepare.outputs.image_tag }}
     steps:
       - uses: actions/checkout@v4
+      - name: Validate Kubernetes credentials
+        env:
+          KUBECONFIG_CONTENT: ${{ needs.prepare.outputs.deploy_env == 'test' && secrets.KUBECONFIG_TEST || secrets.KUBECONFIG_PROD }}
+          K8S_SERVER_URL: ${{ needs.prepare.outputs.deploy_env == 'test' && secrets.K8S_SERVER_TEST || secrets.K8S_SERVER }}
+        run: |
+          if [ -z "$KUBECONFIG_CONTENT" ] || [ -z "$K8S_SERVER_URL" ]; then
+            echo "::error::Missing Kubernetes deployment secrets for $DEPLOY_ENV. Add KUBECONFIG_PROD and K8S_SERVER for prod, or KUBECONFIG_TEST and K8S_SERVER_TEST for test."
+            exit 1
+          fi
       - uses: ./.github/actions/setup-kubectl
         with:
           kubeconfig: ${{ needs.prepare.outputs.deploy_env == 'test' && secrets.KUBECONFIG_TEST || secrets.KUBECONFIG_PROD }}
