@@ -2,7 +2,10 @@ package mcp
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"net/url"
+	"strings"
 )
 
 // ModelsListHandler lists or searches models.
@@ -30,7 +33,8 @@ func ModelsGetHandler(svc *AppServices) ToolHandler {
 		if errResult != nil {
 			return errResult, nil
 		}
-		result, err := svc.Resource.Get(ctx, "models", slug)
+		result := map[string]any{}
+		err := svc.Client.Request(ctx, http.MethodGet, fmt.Sprintf("/v1/models/slug/%s", modelSlugPath(slug)), nil, &result)
 		if err != nil {
 			return ErrorResultf("get model failed: %v", err), nil
 		}
@@ -51,4 +55,12 @@ func SchemaGetHandler(svc *AppServices) ToolHandler {
 		}
 		return JSONResult(s), nil
 	}
+}
+
+func modelSlugPath(slug string) string {
+	parts := strings.Split(slug, "/")
+	for i, part := range parts {
+		parts[i] = url.PathEscape(part)
+	}
+	return strings.Join(parts, "/")
 }

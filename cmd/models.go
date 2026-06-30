@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -52,6 +53,42 @@ type Model struct {
 	Tags     []string `json:"tags,omitempty"`
 }
 
+func (m *Model) UnmarshalJSON(data []byte) error {
+	type rawModel struct {
+		Slug        string   `json:"slug"`
+		ID          string   `json:"id"`
+		Name        string   `json:"name"`
+		DisplayName string   `json:"display_name"`
+		Title       string   `json:"title"`
+		Type        string   `json:"type"`
+		Provider    string   `json:"provider"`
+		Vendor      string   `json:"vendor"`
+		Tags        []string `json:"tags"`
+	}
+	var raw rawModel
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	m.Slug = raw.Slug
+	if strings.Contains(raw.Name, "/") {
+		m.Slug = raw.Name
+	} else if m.Slug == "" {
+		m.Slug = raw.ID
+	}
+	m.Name = firstNonEmpty(raw.DisplayName, raw.Title)
+	if m.Name == "" && raw.Name != m.Slug {
+		m.Name = raw.Name
+	}
+	if m.Name == "" {
+		m.Name = m.Slug
+	}
+	m.Type = raw.Type
+	m.Provider = firstNonEmpty(raw.Provider, raw.Vendor)
+	m.Tags = raw.Tags
+	return nil
+}
+
 // ModelDetail represents detailed model info from the API.
 type ModelDetail struct {
 	Slug        string   `json:"slug"`
@@ -63,9 +100,86 @@ type ModelDetail struct {
 	Version     string   `json:"version,omitempty"`
 }
 
+func (m *ModelDetail) UnmarshalJSON(data []byte) error {
+	type rawDetail struct {
+		Slug        string   `json:"slug"`
+		ID          string   `json:"id"`
+		Name        string   `json:"name"`
+		DisplayName string   `json:"display_name"`
+		Title       string   `json:"title"`
+		Type        string   `json:"type"`
+		Provider    string   `json:"provider"`
+		Vendor      string   `json:"vendor"`
+		Tags        []string `json:"tags"`
+		Description string   `json:"description"`
+		Version     string   `json:"version"`
+	}
+	var raw rawDetail
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	m.Slug = raw.Slug
+	if strings.Contains(raw.Name, "/") {
+		m.Slug = raw.Name
+	} else if m.Slug == "" {
+		m.Slug = raw.ID
+	}
+	m.Name = firstNonEmpty(raw.DisplayName, raw.Title)
+	if m.Name == "" && raw.Name != m.Slug {
+		m.Name = raw.Name
+	}
+	if m.Name == "" {
+		m.Name = m.Slug
+	}
+	m.Type = raw.Type
+	m.Provider = firstNonEmpty(raw.Provider, raw.Vendor)
+	m.Tags = raw.Tags
+	m.Description = raw.Description
+	m.Version = raw.Version
+	return nil
+}
+
 // ModelsListResponse represents the API response for listing models.
 type ModelsListResponse struct {
 	Models []Model `json:"models"`
+	Data   []Model `json:"data"`
+}
+
+func (r *ModelsListResponse) normalizedModels() []Model {
+	if len(r.Models) > 0 {
+		return r.Models
+	}
+	return r.Data
+}
+
+type modelDetailResponse struct {
+	ModelDetail
+	Data *ModelDetail `json:"data"`
+}
+
+func (r modelDetailResponse) normalizedDetail() ModelDetail {
+	if r.Data != nil {
+		return *r.Data
+	}
+	return r.ModelDetail
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, v := range values {
+		if v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
+func modelSlugPath(slug string) string {
+	parts := strings.Split(slug, "/")
+	for i, part := range parts {
+		parts[i] = url.PathEscape(part)
+	}
+	return strings.Join(parts, "/")
 }
 
 func newModelsCmd(app *App) *cobra.Command {
@@ -119,7 +233,7 @@ func modelsListExec(ctx context.Context, app *App, query, typeFilter string) err
 
 	// Apply client-side filter on the returned set so filtering behavior is
 	// verifiable regardless of how the server interprets query params.
-	response.Models = applyLocalFilter(response.Models, query, typeFilter)
+	response.Models = applyLocalFilter(response.normalizedModels(), query, typeFilter)
 
 	if len(response.Models) == 0 {
 		// Single output path: empty list. TTY shows a friendly message via the
@@ -179,12 +293,13 @@ func modelsGetExec(ctx context.Context, app *App, slug string) error {
 		return err
 	}
 
-	path := fmt.Sprintf("/v1/models/%s", url.PathEscape(slug))
+	path := fmt.Sprintf("/v1/models/slug/%s", modelSlugPath(slug))
 
-	var detail ModelDetail
-	if err := app.Client.Request(ctx, http.MethodGet, path, nil, &detail); err != nil {
+	var response modelDetailResponse
+	if err := app.Client.Request(ctx, http.MethodGet, path, nil, &response); err != nil {
 		return err
 	}
+	detail := response.normalizedDetail()
 
 	if detail.Slug == "" {
 		return &clierrors.CliError{
@@ -232,7 +347,7 @@ func newModelsPricingCmd(app *App) *cobra.Command {
 			if err := app.EnsureClient(); err != nil {
 				return err
 			}
-			path := fmt.Sprintf("/v1/models/slug/%s", args[0])
+			path := fmt.Sprintf("/v1/models/slug/%s", modelSlugPath(args[0]))
 			var detail map[string]any
 			if err := app.Client.Request(cmd.Context(), http.MethodGet, path, nil, &detail); err != nil {
 				return err
