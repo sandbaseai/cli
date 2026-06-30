@@ -158,9 +158,9 @@ jobs:
             --command -- curl -fsS "http://sandbase-mcp:8080/healthz"
 
   summary:
-    if: always()
+    if: ${{ always() && !cancelled() }}
     needs: [prepare, test, build, deploy]
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - run: |
           echo "## SandBase CLI MCP Deploy" >> "$GITHUB_STEP_SUMMARY"
