@@ -12,6 +12,7 @@ inputs:
 runs:
   using: composite
   steps:
+    - uses: azure/setup-kubectl@v4
     - shell: bash
       run: |
         mkdir -p ~/.kube
