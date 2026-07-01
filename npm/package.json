@@ -1,5 +1,5 @@
 {
-  "name": "@sandbase/cli",
+  "name": "@sandbaseai/cli",
   "version": "0.2.0",
   "description": "SandBase AI platform CLI",
   "license": "MIT",

@@ -12,7 +12,7 @@ curl -fsSL https://raw.githubusercontent.com/sandbaseai/cli/main/install.sh | sh
 brew install sandbaseai/tap/sandbase
 
 # npm
-npm install -g @sandbase/cli
+npm install -g @sandbaseai/cli
 
 # 从源码构建（需要 Go 1.21+）
 go install github.com/sandbaseai/cli@latest
