@@ -12,7 +12,7 @@
     "access": "public"
   },
   "bin": {
-    "sandbase": "./bin/sandbase.js"
+    "sandbase": "bin/sandbase.js"
   },
   "files": [
     "bin/sandbase.js",
