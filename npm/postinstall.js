@@ -9,7 +9,7 @@ const os = require("os");
 
 const REPO = "sandbaseai/cli";
 const BIN_DIR = path.join(__dirname, "bin");
-const BIN_PATH = path.join(BIN_DIR, os.platform() === "win32" ? "sandbase.exe" : "sandbase");
+const BIN_PATH = path.join(BIN_DIR, os.platform() === "win32" ? "sandbase-bin.exe" : "sandbase-bin");
 
 function getPlatform() {
   const platform = os.platform();

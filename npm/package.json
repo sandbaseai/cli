@@ -1,19 +1,23 @@
 {
   "name": "@sandbaseai/cli",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "SandBase AI platform CLI",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sandbaseai/cli.git"
+    "url": "git+https://github.com/sandbaseai/cli.git"
   },
   "homepage": "https://sandbase.ai",
   "publishConfig": {
     "access": "public"
   },
   "bin": {
-    "sandbase": "./bin/sandbase"
+    "sandbase": "./bin/sandbase.js"
   },
+  "files": [
+    "bin/sandbase.js",
+    "postinstall.js"
+  ],
   "scripts": {
     "postinstall": "node postinstall.js"
   },

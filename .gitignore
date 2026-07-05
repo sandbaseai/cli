@@ -21,3 +21,5 @@ coverage.out
 # npm wrapper binary cache
 npm/bin/sandbase
 npm/bin/sandbase.exe
+npm/bin/sandbase-bin
+npm/bin/sandbase-bin.exe
