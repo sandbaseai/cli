@@ -72,6 +72,31 @@ func TestRequest_Success(t *testing.T) {
 	}
 }
 
+func TestRequestRaw_PreservesYAMLBody(t *testing.T) {
+	const definition = "name: reviewer\nruntime: hermes\n"
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if got := r.Header.Get("Content-Type"); got != "application/yaml" {
+			t.Fatalf("Content-Type = %q", got)
+		}
+		body, _ := io.ReadAll(r.Body)
+		if string(body) != definition {
+			t.Fatalf("body = %q", body)
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"id":"ep_test"}`))
+	}))
+	defer server.Close()
+
+	client := newTestClient(server.URL)
+	var result map[string]any
+	if err := client.RequestRaw(context.Background(), http.MethodPost, "/v1/endpoints", []byte(definition), "application/yaml", &result); err != nil {
+		t.Fatal(err)
+	}
+	if result["id"] != "ep_test" {
+		t.Fatalf("unexpected result: %#v", result)
+	}
+}
+
 func TestRequest_ErrorParsing_ObjectError(t *testing.T) {
 	// OpenAI-style error: {"error": {"message": "...", "type": "..."}}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

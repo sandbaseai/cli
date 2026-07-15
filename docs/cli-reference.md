@@ -132,6 +132,21 @@ sandbase agent versions <id>
 
 ---
 
+## endpoint — Agent Endpoint 管理
+
+从声明式 runtime 定义直接创建可调用的 Agent Endpoint，无需预先创建 Agent 或 Environment。
+
+```bash
+sandbase endpoint create --name reviewer --runtime hermes
+sandbase endpoint create --name reviewer --runtime hermes \
+  --skill vendor_slug/plugin_slug
+sandbase endpoint create --file endpoint.yaml
+```
+
+`--skill` 可重复且可完全省略；`--file` 接受 YAML 或 JSON，并且不能与 `--name`、`--runtime`、`--skill` 混用。
+
+---
+
 ## environment — 环境管理
 
 ```

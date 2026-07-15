@@ -60,6 +60,7 @@ sandbase status <job_id>
 | `chat` | LLM 对话（流式） |
 | `status <job_id>` | 查看异步任务状态 |
 | `agent create/list/get/update/archive/versions` | Agent 管理 |
+| `endpoint create` | 从 runtime/Skills 或 YAML/JSON 定义创建 Agent Endpoint |
 | `environment create/list/get/update/delete` | 环境管理 |
 | `session create/list/get/update/stop/archive/delete/send/events/stream` | 会话管理 |
 | `skill create/list/update/delete` | Skill 管理 |

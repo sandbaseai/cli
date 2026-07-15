@@ -53,6 +53,7 @@ func NewRootCmd() *cobra.Command {
 		newChatCmd(app),
 		newStatusCmd(app),
 		newAgentCmd(app),
+		newEndpointCmd(app),
 		newEnvironmentCmd(app),
 		newSessionCmd(app),
 		newSkillCmd(app),

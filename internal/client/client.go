@@ -171,6 +171,83 @@ func (c *ApiClient) Request(ctx context.Context, method, path string, body any, 
 	return nil
 }
 
+// RequestRaw performs an authenticated API request with a caller-provided body and
+// content type. It is used for APIs whose wire format is intentionally not JSON,
+// such as declarative Endpoint YAML. The body is replayable across retries.
+func (c *ApiClient) RequestRaw(ctx context.Context, method, path string, body []byte, contentType string, result any) error {
+	ctx, cancel := c.withTimeout(ctx)
+	defer cancel()
+
+	url := c.BaseURL + path
+	newReq := func() (*http.Request, error) {
+		req, err := http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
+		if err != nil {
+			return nil, err
+		}
+		req.Header.Set("Content-Type", contentType)
+		apiKey := c.APIKey
+		if scopedKey := apiKeyFromContext(ctx); scopedKey != "" {
+			apiKey = scopedKey
+		}
+		req.Header.Set("Authorization", "Bearer "+apiKey)
+		req.Header.Set("User-Agent", "sandbase-cli")
+		return req, nil
+	}
+
+	req, err := newReq()
+	if err != nil {
+		return fmt.Errorf("create request: %w", err)
+	}
+	if c.Verbose {
+		c.logRequest(req, string(body))
+	}
+
+	var resp *http.Response
+	var attempt int
+	for {
+		resp, err = c.HTTPClient.Do(req)
+		if err != nil {
+			return c.networkError(ctx, err)
+		}
+		if c.Retry != nil && resp.StatusCode >= 400 {
+			decision := c.Retry.Decide(resp.StatusCode, attempt)
+			if decision.Retry {
+				resp.Body.Close()
+				attempt++
+				select {
+				case <-ctx.Done():
+					return c.networkError(ctx, ctx.Err())
+				case <-time.After(time.Duration(decision.DelayMs) * time.Millisecond):
+				}
+				req, err = newReq()
+				if err != nil {
+					return fmt.Errorf("create retry request: %w", err)
+				}
+				continue
+			}
+		}
+		break
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("read response body: %w", err)
+	}
+	if c.Verbose {
+		c.logResponse(resp, respBody)
+	}
+	if resp.StatusCode >= 400 {
+		return c.parseError(resp.StatusCode, respBody)
+	}
+	if result != nil && len(respBody) > 0 {
+		if err := json.Unmarshal(respBody, result); err != nil {
+			return fmt.Errorf("decode response: %w", err)
+		}
+	}
+	return nil
+}
+
 // networkError maps a transport-level error to a CliError, distinguishing
 // timeouts/cancellation from generic connectivity failures for clearer UX.
 func (c *ApiClient) networkError(ctx context.Context, err error) *clierrors.CliError {

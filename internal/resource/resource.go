@@ -66,6 +66,15 @@ func (s *Service) Create(ctx context.Context, resourcePath string, body map[stri
 	return result, nil
 }
 
+// CreateRaw performs POST /v1/{resourcePath} without JSON re-encoding the body.
+func (s *Service) CreateRaw(ctx context.Context, resourcePath string, body []byte, contentType string) (map[string]any, error) {
+	var result map[string]any
+	if err := s.Client.RequestRaw(ctx, http.MethodPost, base(resourcePath), body, contentType, &result); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
 // Update performs PATCH /v1/{resourcePath}/{id}.
 func (s *Service) Update(ctx context.Context, resourcePath, id string, body map[string]any) (map[string]any, error) {
 	var result map[string]any
