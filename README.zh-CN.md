@@ -6,6 +6,13 @@
   <p align="center">
     <a href="./README.md">English</a> | 中文 | <a href="./README.ja.md">日本語</a>
   </p>
+  <p align="center">
+    <a href="https://www.npmjs.com/package/@sandbaseai/cli"><img alt="npm 版本" src="https://img.shields.io/npm/v/%40sandbaseai%2Fcli"></a>
+    <a href="https://www.npmjs.com/package/@sandbaseai/cli"><img alt="npm 下载量" src="https://img.shields.io/npm/dm/%40sandbaseai%2Fcli"></a>
+    <a href="https://github.com/sandbaseai/cli/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/sandbaseai/cli/actions/workflows/ci.yml/badge.svg"></a>
+    <a href="https://github.com/sandbaseai/cli/blob/main/LICENSE"><img alt="开源许可" src="https://img.shields.io/github/license/sandbaseai/cli"></a>
+    <a href="https://github.com/sandbaseai/cli/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/sandbaseai/cli?style=social"></a>
+  </p>
 </p>
 
 ---
