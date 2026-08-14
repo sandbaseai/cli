@@ -1,266 +1,197 @@
-# @sandbaseai/cli
+<p align="center">
+  <h1 align="center">@sandbaseai/cli</h1>
+  <p align="center">
+    <strong>Give your AI agent superpowers. One command. 2,000+ tools.</strong>
+  </p>
+  <p align="center">
+    English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a>
+  </p>
+</p>
 
-English | [中文](./README.zh-CN.md) | [日本語](./README.ja.md)
+---
 
-One command to connect your AI coding agent to [SandBase](https://sandbase.ai) — the universal MCP gateway that gives any LLM-powered tool access to 2,000+ APIs, models, and data sources through a single interface.
+Your AI coding assistant is smart, but it's trapped in a box. It can't search the web, check social media, generate images, or access real-time data — unless you wire up each API yourself.
 
-## Why SandBase?
-
-SandBase acts as a unified Model Context Protocol (MCP) bridge between your AI coding assistant and the tools it needs:
-
-- **2,000+ tools** — web search, social media, e-commerce, crypto, finance, weather, travel, and more
-- **200+ AI models** — GPT-4o, Claude, Gemini, Llama, Qwen, image/video/audio generation
-- **One credential** — no per-service API key management; authorize once through the CLI
-- **Privacy-first** — secrets never appear in command-line arguments or browser URLs
-
-## Quick Start
-
-### Prerequisites
-
-- Node.js 20 or newer
-- A [SandBase](https://sandbase.ai) account (free tier available)
-
-### 1. Connect your client
+**SandBase changes that.** One command connects your agent to 2,000+ tools and 200+ AI models through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
 
 ```sh
 npx -y @sandbaseai/cli connect
 ```
 
-This opens SandBase authorization in your browser. After approval, the CLI automatically configures MCP for all detected clients.
-
-To target a specific client:
-
-```sh
-npx -y @sandbaseai/cli connect --client cursor
-```
-
-### 2. Verify the connection
-
-```sh
-npx -y @sandbaseai/cli doctor --client cursor
-```
-
-### 3. Start using SandBase tools
-
-In your connected client, just ask naturally:
-
-> "Search the web for the latest Next.js 15 features."
-
-> "Get Elon Musk's latest 10 posts on Twitter."
-
-> "Generate an image of a cyberpunk cityscape at night."
-
-> "Scrape the pricing page from stripe.com and summarize it."
+That's it. Your agent now has access to everything.
 
 ---
 
-## What Can You Do After Connecting?
+## See It In Action
 
-Once connected, your AI agent gains access to all SandBase tools transparently through MCP. Here are real examples of what you can ask:
+After connecting, just ask your agent naturally. It handles the rest.
 
-### Web Search & Scraping
-
-```
-You: "Search for recent news about GPT-5 release date"
-
-Agent: [Uses SandBase web search]
-→ Found 10 results from the past week:
-  1. "OpenAI Expected to Launch GPT-5 in Q3 2025" - TechCrunch
-  2. "GPT-5 Benchmarks Leaked..." - The Verge
-  ...
-```
+### "Search the web for React 19 new features"
 
 ```
-You: "Scrape https://example.com/pricing and extract the plan details"
-
-Agent: [Uses SandBase Firecrawl scraper]
-→ Extracted 3 pricing plans:
-  - Starter: $9/mo - 1,000 API calls
-  - Pro: $49/mo - 50,000 API calls
-  - Enterprise: Custom pricing
+Agent → SandBase Web Search → 10 results in 0.8s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. "React 19 is Here: What's New" — react.dev
+2. "React 19 Compiler Deep Dive" — Dan Abramov's blog
+3. "Migrating to React 19" — Vercel Engineering
+...
 ```
 
-### Social Media Data
+### "Get trending posts about AI on Twitter"
 
 ```
-You: "Get the top trending posts on Twitter about AI agents"
-
-Agent: [Uses SandBase Twitter API]
-→ Top 10 trending posts (past 24h):
-  1. @kaborshik: "AI agents are replacing entire SaaS workflows..." (12.4K likes)
-  2. @emollick: "The speed of agent improvement is remarkable..." (8.2K likes)
-  ...
+Agent → SandBase Twitter API → Top 10 posts
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
+2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
+3. @swyx: "The MCP ecosystem is growing fast..." (8K ❤️)
+...
 ```
 
-```
-You: "Find popular posts about machine learning on Xiaohongshu (小红书)"
-
-Agent: [Uses SandBase Xiaohongshu API]
-→ Found 10 posts:
-  1. "2025年最值得学的AI工具清单" - 5.2K likes
-  2. "一个月学会机器学习的路线图" - 3.8K likes
-  ...
-```
-
-### Image & Video Generation
+### "Generate a minimalist logo for my startup 'NightOwl'"
 
 ```
-You: "Generate a logo for a coffee shop called 'ByteBrew' - minimalist style"
-
-Agent: [Uses SandBase Flux image generation]
-→ Generated image: [bytebrew-logo.png]
-  Style: Minimalist
-  Resolution: 1024x1024
+Agent → SandBase Flux Image Gen → 1024x1024 PNG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Generated: nightowl-logo.png
+  Style: Minimalist, dark theme
   Cost: $0.003
+  Time: 2.1s
 ```
 
-```
-You: "Create a 5-second video of ocean waves at sunset"
+### "Scrape the pricing table from linear.app"
 
-Agent: [Uses SandBase Kling video generation - async]
-→ Video generation started (run_id: pred_abc123)
-→ Polling... completed in 45 seconds
-→ Output: [ocean-sunset.mp4] (5s, 720p)
+```
+Agent → SandBase Firecrawl Scraper → Structured data
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Extracted 3 plans:
+  Free: $0/mo — Up to 250 issues
+  Standard: $8/user/mo — Unlimited issues + cycles
+  Plus: $14/user/mo — Advanced features + analytics
+```
+
+### "Use GPT-4o to review this pull request for issues"
+
+```
+Agent → SandBase GPT-4o → Analysis complete
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Found 2 issues:
+  ⚠️  Race condition in useEffect (line 42)
+  ⚠️  Missing error boundary around async component
+  ✓  Type safety looks good
+  ✓  Test coverage adequate
+```
+
+### "Create a 5-second product demo video"
+
+```
+Agent → SandBase Kling Video Gen → Async processing
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⏳ Generating... (45s)
+✓ Output: product-demo.mp4 (5s, 720p)
   Cost: $0.10
 ```
 
-### LLM Inference (200+ models)
+---
 
-```
-You: "Use DeepSeek to analyze this code for security vulnerabilities"
+## What's Inside
 
-Agent: [Uses SandBase DeepSeek model]
-→ Found 3 potential issues:
-  1. SQL injection in line 42 - user input not sanitized
-  2. Hardcoded secret in line 78
-  3. Missing rate limiting on /api/auth endpoint
-```
-
-### Crypto & Finance
-
-```
-You: "What's the current price of Bitcoin and Ethereum?"
-
-Agent: [Uses SandBase crypto market API]
-→ BTC: $67,234.50 (+2.3% 24h)
-→ ETH: $3,456.78 (+1.8% 24h)
-  Updated: 2 minutes ago
-```
-
-### E-commerce Data
-
-```
-You: "Search Taobao for mechanical keyboards under 500 yuan"
-
-Agent: [Uses SandBase Taobao API]
-→ Top 5 results:
-  1. Keychron K8 Pro - ¥459 (4.9★, 12K sold)
-  2. RK84 RGB - ¥289 (4.8★, 8K sold)
-  ...
-```
+| Category | Tools | What You Can Do |
+|----------|-------|-----------------|
+| **Web Search** | Google, Exa, Tavily, Scholar | Research anything in real-time |
+| **Social Media** | Twitter/X, YouTube, Reddit, Instagram, TikTok, Xiaohongshu, Weibo, Bilibili | Monitor trends, pull posts, analyze content |
+| **Scraping** | Firecrawl, Exa Content | Extract data from any public webpage |
+| **AI Models** | GPT-4o, Claude, Gemini, DeepSeek, Qwen, Llama | Run any model without managing keys |
+| **Image Gen** | Flux, DALL-E, Ideogram, Recraft | Create logos, illustrations, mockups |
+| **Video Gen** | Kling, MiniMax, Runway, Luma | Generate short clips and animations |
+| **Audio** | ElevenLabs, Whisper | Text-to-speech, transcription |
+| **E-commerce** | Taobao, Amazon | Product research, price comparison |
+| **Finance** | Stock data, company info | Market research and analysis |
 
 ---
 
-## Supported Clients
+## Supported Clients (17+)
 
-| Client | Mode | Command |
-|--------|------|---------|
-| Codex | Auto | `npx -y @sandbaseai/cli connect --client codex` |
-| Claude Code | Auto | `npx -y @sandbaseai/cli connect --client claude-code` |
-| Cursor | Auto | `npx -y @sandbaseai/cli connect --client cursor` |
-| Cursor CLI | Auto | `npx -y @sandbaseai/cli connect --client cursor-cli` |
-| Kiro IDE | Auto | `npx -y @sandbaseai/cli connect --client kiro` |
-| Kiro CLI | Auto | `npx -y @sandbaseai/cli connect --client kiro-cli` |
-| Windsurf | Auto | `npx -y @sandbaseai/cli connect --client windsurf` |
-| Gemini CLI | Auto | `npx -y @sandbaseai/cli connect --client gemini-cli` |
-| OpenCode | Auto | `npx -y @sandbaseai/cli connect --client opencode` |
-| Qwen Code | Auto | `npx -y @sandbaseai/cli connect --client qwen-code` |
-| Kimi CLI | Auto | `npx -y @sandbaseai/cli connect --client kimi-cli` |
-| Warp | Auto | `npx -y @sandbaseai/cli connect --client warp` |
-| Amp | Auto | `npx -y @sandbaseai/cli connect --client amp` |
-| Hermes | Auto | `npx -y @sandbaseai/cli connect --client hermes` |
-| OpenClaw | Auto | `npx -y @sandbaseai/cli connect --client openclaw` |
-| ChatGPT | Manual | `npx -y @sandbaseai/cli connect --client chatgpt` |
-| Claude Desktop | Manual | `npx -y @sandbaseai/cli connect --client claude-desktop` |
+Works with every major AI coding tool:
 
-Use `--client auto` (or omit `--client`) to configure all detected clients at once.
+| Auto-configured | Manual setup |
+|-----------------|--------------|
+| Cursor, Cursor CLI | ChatGPT |
+| Claude Code | Claude Desktop |
+| Codex | |
+| Kiro IDE, Kiro CLI | |
+| Windsurf | |
+| Gemini CLI | |
+| Amp | |
+| Warp | |
+| OpenCode, Qwen Code, Kimi CLI | |
+| Hermes, OpenClaw | |
 
-## Commands
+```sh
+# Connect all detected clients at once
+npx -y @sandbaseai/cli connect
 
-| Command | Description |
-|---------|-------------|
-| `sandbase connect [--client <name>]` | Authorize and configure MCP for a client |
-| `sandbase doctor [--client <name>]` | Check connection health and configuration status |
-| `sandbase unregister [--client <name>]` | Remove local SandBase configuration for a client |
-| `sandbase catalog --json` | Output the supported client catalog as JSON |
+# Or target one specific client
+npx -y @sandbaseai/cli connect --client cursor
+```
+
+---
 
 ## How It Works
 
 ```
-┌─────────────┐     ┌──────────────┐     ┌───────────────────┐
-│  Your Agent │────▶│  MCP Bridge  │────▶│   SandBase API    │
-│  (Cursor,   │     │  (local,     │     │  (2000+ tools,    │
-│   Claude,   │◀────│   on-demand) │◀────│   200+ models)    │
-│   Codex...) │     └──────────────┘     └───────────────────┘
-└─────────────┘
+┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
+│   Your Agent    │  MCP    │  Local Bridge │  HTTPS  │    SandBase API     │
+│  (Cursor, etc.) │────────▶│  (on-demand)  │────────▶│  2,000+ tools      │
+│                 │◀────────│               │◀────────│  200+ AI models    │
+└─────────────────┘         └───────────────┘         └────────────────────┘
 ```
 
-1. **Authorization** — The CLI initiates a device/PKCE flow; you approve in the browser.
-2. **Credential storage** — An API key is stored locally with restricted file permissions (`0600`).
-3. **MCP configuration** — The CLI writes the appropriate MCP server entry for your client.
-4. **Bridge** — A lightweight local Node.js process translates between your client and the SandBase API.
+1. Run `connect` → CLI opens browser auth → you approve
+2. API key saved locally (file permissions `0600`)
+3. MCP bridge configured for your client
+4. Agent calls tools on-demand. No daemon. No background process.
 
-No background daemon is required. The MCP bridge runs on-demand when your client invokes a tool.
+---
 
-## Tool Categories
+## Commands
 
-| Category | Examples | Use Cases |
-|----------|----------|-----------|
-| **Search** | Google, Exa, Tavily, Scholar | Research, fact-checking, documentation |
-| **Social Media** | Twitter/X, Instagram, TikTok, YouTube, Reddit, Xiaohongshu, Weibo | Trends, monitoring, content research |
-| **Web Scraping** | Firecrawl, Exa content, URL fetch | Data extraction, competitive analysis |
-| **AI Models** | GPT-4o, Claude, Gemini, DeepSeek, Qwen, Llama | Inference, analysis, translation |
-| **Image Gen** | Flux, DALL-E, Ideogram, Recraft | Logos, illustrations, mockups |
-| **Video Gen** | Kling, MiniMax, Runway, Luma | Short clips, animations |
-| **Audio** | ElevenLabs TTS, Whisper STT | Voiceover, transcription |
-| **Crypto** | Market data, on-chain analytics | Prices, wallet analysis |
-| **E-commerce** | Taobao, Amazon product data | Product research, price monitoring |
-| **Finance** | Stock quotes, company data | Market research, analysis |
+```sh
+sandbase connect [--client <name>]    # Authorize + configure
+sandbase doctor [--client <name>]     # Health check
+sandbase unregister [--client <name>] # Remove configuration
+sandbase catalog --json               # List all supported clients
+```
+
+---
 
 ## Security
 
-- OAuth device flow with PKCE — no secrets in URLs or CLI arguments
-- Credentials stored with `0600` file permissions
-- Automatic rollback on failure (credentials, config, and MCP state)
-- Cleanup token ensures dangling authorizations are revoked on error
-- `SANDBASE_API_URL` override for development/testing only
+- **Zero secrets in URLs or CLI args** — OAuth device flow with PKCE
+- **Restricted file permissions** — Credentials stored with `0600`
+- **Automatic rollback** — If anything fails, everything reverts cleanly
+- **Revoke anytime** — One click in the [SandBase Dashboard](https://sandbase.ai/console/keys)
 
-## Manage Access
+---
 
-Revoke your CLI credential at any time from the [SandBase Dashboard](https://sandbase.ai/console/keys) under API Keys.
-
-## Development
+## Get Started
 
 ```sh
-# Install dependencies
-npm ci
-
-# Build
-npm run build
-
-# Run tests
-npm test
-
-# Lint
-npm run lint
+npx -y @sandbaseai/cli connect
 ```
+
+Then ask your agent to do something it couldn't before.
+
+**[Create a free account →](https://sandbase.ai)**
+
+---
 
 ## Links
 
 - [SandBase Platform](https://sandbase.ai)
-- [SandBase Dashboard](https://sandbase.ai/console)
-- [SandBase Documentation](https://docs.sandbase.ai)
+- [Documentation](https://docs.sandbase.ai)
 - [npm Package](https://www.npmjs.com/package/@sandbaseai/cli)
+- [Dashboard](https://sandbase.ai/console)
 
 ## License
 
