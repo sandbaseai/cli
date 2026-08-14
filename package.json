@@ -1,0 +1,44 @@
+{
+  "name": "@sandbaseai/cli",
+  "version": "0.1.14",
+  "description": "Secure SandBase MCP onboarding CLI",
+  "type": "module",
+  "bin": {
+    "sandbase": "dist/cli.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "assets",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
+    "lint": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "audit:package": "bash scripts/audit-package.sh",
+    "prepack": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.3",
+    "typescript": "5.8.3"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sandbaseai/sandbase.git",
+    "directory": "sandbase-cli"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "dependencies": {
+    "jsonc-parser": "3.3.1",
+    "smol-toml": "1.7.0",
+    "yaml": "2.9.0"
+  }
+}

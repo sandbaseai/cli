@@ -1,25 +1,6 @@
-# Binary
-sandbase
-sandbase.exe
-
-# goreleaser
+node_modules/
 dist/
-
-# IDE
-.idea/
-.vscode/
-*.swp
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Test artifacts
-coverage.out
-/tmp/
-
-# npm wrapper binary cache
-npm/bin/sandbase
-npm/bin/sandbase.exe
-npm/bin/sandbase-bin
-npm/bin/sandbase-bin.exe
+dist-test/
+*.tgz
+coverage/
+.env*
