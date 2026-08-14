@@ -1,6 +1,6 @@
 # @sandbaseai/cli
 
-English | [中文](./README.zh-CN.md)
+English | [中文](./README.zh-CN.md) | [日本語](./README.ja.md)
 
 One command to connect your AI coding agent to [SandBase](https://sandbase.ai) — the universal MCP gateway that gives any LLM-powered tool access to 2,000+ APIs, models, and data sources through a single interface.
 

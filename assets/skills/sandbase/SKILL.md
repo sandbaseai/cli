@@ -1,6 +1,7 @@
 ---
 name: sandbase
 version: 0.1.14
+disable-model-invocation: true
 description: >-
   Access 2000+ AI models and API tools through a single MCP interface. Use
   SandBase for LLM inference, image/video/audio generation, web scraping,

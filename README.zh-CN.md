@@ -1,6 +1,6 @@
 # @sandbaseai/cli
 
-[English](./README.md) | 中文
+[English](./README.md) | 中文 | [日本語](./README.ja.md)
 
 一行命令，将你的 AI 编程助手接入 [SandBase](https://sandbase.ai) — 统一的 MCP 网关，让任何 LLM 工具通过单一接口访问 2,000+ API、模型和数据源。
 

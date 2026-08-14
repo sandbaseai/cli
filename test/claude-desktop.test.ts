@@ -15,7 +15,7 @@ const manifest: ClaudeDesktopManifest = { client: "claude-desktop", artifacts: [
   { kind: "skill", version: "a43b227", filename: "sandbase-skill.zip", media_type: "application/zip", sha256: "4e32edb4f2f158333a19c7f64e777f354914adccd61314250770e2db7ff93087", download_url: "/default/v1/desktop-onboarding/claude-desktop/artifacts/skill", source: { repository: "https://github.com/sandbaseai/sandbase-skills", ref: commit, commit, path: "SKILL.md" } },
 ] };
 const mcp = Buffer.from(claudeDesktopMCPConfig);
-const skill = await readFile(join(process.cwd(), "..", "sandbase-apiserver", "internal", "handler", "artifacts", "sandbase-skill.zip"));
+const skill = await readFile(join(process.cwd(), "test", "fixtures", "sandbase-skill.zip"));
 
 test("Claude Desktop accepts only the locked first-party MCP schema and source digest", () => { assert.deepEqual(inspectClaudeDesktopArtifacts(manifest, mcp, skill), { mcp: "ready", skill: "ready" }); const altered = Buffer.from(claudeDesktopMCPConfig.replace("npx", "node")); assert.deepEqual(inspectClaudeDesktopArtifacts(manifest, altered, skill), { mcp: "invalid", skill: "ready" }); const floating: ClaudeDesktopManifest = structuredClone(manifest); floating.artifacts[1]!.source!.ref = "main"; assert.deepEqual(inspectClaudeDesktopArtifacts(floating, mcp, skill), { mcp: "ready", skill: "invalid" }); assert.deepEqual(inspectClaudeDesktopArtifacts({ ...manifest, client: "cowork" }, mcp, skill), { mcp: "invalid", skill: "invalid" }); });
 
