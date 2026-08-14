@@ -13,30 +13,6 @@ SandBaseは、AIコーディングアシスタントと必要なツールを橋�
 - **認証は一度だけ** — サービスごとのAPIキー管理は不要。CLIで一度認証するだけ
 - **プライバシー重視** — シークレットがコマンドライン引数やURLに表示されることはありません
 
-## 対応クライアント
-
-| クライアント | モード | コマンド |
-|-------------|--------|---------|
-| Codex | 自動 | `npx -y @sandbaseai/cli connect --client codex` |
-| Claude Code | 自動 | `npx -y @sandbaseai/cli connect --client claude-code` |
-| Cursor | 自動 | `npx -y @sandbaseai/cli connect --client cursor` |
-| Cursor CLI | 自動 | `npx -y @sandbaseai/cli connect --client cursor-cli` |
-| Kiro IDE | 自動 | `npx -y @sandbaseai/cli connect --client kiro` |
-| Kiro CLI | 自動 | `npx -y @sandbaseai/cli connect --client kiro-cli` |
-| Windsurf | 自動 | `npx -y @sandbaseai/cli connect --client windsurf` |
-| Gemini CLI | 自動 | `npx -y @sandbaseai/cli connect --client gemini-cli` |
-| OpenCode | 自動 | `npx -y @sandbaseai/cli connect --client opencode` |
-| Qwen Code | 自動 | `npx -y @sandbaseai/cli connect --client qwen-code` |
-| Kimi CLI | 自動 | `npx -y @sandbaseai/cli connect --client kimi-cli` |
-| Warp | 自動 | `npx -y @sandbaseai/cli connect --client warp` |
-| Amp | 自動 | `npx -y @sandbaseai/cli connect --client amp` |
-| Hermes | 自動 | `npx -y @sandbaseai/cli connect --client hermes` |
-| OpenClaw | 自動 | `npx -y @sandbaseai/cli connect --client openclaw` |
-| ChatGPT | 手動 | `npx -y @sandbaseai/cli connect --client chatgpt` |
-| Claude Desktop | 手動 | `npx -y @sandbaseai/cli connect --client claude-desktop` |
-
-`--client auto`（または `--client` を省略）で、検出されたすべてのクライアントを一度に設定します。
-
 ## クイックスタート
 
 ### 前提条件
@@ -66,13 +42,106 @@ npx -y @sandbaseai/cli doctor --client cursor
 
 ### 3. SandBaseツールを使い始める
 
-接続されたクライアントで試してみてください：
+接続されたクライアントで、自然言語で依頼するだけ：
 
-> 「SandBaseを使って、最新のNext.jsリリースノートをWeb検索して。」
+> 「Next.js 15の最新機能をWeb検索して。」
 
-> 「SandBaseを使って、イーロン・マスクの最新10件のツイートを取得して。」
+> 「イーロン・マスクの最新10件のツイートを取得して。」
 
-> 「SandBaseを使って、夕焼けの山の風景画像を生成して。」
+> 「サイバーパンク風の夜の都市画像を生成して。」
+
+> 「stripe.comの料金ページをスクレイピングして要約して。」
+
+---
+
+## 接続後にできること
+
+接続後、AIエージェントはMCPを通じてSandBaseの全ツールに透過的にアクセスできます。実際の使用例：
+
+### Web検索・スクレイピング
+
+```
+あなた: "GPT-5のリリース時期について最新ニュースを検索して"
+
+Agent: [SandBase Web検索を使用]
+→ 直近1週間の10件の結果:
+  1. "OpenAI、2025年Q3にGPT-5発表見込み" - TechCrunch
+  2. "GPT-5ベンチマーク流出..." - The Verge
+  ...
+```
+
+### SNSデータ
+
+```
+あなた: "TwitterでAIエージェントについてのトレンド投稿を取得して"
+
+Agent: [SandBase Twitter APIを使用]
+→ 24時間以内のトップ10投稿:
+  1. @kaborshik: "AI agents are replacing entire SaaS workflows..." (12.4K いいね)
+  2. @emollick: "The speed of agent improvement is remarkable..." (8.2K いいね)
+  ...
+```
+
+### 画像・動画生成
+
+```
+あなた: "'ByteBrew'というカフェのロゴを生成して。ミニマルスタイルで"
+
+Agent: [SandBase Flux画像生成を使用]
+→ 生成画像: [bytebrew-logo.png]
+  スタイル: ミニマル
+  解像度: 1024x1024
+  コスト: $0.003
+```
+
+### LLM推論（200以上のモデル）
+
+```
+あなた: "DeepSeekを使ってこのコードのセキュリティ脆弱性を分析して"
+
+Agent: [SandBase DeepSeekモデルを使用]
+→ 3つの潜在的な問題を発見:
+  1. 42行目にSQLインジェクション - ユーザー入力が未サニタイズ
+  2. 78行目にハードコードされたシークレット
+  3. /api/authエンドポイントにレート制限なし
+```
+
+### 暗号通貨・金融
+
+```
+あなた: "ビットコインとイーサリアムの現在の価格は？"
+
+Agent: [SandBase暗号通貨市場APIを使用]
+→ BTC: $67,234.50 (+2.3% 24h)
+→ ETH: $3,456.78 (+1.8% 24h)
+  更新: 2分前
+```
+
+---
+
+## 対応クライアント
+
+| クライアント | モード | コマンド |
+|-------------|--------|---------|
+| Codex | 自動 | `npx -y @sandbaseai/cli connect --client codex` |
+| Claude Code | 自動 | `npx -y @sandbaseai/cli connect --client claude-code` |
+| Cursor | 自動 | `npx -y @sandbaseai/cli connect --client cursor` |
+| Cursor CLI | 自動 | `npx -y @sandbaseai/cli connect --client cursor-cli` |
+| Kiro IDE | 自動 | `npx -y @sandbaseai/cli connect --client kiro` |
+| Kiro CLI | 自動 | `npx -y @sandbaseai/cli connect --client kiro-cli` |
+| Windsurf | 自動 | `npx -y @sandbaseai/cli connect --client windsurf` |
+| Gemini CLI | 自動 | `npx -y @sandbaseai/cli connect --client gemini-cli` |
+| OpenCode | 自動 | `npx -y @sandbaseai/cli connect --client opencode` |
+| Qwen Code | 自動 | `npx -y @sandbaseai/cli connect --client qwen-code` |
+| Kimi CLI | 自動 | `npx -y @sandbaseai/cli connect --client kimi-cli` |
+| Warp | 自動 | `npx -y @sandbaseai/cli connect --client warp` |
+| Amp | 自動 | `npx -y @sandbaseai/cli connect --client amp` |
+| Hermes | 自動 | `npx -y @sandbaseai/cli connect --client hermes` |
+| OpenClaw | 自動 | `npx -y @sandbaseai/cli connect --client openclaw` |
+| ChatGPT | 手動 | `npx -y @sandbaseai/cli connect --client chatgpt` |
+| Claude Desktop | 手動 | `npx -y @sandbaseai/cli connect --client claude-desktop` |
+
+`--client auto`（または `--client` を省略）で、検出されたすべてのクライアントを一度に設定します。
 
 ## コマンド
 
@@ -85,12 +154,35 @@ npx -y @sandbaseai/cli doctor --client cursor
 
 ## 仕組み
 
+```
+┌─────────────┐     ┌──────────────┐     ┌───────────────────┐
+│  あなたの   │────▶│  MCP Bridge  │────▶│   SandBase API    │
+│  Agent      │     │  (ローカル,  │     │  (2000+ ツール,   │
+│  (Cursor,   │◀────│  オンデマンド)│◀────│   200+ モデル)    │
+│   Claude...)│     └──────────────┘     └───────────────────┘
+└─────────────┘
+```
+
 1. **認証** — CLIがdevice/PKCEフローを開始し、ブラウザで承認します。
-2. **認証情報の保存** — APIキーが制限されたファイル権限でローカルに保存されます。
+2. **認証情報の保存** — APIキーが `0600` 権限でローカルに保存されます。
 3. **MCP設定** — CLIがクライアントに適切なMCPサーバーエントリを書き込みます。
-4. **ブリッジ** — 軽量なローカルNode.jsプロセス（MCPブリッジ）がクライアントとSandBase APIの間を仲介します。
+4. **ブリッジ** — 軽量なローカルNode.jsプロセスがクライアントとSandBase APIの間を仲介します。
 
 バックグラウンドデーモンは不要です。MCPブリッジはクライアントがツールを呼び出す時にオンデマンドで起動します。
+
+## ツールカテゴリ
+
+| カテゴリ | 含まれるツール | ユースケース |
+|---------|--------------|-------------|
+| **検索** | Google、Exa、Tavily、Scholar | 調査、ファクトチェック、ドキュメント検索 |
+| **SNS** | Twitter/X、Instagram、TikTok、YouTube、Reddit | トレンド分析、モニタリング |
+| **Webスクレイピング** | Firecrawl、Exa content、URL fetch | データ抽出、競合分析 |
+| **AIモデル** | GPT-4o、Claude、Gemini、DeepSeek、Qwen | 推論、分析、翻訳 |
+| **画像生成** | Flux、DALL-E、Ideogram、Recraft | ロゴ、イラスト、モックアップ |
+| **動画生成** | Kling、MiniMax、Runway、Luma | ショートクリップ、アニメーション |
+| **音声** | ElevenLabs TTS、Whisper STT | ナレーション、文字起こし |
+| **暗号通貨** | 相場データ、オンチェーン分析 | 価格照会、ウォレット分析 |
+| **EC** | Taobao、Amazon商品データ | 商品調査、価格モニタリング |
 
 ## セキュリティ
 
@@ -98,7 +190,6 @@ npx -y @sandbaseai/cli doctor --client cursor
 - 認証情報は `0600` 権限で保存
 - 失敗時に自動ロールバック（認証情報、設定、MCP状態）
 - クリーンアップトークンにより、エラー時に未処理の認証を確実に取り消し
-- `SANDBASE_API_URL` は開発/テスト環境専用
 
 ## アクセス管理
 
