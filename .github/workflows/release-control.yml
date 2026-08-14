@@ -1,0 +1,59 @@
+name: Control npm recommendation
+
+on:
+  workflow_dispatch:
+    inputs:
+      affected_version:
+        description: Published version to deprecate (without v)
+        required: true
+        type: string
+      replacement_version:
+        description: Higher published version to recommend as latest (without v)
+        required: true
+        type: string
+      reason:
+        description: Public deprecation reason (must not contain secrets)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  stop-recommending:
+    runs-on: ubuntu-latest
+    environment: npm-production-control
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Validate immutable recovery versions
+        shell: bash
+        env:
+          AFFECTED_VERSION: ${{ inputs.affected_version }}
+          REPLACEMENT_VERSION: ${{ inputs.replacement_version }}
+        run: |
+          set -euo pipefail
+          node -e 'const semver=/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/; for (const value of process.argv.slice(1)) if (!semver.test(value)) process.exit(1)' "$AFFECTED_VERSION" "$REPLACEMENT_VERSION"
+          test "$AFFECTED_VERSION" != "$REPLACEMENT_VERSION"
+          npm view "@sandbaseai/cli@$AFFECTED_VERSION" version >/dev/null
+          npm view "@sandbaseai/cli@$REPLACEMENT_VERSION" version >/dev/null
+          node -e 'const a=process.argv[1].split("-")[0].split(".").map(Number); const b=process.argv[2].split("-")[0].split(".").map(Number); for(let i=0;i<3;i++){if(b[i]>a[i])process.exit(0);if(b[i]<a[i])process.exit(1)}process.exit(1)' "$AFFECTED_VERSION" "$REPLACEMENT_VERSION"
+      - name: Deprecate affected version and move latest forward
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_RELEASE_CONTROL_TOKEN }}
+          AFFECTED_VERSION: ${{ inputs.affected_version }}
+          REPLACEMENT_VERSION: ${{ inputs.replacement_version }}
+          DEPRECATION_REASON: ${{ inputs.reason }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "NPM_RELEASE_CONTROL_TOKEN is not configured" >&2
+            exit 1
+          fi
+          echo "::add-mask::$NODE_AUTH_TOKEN"
+          npm deprecate -- "@sandbaseai/cli@$AFFECTED_VERSION" "$DEPRECATION_REASON"
+          npm dist-tag add "@sandbaseai/cli@$REPLACEMENT_VERSION" latest
+          npm dist-tag ls @sandbaseai/cli

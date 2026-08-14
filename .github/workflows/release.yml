@@ -1,0 +1,64 @@
+name: Release to npm
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: npm-production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20.19.5'
+          registry-url: 'https://registry.npmjs.org'
+          cache: npm
+      - name: Install trusted-publishing capable npm
+        run: npm install --global npm@11.5.1
+      - name: Verify immutable release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          package_version="$(node -p "require('./package.json').version")"
+          if [ "$version" != "$package_version" ]; then
+            echo "Tag version does not match package.json" >&2
+            exit 1
+          fi
+          package_name="$(node -p "require('./package.json').name")"
+          if [ "$package_name" != "@sandbaseai/cli" ]; then
+            echo "package.json name must be @sandbaseai/cli" >&2
+            exit 1
+          fi
+          if npm view "@sandbaseai/cli@$version" version 2>/dev/null; then
+            echo "Version already exists and cannot be overwritten" >&2
+            exit 1
+          fi
+      - name: Install frozen dependencies
+        run: npm ci --ignore-scripts
+      - name: Rebuild and audit package
+        run: |
+          set -euo pipefail
+          npm run lint
+          npm test
+          npm run build
+          npm run audit:package
+      - name: Publish with trusted publishing and provenance
+        run: npm publish --ignore-scripts --access public --provenance --tag latest
