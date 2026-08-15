@@ -15,6 +15,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI securely bridges AI clients to models, APIs, media, data, and sandboxes" width="100%">
+</p>
+
 ---
 
 Your AI coding assistant is smart, but it's trapped in a box. It can't search the web, check social media, generate images, or access real-time data — unless you wire up each API yourself.

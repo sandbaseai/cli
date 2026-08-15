@@ -15,6 +15,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI 安全连接 AI 客户端与模型、API、媒体、数据和沙箱" width="100%">
+</p>
+
 ---
 
 你的 AI 编程助手很聪明，但它被困在一个盒子里。它不能搜索网页、查看社交媒体、生成图片、或获取实时数据 — 除非你自己逐个对接每个 API。

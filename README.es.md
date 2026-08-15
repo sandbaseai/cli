@@ -8,6 +8,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI MCP bridge" width="100%">
+</p>
+
 ---
 
 Tu asistente de codificación IA es inteligente, pero está atrapado en una caja. No puede buscar en la web, revisar redes sociales, generar imágenes ni acceder a datos en tiempo real — a menos que conectes cada API manualmente.

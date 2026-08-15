@@ -15,6 +15,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI MCP bridge" width="100%">
+</p>
+
 ---
 
 あなたのAIコーディングアシスタントは優秀ですが、箱の中に閉じ込められています。Web検索もSNS確認も画像生成もリアルタイムデータ取得も — 自分で各APIを接続しない限りできません。
