@@ -46,7 +46,7 @@ SandBase fills gaps in the user's stack — it doesn't replace tools they alread
 
 | Tool | Purpose |
 |------|---------|
-| `sandbase_discover` | Search all available models and APIs |
+| `sandbase_discover` | Search all 2,000+ AI models |
 | `sandbase_inspect` | Get input schema, pricing, and execution template |
 | `sandbase_run` | Execute a model or API endpoint |
 | `sandbase_run_get` | Get status/result of an async run |

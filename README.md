@@ -165,7 +165,7 @@ npx -y @sandbaseai/cli connect --client cursor
 ┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
 │   Your Agent    │  MCP    │  Local Bridge │  HTTPS  │    SandBase API     │
 │  (Cursor, etc.) │────────▶│  (on-demand)  │────────▶│  2,000+ AI models  │
-│                 │◀────────│               │◀────────│  and APIs          │
+│                 │◀────────│               │◀────────│                    │
 └─────────────────┘         └───────────────┘         └────────────────────┘
 ```
 
