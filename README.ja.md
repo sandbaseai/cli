@@ -146,11 +146,36 @@ npx -y @sandbaseai/cli connect --client cursor
 
 ## コマンド
 
+### CLIコマンド
+
 ```sh
 sandbase connect [--client <name>]    # 認証 + 設定
 sandbase doctor [--client <name>]     # ヘルスチェック
 sandbase unregister [--client <name>] # 設定削除
 sandbase catalog --json               # 対応クライアント一覧
+```
+
+### MCPツール（接続後にエージェントが使用可能）
+
+| ツール | 用途 |
+|--------|------|
+| `sandbase_discover` | 2,000以上の利用可能なモデルとAPIを検索 |
+| `sandbase_inspect` | 入力スキーマ、料金、実行テンプレートを取得 |
+| `sandbase_run` | モデルまたはAPIエンドポイントを実行 |
+| `sandbase_run_get` | 非同期タスクのステータス/結果をポーリング |
+| `sandbase_runs` | 最近のAPI呼び出しとコストを一覧表示 |
+| `sandbase_account` | アカウント残高を確認（無料） |
+
+**エージェントが自動的に従うワークフロー：**
+
+```
+discover → inspect → run
+```
+
+```
+1. sandbase_discover(q: "twitter search")        → マッチするツールを検索
+2. sandbase_inspect(name: "twitter_timeline")    → スキーマ + 料金を取得
+3. sandbase_run(name: "twitter_timeline", ...)   → 実行してデータを返す
 ```
 
 ---

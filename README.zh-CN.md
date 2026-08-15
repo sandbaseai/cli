@@ -156,11 +156,36 @@ npx -y @sandbaseai/cli connect --client cursor
 
 ## 命令
 
+### CLI 命令
+
 ```sh
 sandbase connect [--client <name>]    # 授权 + 配置
 sandbase doctor [--client <name>]     # 健康检查
 sandbase unregister [--client <name>] # 移除配置
 sandbase catalog --json               # 列出所有支持的客户端
+```
+
+### MCP 工具（连接后你的 Agent 可以使用）
+
+| 工具 | 用途 |
+|------|------|
+| `sandbase_discover` | 搜索全部 2,000+ 可用模型和 API |
+| `sandbase_inspect` | 获取输入参数、定价和调用模板 |
+| `sandbase_run` | 执行模型或 API |
+| `sandbase_run_get` | 轮询异步任务状态/结果（视频生成等） |
+| `sandbase_runs` | 查看最近的 API 调用记录和费用 |
+| `sandbase_account` | 查看账户余额（免费，不扣费） |
+
+**Agent 自动遵循的调用流程：**
+
+```
+discover → inspect → run
+```
+
+```
+1. sandbase_discover(q: "推特搜索")              → 找到匹配的工具
+2. sandbase_inspect(name: "twitter_timeline")    → 获取参数定义 + 定价
+3. sandbase_run(name: "twitter_timeline", ...)   → 执行并返回数据
 ```
 
 ---

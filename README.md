@@ -156,11 +156,36 @@ npx -y @sandbaseai/cli connect --client cursor
 
 ## Commands
 
+### CLI Commands
+
 ```sh
 sandbase connect [--client <name>]    # Authorize + configure
 sandbase doctor [--client <name>]     # Health check
 sandbase unregister [--client <name>] # Remove configuration
 sandbase catalog --json               # List all supported clients
+```
+
+### MCP Tools (available to your agent after connecting)
+
+| Tool | Purpose |
+|------|---------|
+| `sandbase_discover` | Search all 2,000+ available models and APIs |
+| `sandbase_inspect` | Get input schema, pricing, and ready-to-use template |
+| `sandbase_run` | Execute a model or API endpoint |
+| `sandbase_run_get` | Poll status/result of an async run (video gen, etc.) |
+| `sandbase_runs` | List your recent API calls with cost breakdown |
+| `sandbase_account` | Check account balance (free, no cost) |
+
+**Workflow your agent follows automatically:**
+
+```
+discover → inspect → run
+```
+
+```
+1. sandbase_discover(q: "twitter search")        → finds matching tools
+2. sandbase_inspect(name: "twitter_timeline")    → gets schema + pricing
+3. sandbase_run(name: "twitter_timeline", ...)   → executes and returns data
 ```
 
 ---
