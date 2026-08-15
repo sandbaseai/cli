@@ -1,0 +1,35 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.sandbaseai/cli",
+  "title": "SandBase",
+  "description": "Connect MCP clients to 2,000+ AI models and APIs without managing provider API keys.",
+  "version": "0.1.15",
+  "repository": {
+    "url": "https://github.com/sandbaseai/cli",
+    "source": "github"
+  },
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@sandbaseai/cli",
+      "version": "0.1.15",
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp-bridge"
+        },
+        {
+          "type": "positional",
+          "value": "--client"
+        },
+        {
+          "type": "positional",
+          "value": "claude-desktop"
+        }
+      ],
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
