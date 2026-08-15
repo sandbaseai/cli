@@ -191,7 +191,8 @@ discover → inspect → run
 
 - **URLやCLI引数にシークレットなし** — OAuth device flow + PKCE
 - **制限されたファイル権限** — 認証情報は `0600` で保存
-- **自動ロールバック** — 失敗時はすべてクリーンに復元
+- **所有権を認識した更新** — 既存の JSONC コメントとユーザー管理の MCP エントリを保持
+- **正確なロールバック** — 失敗時や `unregister` 実行時には、SandBase が作成した設定だけを削除
 - **いつでも取り消し** — [SandBase Dashboard](https://sandbase.ai/console/keys)でワンクリック
 
 ---
@@ -205,6 +206,8 @@ npx -y @sandbaseai/cli connect
 そして、エージェントに今までできなかったことを頼んでみてください。
 
 **[無料アカウント作成 →](https://sandbase.ai)**
+
+SandBase でセットアップ時間を短縮できたら、[リポジトリに Star を付けてください](https://github.com/sandbaseai/cli)。より多くのエージェントユーザーがこのプロジェクトを見つけやすくなります。
 
 ---
 

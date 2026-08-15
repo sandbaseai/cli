@@ -201,7 +201,8 @@ discover → inspect → run
 
 - **URL 和 CLI 参数中没有任何密钥** — OAuth device flow + PKCE
 - **受限文件权限** — 凭据以 `0600` 存储
-- **自动回滚** — 任何步骤失败都会干净地恢复
+- **所有权感知更新** — 保留现有 JSONC 注释以及用户自行管理的 MCP 配置项
+- **精确回滚** — 失败或执行 `unregister` 时，只移除由 SandBase 创建的配置
 - **随时吊销** — [SandBase Dashboard](https://sandbase.ai/console/keys) 一键操作
 
 ---
@@ -215,6 +216,8 @@ npx -y @sandbaseai/cli connect
 然后让你的 Agent 做一些它以前做不到的事。
 
 **[注册免费账号 →](https://sandbase.ai)**
+
+如果 SandBase 帮你节省了配置时间，欢迎[为项目点个 Star](https://github.com/sandbaseai/cli)——这会让更多 Agent 用户发现它。
 
 ---
 

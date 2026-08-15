@@ -201,7 +201,8 @@ discover → inspect → run
 
 - **Zero secrets in URLs or CLI args** — OAuth device flow with PKCE
 - **Restricted file permissions** — Credentials stored with `0600`
-- **Automatic rollback** — If anything fails, everything reverts cleanly
+- **Ownership-aware updates** — Existing JSONC comments and user-managed MCP entries are preserved
+- **Exact rollback** — On failure or `unregister`, only configuration owned by SandBase is removed
 - **Revoke anytime** — One click in the [SandBase Dashboard](https://sandbase.ai/console/keys)
 
 ---
@@ -215,6 +216,8 @@ npx -y @sandbaseai/cli connect
 Then ask your agent to do something it couldn't before.
 
 **[Create a free account →](https://sandbase.ai)**
+
+If SandBase saves you setup time, [star the repository](https://github.com/sandbaseai/cli) — it helps more agent users discover the project.
 
 ---
 
