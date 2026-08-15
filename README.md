@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>Give your AI agent superpowers. One command. 2,000+ tools.</strong>
+    <strong>Give your AI agent superpowers. One command. 2,000+ AI models and APIs.</strong>
   </p>
   <p align="center">
     English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -23,7 +23,7 @@
 
 Your AI coding assistant is smart, but it's trapped in a box. It can't search the web, check social media, generate images, or access real-time data — unless you wire up each API yourself.
 
-**SandBase changes that.** One command connects your agent to 2,000+ tools and 200+ AI models through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
+**SandBase changes that.** One command connects your agent to 2,000+ AI models and APIs through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
 
 ```sh
 npx -y @sandbaseai/cli connect
@@ -159,8 +159,8 @@ npx -y @sandbaseai/cli connect --client cursor
 ```
 ┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
 │   Your Agent    │  MCP    │  Local Bridge │  HTTPS  │    SandBase API     │
-│  (Cursor, etc.) │────────▶│  (on-demand)  │────────▶│  2,000+ tools      │
-│                 │◀────────│               │◀────────│  200+ AI models    │
+│  (Cursor, etc.) │────────▶│  (on-demand)  │────────▶│  2,000+ AI models  │
+│                 │◀────────│               │◀────────│  and APIs          │
 └─────────────────┘         └───────────────┘         └────────────────────┘
 ```
 

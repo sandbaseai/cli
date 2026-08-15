@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>让你的 AI 助手拥有超能力。一行命令，2000+ 工具。</strong>
+    <strong>让你的 AI 助手拥有超能力。一行命令，2,000+ AI 模型和 API。</strong>
   </p>
   <p align="center">
     <a href="./README.md">English</a> | 中文 | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -23,7 +23,7 @@
 
 你的 AI 编程助手很聪明，但它被困在一个盒子里。它不能搜索网页、查看社交媒体、生成图片、或获取实时数据 — 除非你自己逐个对接每个 API。
 
-**SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ 工具和 200+ AI 模型。不用管理 API Key，不用折腾配置。
+**SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型和 API。不用管理 API Key，不用折腾配置。
 
 ```sh
 npx -y @sandbaseai/cli connect
@@ -159,8 +159,8 @@ npx -y @sandbaseai/cli connect --client cursor
 ```
 ┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
 │   你的 Agent    │  MCP    │  本地 Bridge  │  HTTPS  │    SandBase API     │
-│  (Cursor 等)    │────────▶│  (按需启动)   │────────▶│  2,000+ 工具       │
-│                 │◀────────│               │◀────────│  200+ AI 模型      │
+│  (Cursor 等)    │────────▶│  (按需启动)   │────────▶│  2,000+ AI 模型    │
+│                 │◀────────│               │◀────────│  和 API             │
 └─────────────────┘         └───────────────┘         └────────────────────┘
 ```
 

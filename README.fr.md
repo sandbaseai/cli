@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>Donnez des super-pouvoirs à votre agent IA. Une commande. 2 000+ outils.</strong>
+    <strong>Donnez des super-pouvoirs à votre agent IA. Une commande. 2 000+ modèles IA et APIs.</strong>
   </p>
   <p align="center">
     <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | Français | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -16,7 +16,7 @@
 
 Votre assistant de codage IA est intelligent, mais il est enfermé dans une boîte. Il ne peut pas chercher sur le web, consulter les réseaux sociaux, générer des images ou accéder aux données en temps réel — sauf si vous connectez chaque API vous-même.
 
-**SandBase change la donne.** Une commande connecte votre agent à 2 000+ outils et 200+ modèles IA via le [MCP](https://modelcontextprotocol.io). Pas de clés API à gérer. Pas de prise de tête.
+**SandBase change la donne.** Une commande connecte votre agent à 2 000+ modèles IA et APIs via le [MCP](https://modelcontextprotocol.io). Pas de clés API à gérer. Pas de prise de tête.
 
 ```sh
 npx -y @sandbaseai/cli connect

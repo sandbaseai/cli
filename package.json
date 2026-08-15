@@ -1,7 +1,7 @@
 {
   "name": "@sandbaseai/cli",
   "version": "0.1.14",
-  "description": "Connect 2,000+ AI tools and 200+ models to Cursor, Claude Code, Codex, Windsurf, and other MCP clients",
+  "description": "Connect 2,000+ AI models and APIs to Cursor, Claude Code, Codex, Windsurf, and other MCP clients",
   "type": "module",
   "bin": {
     "sandbase": "dist/cli.js"
