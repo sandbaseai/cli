@@ -134,6 +134,12 @@ Agent → SandBase Kling 视频生成 → 异步处理
 | OpenCode、Qwen Code、Kimi CLI | |
 | Hermes、OpenClaw | |
 
+无需登录或修改任何文件，即可预览完整兼容性目录：
+
+```sh
+npx -y @sandbaseai/cli catalog --json
+```
+
 ```sh
 # 一次连接所有检测到的客户端
 npx -y @sandbaseai/cli connect
