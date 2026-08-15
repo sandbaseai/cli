@@ -124,6 +124,12 @@ Agent → SandBase GPT-4o → 分析完了
 | OpenCode、Qwen Code、Kimi CLI | |
 | Hermes、OpenClaw | |
 
+サインインやファイル変更なしで、完全な互換性カタログを確認できます：
+
+```sh
+npx -y @sandbaseai/cli catalog --json
+```
+
 ```sh
 # 検出されたすべてのクライアントを一度に接続
 npx -y @sandbaseai/cli connect

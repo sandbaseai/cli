@@ -134,6 +134,12 @@ Works with every major AI coding tool:
 | OpenCode, Qwen Code, Kimi CLI | |
 | Hermes, OpenClaw | |
 
+Preview the complete compatibility catalog without signing in or changing any files:
+
+```sh
+npx -y @sandbaseai/cli catalog --json
+```
+
 ```sh
 # Connect all detected clients at once
 npx -y @sandbaseai/cli connect
