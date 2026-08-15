@@ -31,6 +31,11 @@ npx -y @sandbaseai/cli connect
 
 就这样。你的 Agent 现在能访问一切。
 
+## SandBase 开源技术栈
+
+- **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — 自托管 Agent Runtime，提供持久会话、沙箱隔离、审批、审计与回放。
+- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 个可安装 Skills，覆盖研究、社交情报、营销和商业工作流。
+
 ---
 
 ## 看看效果

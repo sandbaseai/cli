@@ -24,6 +24,11 @@ npx -y @sandbaseai/cli connect
 
 이게 전부입니다. 에이전트가 이제 모든 것에 접근할 수 있습니다.
 
+## SandBase 오픈 소스 스택
+
+- **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — 영구 세션, 샌드박스 격리, 승인, 감사 및 재생을 제공하는 셀프 호스팅 에이전트 런타임입니다.
+- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 리서치, 소셜 인텔리전스, 마케팅 및 비즈니스 워크플로를 위한 설치형 Skills 88개입니다.
+
 ---
 
 ## 사용 예시
