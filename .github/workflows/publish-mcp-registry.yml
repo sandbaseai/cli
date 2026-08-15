@@ -1,0 +1,87 @@
+name: Publish to MCP Registry
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Published npm version to register (without v)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-registry-${{ github.event.release.tag_name || inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve and validate version
+        id: version
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+          MANUAL_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          version="${RELEASE_TAG#v}"
+          if [ -z "$version" ]; then
+            version="$MANUAL_VERSION"
+          fi
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semantic version: $version" >&2
+            exit 1
+          fi
+          npm_version="$(npm view "@sandbaseai/cli@$version" version)"
+          if [ "$npm_version" != "$version" ]; then
+            echo "@sandbaseai/cli@$version is not available on npm" >&2
+            exit 1
+          fi
+          npm_mcp_name="$(npm view "@sandbaseai/cli@$version" mcpName)"
+          if [ "$npm_mcp_name" != "io.github.sandbaseai/cli" ]; then
+            echo "Published package does not contain the expected mcpName" >&2
+            exit 1
+          fi
+          jq --arg version "$version" \
+            '.version = $version | .packages |= map(.version = $version)' \
+            server.json > server.tmp.json
+          mv server.tmp.json server.json
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Install MCP publisher
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL \
+            "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" \
+            | tar xz mcp-publisher
+
+      - name: Validate registry metadata
+        run: ./mcp-publisher validate
+
+      - name: Authenticate with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish server metadata
+        run: ./mcp-publisher publish
+
+      - name: Verify registry listing
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          response="$(curl -fsSL 'https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli')"
+          jq -e --arg version "$VERSION" \
+            '.servers | any(.server.name == "io.github.sandbaseai/cli" and .server.version == $version)' \
+            <<< "$response"
