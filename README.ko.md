@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>AI 에이전트에 초능력을. 한 줄 명령어로 2,000개 이상의 도구.</strong>
+    <strong>AI 에이전트에 초능력을. 한 줄 명령어로 2,000개 이상의 AI 모델과 API.</strong>
   </p>
   <p align="center">
     <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | 한국어 | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -16,7 +16,7 @@
 
 AI 코딩 어시스턴트는 똑똑하지만 상자 안에 갇혀 있습니다. 웹 검색, SNS 확인, 이미지 생성, 실시간 데이터 접근 — 직접 각 API를 연결하지 않으면 불가능합니다.
 
-**SandBase가 이를 바꿉니다.** 한 줄 명령어로 에이전트를 2,000개 이상의 도구와 200개 이상의 AI 모델에 [MCP](https://modelcontextprotocol.io)를 통해 연결합니다. API 키 관리 불필요. 설정 고민 없음.
+**SandBase가 이를 바꿉니다.** 한 줄 명령어로 에이전트를 2,000개 이상의 AI 모델과 API에 [MCP](https://modelcontextprotocol.io)를 통해 연결합니다. API 키 관리 불필요. 설정 고민 없음.
 
 ```sh
 npx -y @sandbaseai/cli connect

@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>AIエージェントに超能力を。1コマンドで2,000以上のツール。</strong>
+    <strong>AIエージェントに超能力を。1コマンドで2,000以上のAIモデルとAPI。</strong>
   </p>
   <p align="center">
     <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a> | 日本語 | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -23,7 +23,7 @@
 
 あなたのAIコーディングアシスタントは優秀ですが、箱の中に閉じ込められています。Web検索もSNS確認も画像生成もリアルタイムデータ取得も — 自分で各APIを接続しない限りできません。
 
-**SandBaseがそれを変えます。** 1コマンドで、[Model Context Protocol](https://modelcontextprotocol.io)を通じてエージェントを2,000以上のツールと200以上のAIモデルに接続。APIキー管理不要。設定の手間なし。
+**SandBaseがそれを変えます。** 1コマンドで、[Model Context Protocol](https://modelcontextprotocol.io)を通じてエージェントを2,000以上のAIモデルとAPIに接続。APIキー管理不要。設定の手間なし。
 
 ```sh
 npx -y @sandbaseai/cli connect
@@ -149,8 +149,8 @@ npx -y @sandbaseai/cli connect --client cursor
 ```
 ┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
 │  あなたのAgent  │  MCP    │ ローカルBridge │  HTTPS  │    SandBase API     │
-│  (Cursorなど)   │────────▶│ (オンデマンド) │────────▶│  2,000+ ツール     │
-│                 │◀────────│               │◀────────│  200+ AIモデル     │
+│  (Cursorなど)   │────────▶│ (オンデマンド) │────────▶│  2,000+ AIモデル   │
+│                 │◀────────│               │◀────────│  とAPI              │
 └─────────────────┘         └───────────────┘         └────────────────────┘
 ```
 

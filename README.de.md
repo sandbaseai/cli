@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>Gib deinem KI-Agenten Superkräfte. Ein Befehl. 2.000+ Tools.</strong>
+    <strong>Gib deinem KI-Agenten Superkräfte. Ein Befehl. 2.000+ KI-Modelle und APIs.</strong>
   </p>
   <p align="center">
     <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | Deutsch | <a href="./README.pt-BR.md">Português</a>
@@ -16,7 +16,7 @@
 
 Dein KI-Coding-Assistent ist schlau, aber in einer Box gefangen. Er kann nicht im Web suchen, Social Media prüfen, Bilder generieren oder Echtzeitdaten abrufen — es sei denn, du verbindest jede API selbst.
 
-**SandBase ändert das.** Ein Befehl verbindet deinen Agenten mit 2.000+ Tools und 200+ KI-Modellen über das [MCP](https://modelcontextprotocol.io). Keine API-Keys verwalten. Kein Konfigurationsaufwand.
+**SandBase ändert das.** Ein Befehl verbindet deinen Agenten mit 2.000+ KI-Modellen und APIs über das [MCP](https://modelcontextprotocol.io). Keine API-Keys verwalten. Kein Konfigurationsaufwand.
 
 ```sh
 npx -y @sandbaseai/cli connect
