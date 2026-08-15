@@ -1,7 +1,7 @@
 {
   "name": "@sandbaseai/cli",
   "version": "0.1.14",
-  "description": "Secure SandBase MCP onboarding CLI",
+  "description": "Connect 2,000+ AI tools and 200+ models to Cursor, Claude Code, Codex, Windsurf, and other MCP clients",
   "type": "module",
   "bin": {
     "sandbase": "dist/cli.js"
@@ -29,9 +29,26 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sandbaseai/sandbase.git",
-    "directory": "sandbase-cli"
+    "url": "git+https://github.com/sandbaseai/cli.git"
   },
+  "homepage": "https://github.com/sandbaseai/cli#readme",
+  "bugs": {
+    "url": "https://github.com/sandbaseai/cli/issues"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "cli",
+    "mcp",
+    "model-context-protocol",
+    "cursor",
+    "claude-code",
+    "codex",
+    "windsurf",
+    "gemini-cli",
+    "developer-tools",
+    "automation"
+  ],
   "publishConfig": {
     "access": "public",
     "provenance": true
