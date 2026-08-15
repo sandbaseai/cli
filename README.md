@@ -4,7 +4,7 @@
     <strong>Give your AI agent superpowers. One command. 2,000+ tools.</strong>
   </p>
   <p align="center">
-    English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a>
+    English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
   </p>
   <p align="center">
     <a href="https://www.npmjs.com/package/@sandbaseai/cli"><img alt="npm version" src="https://img.shields.io/npm/v/%40sandbaseai%2Fcli"></a>
