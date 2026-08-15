@@ -33,7 +33,7 @@ tar -tzf "$tarball" | LC_ALL=C sort > "$audit_dir/files.txt"
 
 while IFS= read -r entry; do
   case "$entry" in
-    package/package.json|package/README.md|package/LICENSE|package/assets/mcp-bridge.mjs|package/assets/skills/sandbase/SKILL.md|package/dist/*.js|package/dist/*.d.ts)
+    package/package.json|package/README.md|package/README.ja.md|package/README.zh-CN.md|package/LICENSE|package/assets/mcp-bridge.mjs|package/assets/skills/sandbase/SKILL.md|package/dist/*.js|package/dist/*.d.ts)
       ;;
     *)
       echo "Unexpected file in npm tarball: $entry" >&2
