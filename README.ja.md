@@ -31,6 +31,11 @@ npx -y @sandbaseai/cli connect
 
 これだけ。あなたのエージェントはすべてにアクセスできるようになりました。
 
+## SandBase オープンソーススタック
+
+- **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — 永続セッション、サンドボックス分離、承認、監査、リプレイを備えたセルフホスト型エージェントランタイム。
+- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — リサーチ、ソーシャルインテリジェンス、マーケティング、ビジネス向けのインストール可能な 88 Skills。
+
 ---
 
 ## 実際の動作

@@ -31,6 +31,11 @@ npx -y @sandbaseai/cli connect
 
 That's it. Your agent now has access to everything.
 
+## SandBase Open-Source Stack
+
+- **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — self-hosted agent runtime with persistent sessions, sandbox isolation, approvals, audit, and replay.
+- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 installable Skills for research, social intelligence, marketing, and business workflows.
+
 ---
 
 ## See It In Action
