@@ -12,7 +12,7 @@
 
 Tu asistente de codificación IA es inteligente, pero está atrapado en una caja. No puede buscar en la web, revisar redes sociales, generar imágenes ni acceder a datos en tiempo real — a menos que conectes cada API manualmente.
 
-**SandBase cambia eso.** Un comando conecta tu agente a 2,000+ herramientas y 2,000+ modelos de IA a través del [MCP](https://modelcontextprotocol.io). Sin gestionar claves API. Sin dolores de cabeza de configuración.
+**SandBase cambia eso.** Un comando conecta tu agente a 2,000+ herramientas y 200+ modelos de IA a través del [MCP](https://modelcontextprotocol.io). Sin gestionar claves API. Sin dolores de cabeza de configuración.
 
 ```sh
 npx -y @sandbaseai/cli connect
