@@ -8,6 +8,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI MCP bridge" width="100%">
+</p>
+
 ---
 
 AI 코딩 어시스턴트는 똑똑하지만 상자 안에 갇혀 있습니다. 웹 검색, SNS 확인, 이미지 생성, 실시간 데이터 접근 — 직접 각 API를 연결하지 않으면 불가능합니다.

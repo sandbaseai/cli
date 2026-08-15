@@ -8,6 +8,10 @@
   </p>
 </p>
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI MCP bridge" width="100%">
+</p>
+
 ---
 
 Dein KI-Coding-Assistent ist schlau, aber in einer Box gefangen. Er kann nicht im Web suchen, Social Media prüfen, Bilder generieren oder Echtzeitdaten abrufen — es sei denn, du verbindest jede API selbst.
