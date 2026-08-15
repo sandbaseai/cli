@@ -12,6 +12,7 @@
     <a href="https://github.com/sandbaseai/cli/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/sandbaseai/cli/actions/workflows/ci.yml/badge.svg"></a>
     <a href="https://github.com/sandbaseai/cli/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/sandbaseai/cli"></a>
     <a href="https://github.com/sandbaseai/cli/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/sandbaseai/cli?style=social"></a>
+    <a href="https://easylaunch.dev/dev-tools/sandbase-cli"><img alt="Featured on EasyLaunch" src="https://easylaunch.dev/badge/easylaunch-badge-light.svg" width="94" height="28"></a>
   </p>
 </p>
 
