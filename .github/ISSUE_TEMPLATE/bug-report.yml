@@ -1,0 +1,66 @@
+name: Bug report
+description: Report a reproducible CLI, MCP bridge, or client compatibility problem
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve SandBase CLI. Do not include API keys, access tokens, credentials, or private configuration files.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: This report contains no secrets or private user data.
+          required: true
+        - label: This is not a security vulnerability with sensitive exploit details.
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: SandBase CLI version
+      description: Paste the installed package version or the exact npx command you ran.
+      placeholder: "@sandbaseai/cli@0.1.14"
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Operating system, Node.js version, and affected AI client.
+      placeholder: "macOS 15, Node.js 22, Codex"
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest sequence that reliably reproduces the problem.
+      placeholder: |
+        1. Run ...
+        2. Select ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include sanitized error output if useful.
+    validations:
+      required: true
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional context
+      description: Add sanitized configuration excerpts, screenshots, or related links if needed.

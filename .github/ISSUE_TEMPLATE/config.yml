@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security report
+    url: https://github.com/sandbaseai/cli/security/policy
+    about: Read the security policy before reporting a vulnerability or credential issue.
+  - name: Questions and ideas
+    url: https://github.com/sandbaseai/cli/discussions
+    about: Ask usage questions and discuss early ideas with the community.
