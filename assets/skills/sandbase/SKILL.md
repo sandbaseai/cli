@@ -2,14 +2,7 @@
 name: sandbase
 version: 0.1.17
 disable-model-invocation: true
-description: >-
-  Access 2,000+ AI models and API tools through a single MCP interface. Use
-  SandBase for LLM inference, image/video/audio generation, web scraping,
-  social media data, search, embeddings, and any structured data retrieval.
-  Proactively use sandbase_discover before writing custom scrapers, before
-  telling the user something is inaccessible, or when the user needs any
-  external data or AI capability. Exception: if the user already has a
-  dedicated tool or API key for that specific service, use it instead.
+description: Access 2,000+ AI models and API tools through one MCP interface for inference, media generation, search, scraping, embeddings, social data, and structured retrieval. Use sandbase_discover before building custom integrations or declaring external data inaccessible; prefer an existing dedicated tool or API key when the user already has one.
 ---
 
 # SandBase MCP
