@@ -19,7 +19,7 @@ Votre assistant de codage IA est intelligent, mais il est enfermé dans une boî
 **SandBase change la donne.** Une commande connecte votre agent à 2 000+ modèles IA et APIs via le [MCP](https://modelcontextprotocol.io). Pas de clés API à gérer. Pas de prise de tête.
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 C'est tout. Votre agent a maintenant accès à tout.
@@ -64,8 +64,8 @@ Agent → SandBase Flux → PNG 1024x1024
 | OpenCode, Qwen Code, Kimi CLI | |
 
 ```sh
-npx -y @sandbaseai/cli connect
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -104,7 +104,7 @@ sandbase catalog --json               # Lister les clients
 ## Commencer
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 **[Créer un compte gratuit →](https://sandbase.ai)**

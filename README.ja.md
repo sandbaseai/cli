@@ -26,7 +26,7 @@
 **SandBaseがそれを変えます。** 1コマンドで、[Model Context Protocol](https://modelcontextprotocol.io)を通じてエージェントを2,000以上のAIモデルとAPIに接続。APIキー管理不要。設定の手間なし。
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 これだけ。あなたのエージェントはすべてにアクセスできるようになりました。
@@ -141,10 +141,10 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ```sh
 # 検出されたすべてのクライアントを一度に接続
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 
 # 特定のクライアントを指定
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -215,7 +215,7 @@ discover → inspect → run
 ## 始めよう
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 そして、エージェントに今までできなかったことを頼んでみてください。

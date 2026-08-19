@@ -26,7 +26,7 @@
 **SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型。不用管理 API Key，不用折腾配置。
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 就这样。你的 Agent 现在能访问一切。
@@ -151,10 +151,10 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ```sh
 # 一次连接所有检测到的客户端
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 
 # 或者指定某个客户端
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -225,7 +225,7 @@ discover → inspect → run
 ## 开始使用
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 然后让你的 Agent 做一些它以前做不到的事。

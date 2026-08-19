@@ -19,7 +19,7 @@ AI 코딩 어시스턴트는 똑똑하지만 상자 안에 갇혀 있습니다. 
 **SandBase가 이를 바꿉니다.** 한 줄 명령어로 에이전트를 2,000개 이상의 AI 모델과 API에 [MCP](https://modelcontextprotocol.io)를 통해 연결합니다. API 키 관리 불필요. 설정 고민 없음.
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 이게 전부입니다. 에이전트가 이제 모든 것에 접근할 수 있습니다.
@@ -77,10 +77,10 @@ Agent → SandBase Firecrawl → 구조화된 데이터
 
 ```sh
 # 감지된 모든 클라이언트 한번에 연결
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 
 # 특정 클라이언트 지정
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -121,7 +121,7 @@ sandbase catalog --json               # 지원 클라이언트 목록
 ## 시작하기
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 **[무료 계정 만들기 →](https://sandbase.ai)**

@@ -19,7 +19,7 @@ Dein KI-Coding-Assistent ist schlau, aber in einer Box gefangen. Er kann nicht i
 **SandBase ändert das.** Ein Befehl verbindet deinen Agenten mit 2.000+ KI-Modellen und APIs über das [MCP](https://modelcontextprotocol.io). Keine API-Keys verwalten. Kein Konfigurationsaufwand.
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 Das war's. Dein Agent hat jetzt Zugriff auf alles.
@@ -64,8 +64,8 @@ Agent → SandBase Flux → 1024x1024 PNG
 | OpenCode, Qwen Code, Kimi CLI | |
 
 ```sh
-npx -y @sandbaseai/cli connect
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -104,7 +104,7 @@ sandbase catalog --json               # Unterstützte Clients auflisten
 ## Loslegen
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 **[Kostenloses Konto erstellen →](https://sandbase.ai)**

@@ -19,7 +19,7 @@ Seu assistente de codificação IA é inteligente, mas está preso em uma caixa.
 **SandBase muda isso.** Um comando conecta seu agente a 2.000+ modelos de IA e APIs pelo [MCP](https://modelcontextprotocol.io). Sem gerenciar chaves de API. Sem dor de cabeça.
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 É isso. Seu agente agora tem acesso a tudo.
@@ -77,10 +77,10 @@ Agent → SandBase Firecrawl → Dados estruturados
 
 ```sh
 # Conectar todos os clientes detectados
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 
 # Ou um cliente específico
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -119,7 +119,7 @@ sandbase catalog --json               # Listar clientes suportados
 ## Começar
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 **[Criar conta grátis →](https://sandbase.ai)**

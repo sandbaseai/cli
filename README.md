@@ -27,7 +27,7 @@ Your AI coding assistant is smart, but it's trapped in a box. It can't search th
 **SandBase changes that.** One command connects your agent to 2,000+ AI models through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 Approve the browser authorization once; each supported client can then discover,
@@ -174,10 +174,10 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ```sh
 # Connect all detected clients at once
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 
 # Or target one specific client
-npx -y @sandbaseai/cli connect --client cursor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
 ---
@@ -248,7 +248,7 @@ discover → inspect → run
 ## Get Started
 
 ```sh
-npx -y @sandbaseai/cli connect
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
 Then ask your agent to do something it couldn't before.
