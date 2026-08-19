@@ -44,10 +44,10 @@ export function skillFallback(client: Client): string {
 export function skillInvocation(client: Client): string { return `${clientProfiles[client].label} has a SandBase Skill artifact installed. Native discovery remains unverified until the real-client matrix is complete.`; }
 function nativeTier(client: Client): boolean { return skillTiers[client] === "s3_promotion" || skillTiers[client] === "s1_slash"; }
 function marked(content: string): boolean { return content.includes(ownershipMarker) && /^name:\s*sandbase\s*$/m.test(content); }
-async function asset(relative = "../assets/skills/sandbase/SKILL.md"): Promise<string> {
+async function asset(relative = "../skills/sandbase/SKILL.md"): Promise<string> {
   const bundled = fileURLToPath(new URL(relative, import.meta.url));
   try { return await readFile(bundled, "utf8"); }
-  catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; return readFile(join(process.cwd(), "assets", "skills", "sandbase", "SKILL.md"), "utf8"); }
+  catch (error) { if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error; return readFile(join(process.cwd(), "skills", "sandbase", "SKILL.md"), "utf8"); }
 }
 async function sharedOwnership(env = process.env): Promise<Ownership> {
   const [skill, metadata] = await Promise.all([readOptional(sharedSkillPath(env)), readOptional(metadataPath(env))]);

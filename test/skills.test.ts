@@ -99,7 +99,7 @@ test("concurrent shared installs are idempotent and clean only verified legacy p
   const env = await environment();
   const legacy = join(env.HOME!, ".cursor", "skills", "sandbase", "SKILL.md");
   await mkdir(join(env.HOME!, ".cursor", "skills", "sandbase"), { recursive: true });
-  await writeFile(legacy, await readFile(join(process.cwd(), "assets", "skills", "sandbase", "SKILL.md"), "utf8"));
+  await writeFile(legacy, await readFile(join(process.cwd(), "skills", "sandbase", "SKILL.md"), "utf8"));
   const results = await Promise.all([installSkill("cursor", env), installSkill("codex", env)]);
   assert.ok(results.some(result => result.state === "configured"));
   assert.match(await readFile(sharedSkillPath(env), "utf8"), /disable-model-invocation: true/);
