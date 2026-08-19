@@ -1,6 +1,6 @@
 {
   "name": "@sandbaseai/cli",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "mcpName": "io.github.sandbaseai/cli",
   "description": "Connect 2,000+ AI models to Cursor, Claude Code, Codex, Windsurf, and other MCP clients",
   "type": "module",

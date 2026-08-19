@@ -62,3 +62,8 @@ jobs:
           npm run audit:package
       - name: Publish with trusted publishing and provenance
         run: npm publish --ignore-scripts --access public --provenance --tag latest
+        env:
+          # Use the existing automation token when available. npm trusted
+          # publishing remains available through the job's OIDC permission,
+          # while this fallback keeps releases working for the scoped package.
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
