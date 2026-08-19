@@ -22,16 +22,16 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20.19.5'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-          cache: npm
+          package-manager-cache: false
       - name: Install trusted-publishing capable npm
-        run: npm install --global npm@11.5.1
+        run: npm install --global npm@^11.15.0
       - name: Verify immutable release identity
         shell: bash
         run: |
@@ -61,9 +61,6 @@ jobs:
           npm run build
           npm run audit:package
       - name: Publish with trusted publishing and provenance
-        run: npm publish --ignore-scripts --access public --provenance --tag latest
-        env:
-          # Use the existing automation token when available. npm trusted
-          # publishing remains available through the job's OIDC permission,
-          # while this fallback keeps releases working for the scoped package.
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        # Do not set NODE_AUTH_TOKEN here. npm exchanges the GitHub OIDC token
+        # for a short-lived publishing credential tied to this exact workflow.
+        run: npm publish --ignore-scripts --access public --tag latest
