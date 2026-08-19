@@ -13,6 +13,7 @@
   "files": [
     "dist",
     "assets",
+    "llms-install.md",
     "README.md",
     "LICENSE"
   ],

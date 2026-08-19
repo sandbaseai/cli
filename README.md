@@ -47,6 +47,8 @@ its SHA-256 is published with the release.
 
 For a security-focused walkthrough of client detection, MCP tools, and rollback,
 read the [25-client SandBase CLI setup guide](https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/).
+AI agents and automated installers can use the concise
+[`llms-install.md`](./llms-install.md) instructions.
 
 ## SandBase Open-Source Stack
 
