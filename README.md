@@ -53,6 +53,9 @@ read the [25-client SandBase CLI setup guide](https://blog.sandbase.ai/sandbase-
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — self-hosted agent runtime with persistent sessions, sandbox isolation, approvals, audit, and replay.
 - **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 installable Skills for research, social intelligence, marketing, and business workflows.
 
+Discover the bridge on [MCPRepository](https://mcprepository.com/sandbaseai/cli),
+or install its verified [`sandbase` Agent Skill from skills.sh](https://www.skills.sh/sandbaseai/cli/sandbase).
+
 ---
 
 ## See It In Action
