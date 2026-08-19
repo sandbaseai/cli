@@ -63,6 +63,11 @@ or browse the versioned [`sandbaseai/sandbase` snapshot on Agent Skill Hub](http
 
 After connecting, just ask your agent naturally. It handles the rest.
 
+> The outputs below are illustrative examples of the interaction pattern. Live
+> results, latency, availability, and pricing vary by provider and request; use
+> `sandbase_inspect` before running a model or API to see its current schema and
+> price.
+
 ### "Search the web for React 19 new features"
 
 ```
