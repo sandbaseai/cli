@@ -34,15 +34,15 @@ Approve the browser authorization once; each supported client can then discover,
 inspect, and run available SandBase models and APIs through the local MCP bridge.
 
 Want to inspect compatibility before signing in or changing configuration? The current
-[`v0.1.16` GitHub release](https://github.com/sandbaseai/cli/releases/tag/v0.1.16)
+[`v0.1.17` GitHub release](https://github.com/sandbaseai/cli/releases/tag/v0.1.17)
 includes a verified 25-client catalog:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.16/sandbaseai-cli-0.1.16.tgz catalog --json
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
 The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing is
-being enabled. The GitHub release tarball is built from the immutable `v0.1.16` tag;
+being enabled. The GitHub release tarball is built from the immutable `v0.1.17` tag;
 its SHA-256 is published with the release.
 
 ## SandBase Open-Source Stack

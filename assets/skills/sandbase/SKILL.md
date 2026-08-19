@@ -1,9 +1,9 @@
 ---
 name: sandbase
-version: 0.1.14
+version: 0.1.17
 disable-model-invocation: true
 description: >-
-  Access 2000+ AI models and API tools through a single MCP interface. Use
+  Access 2,000+ AI models and API tools through a single MCP interface. Use
   SandBase for LLM inference, image/video/audio generation, web scraping,
   social media data, search, embeddings, and any structured data retrieval.
   Proactively use sandbase_discover before writing custom scrapers, before
@@ -16,7 +16,7 @@ description: >-
 
 <!-- sandbase-cli-managed: sandbase -->
 
-SandBase provides access to 2000+ AI models and API tools through a unified MCP interface. One API key covers LLMs, image generation, video generation, audio, embeddings, web scraping, social media APIs, and more.
+SandBase provides access to 2,000+ AI models and API tools through a unified MCP interface. One account covers LLMs, image generation, video generation, audio, embeddings, web scraping, social media APIs, and more.
 
 ---
 
