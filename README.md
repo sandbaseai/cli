@@ -45,6 +45,9 @@ The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing
 being enabled. The GitHub release tarball is built from the immutable `v0.1.17` tag;
 its SHA-256 is published with the release.
 
+For a security-focused walkthrough of client detection, MCP tools, and rollback,
+read the [25-client SandBase CLI setup guide](https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/).
+
 ## SandBase Open-Source Stack
 
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — self-hosted agent runtime with persistent sessions, sandbox isolation, approvals, audit, and replay.
@@ -140,7 +143,7 @@ Agent → SandBase Kling Video Gen → Async processing
 
 ---
 
-## Supported Clients (17+)
+## Supported Clients (25 Targets)
 
 Works with every major AI coding tool:
 
@@ -160,7 +163,7 @@ Works with every major AI coding tool:
 Preview the complete compatibility catalog without signing in or changing any files:
 
 ```sh
-npx -y @sandbaseai/cli catalog --json
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
 ```sh
