@@ -4,20 +4,29 @@ SandBase CLI configures MCP clients and stores local credentials, so security an
 
 ## Supported versions
 
-Security fixes are released in the latest version published under the `latest` npm tag. Upgrade before reporting an issue that may already be fixed:
+Security fixes are provided in the latest verified GitHub release. The npm `latest` tag may temporarily lag while trusted publishing is being enabled.
+
+| Version | Supported |
+| --- | --- |
+| [v0.1.17](https://github.com/sandbaseai/cli/releases/tag/v0.1.17) | Yes |
+| Earlier versions | No |
+
+Install or diagnose the supported release from its immutable artifact:
 
 ```sh
-npx -y @sandbaseai/cli@latest doctor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor
 ```
 
 ## Reporting a vulnerability
 
-Open a minimal [security triage issue](https://github.com/sandbaseai/cli/issues/new) that describes the affected command and impact without including secrets, working exploit details, or private user data. A maintainer will move sensitive follow-up to a private channel.
+Use [GitHub private vulnerability reporting](https://github.com/sandbaseai/cli/security/advisories/new). Include the affected command and version, impact, reproduction steps, and sanitized diagnostic output.
 
-For ordinary bugs that do not expose credentials or cross a security boundary, use the regular issue tracker and include reproducible steps.
+Do not open a public Issue for vulnerabilities. Never include API keys, access tokens, credentials, private configuration, working exploit details, or user data in public discussions.
+
+For ordinary bugs that do not expose credentials or cross a security boundary, use the [bug report form](https://github.com/sandbaseai/cli/issues/new?template=bug-report.yml).
 
 ## What to expect
 
-We will acknowledge actionable reports, assess affected versions, and coordinate a fix and disclosure. Please give maintainers reasonable time to investigate before publishing exploit details.
+Maintainers will acknowledge actionable reports, assess affected versions, and coordinate a fix and disclosure through the private advisory. Please allow reasonable time to investigate before publishing exploit details.
 
 Do not test against accounts, systems, or data you do not own or have explicit permission to use.
