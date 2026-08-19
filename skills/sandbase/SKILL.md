@@ -13,6 +13,20 @@ SandBase provides access to 2,000+ AI models and API tools through a unified MCP
 
 ---
 
+## Setup
+
+If the six `sandbase_*` MCP tools are not already available, connect the current machine with the immutable v0.1.17 release:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+```
+
+Approve the browser authorization once. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
+
+This file is managed by SandBase CLI. Check the [official repository](https://github.com/sandbaseai/cli) for newer releases before copying or modifying it independently.
+
+---
+
 ## When to Use SandBase
 
 **Use SandBase when the user needs:**
@@ -193,4 +207,3 @@ sandbase_runs(limit: 5)
 6. **Poll async runs** — use `sandbase_run_get` for long-running operations.
 7. **Report costs** — mention pricing when the user cares about budget.
 8. **One call per turn** — wait for results before the next call.
-
