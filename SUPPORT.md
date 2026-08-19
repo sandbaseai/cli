@@ -10,7 +10,7 @@ Use the channel that best matches your request:
 Before requesting help, run:
 
 ```sh
-npx -y @sandbaseai/cli@latest doctor
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor
 ```
 
 Include the CLI version, client and version, operating system, exact command, and sanitized output. Never post API keys, access tokens, credentials, or private configuration.
