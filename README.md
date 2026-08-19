@@ -240,6 +240,7 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 
 - [SandBase Platform](https://sandbase.ai)
 - [Documentation](https://docs.sandbase.ai)
+- [CLI setup guide](https://www.sandbase.ai/docs/setup/cli)
 - [npm Package](https://www.npmjs.com/package/@sandbaseai/cli)
 - [Dashboard](https://sandbase.ai/console)
 
