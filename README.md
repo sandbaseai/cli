@@ -56,7 +56,8 @@ AI agents and automated installers can use the concise
 - **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 installable Skills for research, social intelligence, marketing, and business workflows.
 
 Discover the bridge on [MCPRepository](https://mcprepository.com/sandbaseai/cli),
-or install its verified [`sandbase` Agent Skill from skills.sh](https://www.skills.sh/sandbaseai/cli/sandbase).
+install its verified [`sandbase` Agent Skill from skills.sh](https://www.skills.sh/sandbaseai/cli/sandbase),
+or browse the versioned [`sandbaseai/sandbase` snapshot on Agent Skill Hub](https://agentskillhub.dev/u/sandbaseai/sk/sandbase).
 
 ---
 
