@@ -21,7 +21,7 @@ If the six `sandbase_*` MCP tools are not already available, connect the current
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
-Approve the browser authorization once. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
+Approve the browser sign-in once. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
 
 This file is managed by SandBase CLI. Check the [official repository](https://github.com/sandbaseai/cli) for newer releases before copying or modifying it independently.
 
