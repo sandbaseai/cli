@@ -15,10 +15,12 @@ test("package identity and executable are the formal release contract", async ()
   assert.deepEqual(manifest.bin, { sandbase: "dist/cli.js" });
 });
 
-test("package declares the static native Skill asset", async () => {
+test("package declares the static native Skill asset and keeps the registry mirror identical", async () => {
   const manifest = JSON.parse(await readFile(join(process.cwd(), "package.json"), "utf8")) as { files?: string[] };
   assert.ok(manifest.files?.includes("assets"));
   const skill = await readFile(join(process.cwd(), "assets", "skills", "sandbase", "SKILL.md"), "utf8");
+  const registrySkill = await readFile(join(process.cwd(), "skills", "sandbase", "SKILL.md"), "utf8");
+  assert.equal(registrySkill.trimEnd(), skill.trimEnd());
   assert.match(skill, /name: sandbase/);
   assert.match(skill, /sandbase-cli-managed: sandbase/);
   assert.match(skill, /^disable-model-invocation: true$/m);
