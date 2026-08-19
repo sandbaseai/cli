@@ -33,7 +33,7 @@ tar -tzf "$tarball" | LC_ALL=C sort > "$audit_dir/files.txt"
 
 while IFS= read -r entry; do
   case "$entry" in
-    package/package.json|package/README.md|package/README.de.md|package/README.es.md|package/README.fr.md|package/README.ja.md|package/README.ko.md|package/README.pt-BR.md|package/README.zh-CN.md|package/llms-install.md|package/LICENSE|package/assets/mcp-bridge.mjs|package/skills/sandbase/SKILL.md|package/dist/*.js|package/dist/*.d.ts)
+    package/package.json|package/README.md|package/README.de.md|package/README.es.md|package/README.fr.md|package/README.ja.md|package/README.ko.md|package/README.pt-BR.md|package/README.zh-CN.md|package/llms-install.md|package/LICENSE|package/assets/mcp-bridge.mjs|package/skills/sandbase/SKILL.md|package/skills/sandbase/skill.json|package/dist/*.js|package/dist/*.d.ts)
       ;;
     *)
       echo "Unexpected file in npm tarball: $entry" >&2
@@ -42,7 +42,7 @@ while IFS= read -r entry; do
   esac
 done < "$audit_dir/files.txt"
 
-for required in package/package.json package/README.md package/README.de.md package/README.es.md package/README.fr.md package/README.ja.md package/README.ko.md package/README.pt-BR.md package/README.zh-CN.md package/llms-install.md package/LICENSE package/assets/mcp-bridge.mjs package/skills/sandbase/SKILL.md package/dist/cli.js; do
+for required in package/package.json package/README.md package/README.de.md package/README.es.md package/README.fr.md package/README.ja.md package/README.ko.md package/README.pt-BR.md package/README.zh-CN.md package/llms-install.md package/LICENSE package/assets/mcp-bridge.mjs package/skills/sandbase/SKILL.md package/skills/sandbase/skill.json package/dist/cli.js; do
   if ! grep -Fxq "$required" "$audit_dir/files.txt"; then
     echo "Required file missing from npm tarball: $required" >&2
     exit 1
