@@ -243,6 +243,19 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 - [npm Package](https://www.npmjs.com/package/@sandbaseai/cli)
 - [Dashboard](https://sandbase.ai/console)
 
+## Community
+
+- [Ask a question or share what you built](https://github.com/sandbaseai/cli/discussions)
+- [Report a reproducible bug](https://github.com/sandbaseai/cli/issues/new?template=bug-report.yml)
+- [Propose an integration or improvement](https://github.com/sandbaseai/cli/issues/new?template=feature-request.yml)
+- [Contribute to SandBase CLI](./CONTRIBUTING.md)
+
+Community-curated listings:
+
+- [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
+- [Awesome AI Tools](https://github.com/QAInsights/awesome-ai-tools)
+- [Awesome MCP Server](https://github.com/AIAnytime/Awesome-MCP-Server)
+
 ## License
 
 Apache-2.0
