@@ -9,6 +9,7 @@
   <p align="center">
     <a href="https://www.npmjs.com/package/@sandbaseai/cli"><img alt="npm version" src="https://img.shields.io/npm/v/%40sandbaseai%2Fcli"></a>
     <a href="https://www.npmjs.com/package/@sandbaseai/cli"><img alt="npm downloads" src="https://img.shields.io/npm/dm/%40sandbaseai%2Fcli"></a>
+    <a href="https://github.com/sandbaseai/cli/releases/latest"><img alt="GitHub release" src="https://img.shields.io/github/v/release/sandbaseai/cli"></a>
     <a href="https://github.com/sandbaseai/cli/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/sandbaseai/cli/actions/workflows/ci.yml/badge.svg"></a>
     <a href="https://github.com/sandbaseai/cli/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/github/license/sandbaseai/cli"></a>
     <a href="https://github.com/sandbaseai/cli/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/sandbaseai/cli?style=social"></a>
@@ -29,7 +30,20 @@ Your AI coding assistant is smart, but it's trapped in a box. It can't search th
 npx -y @sandbaseai/cli connect
 ```
 
-That's it. Your agent now has access to everything.
+Approve the browser authorization once; each supported client can then discover,
+inspect, and run available SandBase models and APIs through the local MCP bridge.
+
+Want to inspect compatibility before signing in or changing configuration? The current
+[`v0.1.16` GitHub release](https://github.com/sandbaseai/cli/releases/tag/v0.1.16)
+includes a verified 25-client catalog:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.16/sandbaseai-cli-0.1.16.tgz catalog --json
+```
+
+The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing is
+being enabled. The GitHub release tarball is built from the immutable `v0.1.16` tag;
+its SHA-256 is published with the release.
 
 ## SandBase Open-Source Stack
 
