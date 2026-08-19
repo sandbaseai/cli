@@ -29,7 +29,7 @@ printf '%s  %s\n' '1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71f
 npx -y ./sandbaseai-cli-0.1.17.tgz connect
 ```
 
-Approve the browser sign-in once. Authentication happens with SandBase in the browser; the CLI stores the resulting local credential with restricted file permissions. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
+Approve the browser sign-in once. Authentication happens with SandBase in the browser; the CLI stores the resulting local session record with restricted file permissions. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
 
 This file is managed by SandBase CLI and may be replaced during a later CLI-managed update, so keep custom instructions in a separate Skill. Check the [official repository](https://github.com/sandbaseai/cli) for newer releases before copying it independently.
 
