@@ -54,7 +54,7 @@ Agent → SandBase Flux → PNG 1024x1024
 
 ---
 
-## Clients Supportés (17+)
+## Clients pris en charge (25 cibles)
 
 | Configuration auto | Configuration manuelle |
 |-------------------|----------------------|

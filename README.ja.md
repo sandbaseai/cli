@@ -116,7 +116,7 @@ Agent → SandBase GPT-4o → 分析完了
 
 ---
 
-## 対応クライアント (17+)
+## 対応クライアント（25ターゲット）
 
 すべての主要AIコーディングツールで動作：
 
@@ -136,7 +136,7 @@ Agent → SandBase GPT-4o → 分析完了
 サインインやファイル変更なしで、完全な互換性カタログを確認できます：
 
 ```sh
-npx -y @sandbaseai/cli catalog --json
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
 ```sh

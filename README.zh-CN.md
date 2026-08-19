@@ -126,7 +126,7 @@ Agent → SandBase Kling 视频生成 → 异步处理
 
 ---
 
-## 支持的客户端 (17+)
+## 支持的客户端（25 个目标）
 
 兼容所有主流 AI 编程工具：
 
@@ -146,7 +146,7 @@ Agent → SandBase Kling 视频生成 → 异步处理
 无需登录或修改任何文件，即可预览完整兼容性目录：
 
 ```sh
-npx -y @sandbaseai/cli catalog --json
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
 ```sh

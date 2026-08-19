@@ -65,7 +65,7 @@ Agent → SandBase Firecrawl → Datos estructurados
 
 ---
 
-## Clientes Soportados (17+)
+## Clientes compatibles (25 destinos)
 
 | Configuración automática | Configuración manual |
 |--------------------------|---------------------|
