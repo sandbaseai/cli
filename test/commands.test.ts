@@ -14,7 +14,7 @@ test("doctor uses the packaged sandbase entry point for every client", async () 
     const root = await mkdtemp(join(tmpdir(), `sandbase-doctor-${client}-`));
     const result = spawnSync(process.execPath, [cli, "doctor", "--client", client], {
       encoding: "utf8",
-      env: { ...process.env, HOME: root, SANDBASE_HOME: join(root, ".sandbase") },
+      env: { ...process.env, HOME: root, KIRO_HOME: join(root, ".kiro"), PWD: root, SANDBASE_HOME: join(root, ".sandbase") },
     });
     assert.equal(result.status, 1);
     assert.match(result.stdout, new RegExp(`^${client}:`));
@@ -26,7 +26,7 @@ test("unregister uses the packaged sandbase entry point for every client", async
     const root = await mkdtemp(join(tmpdir(), `sandbase-unregister-${client}-`));
     const result = spawnSync(process.execPath, [cli, "unregister", "--client", client], {
       encoding: "utf8",
-      env: { ...process.env, HOME: root, SANDBASE_HOME: join(root, ".sandbase") },
+      env: { ...process.env, HOME: root, KIRO_HOME: join(root, ".kiro"), PWD: root, SANDBASE_HOME: join(root, ".sandbase") },
     });
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, new RegExp(`^(?:Removed local SandBase |${client}: )`));
@@ -82,8 +82,13 @@ test("default doctor and unregister only act on installed automatic adapters", a
   assert.ok(output.some(line => line.startsWith("openclaw:") && line.includes("mcp=")));
 });
 
-test("doctor and unregister use source-specific Skills CLI readback for Kiro", async () => {
+test("doctor uses source-specific Skills CLI readback for Kiro", async () => {
   const calls: string[][] = []; let listCount = 0; const output: string[] = []; const previousLog = console.log;
+  const isolatedHome = await mkdtemp(join(tmpdir(), "sandbase-kiro-maintenance-"));
+  const previousKiroHome = process.env.KIRO_HOME;
+  const previousPwd = process.env.PWD;
+  process.env.KIRO_HOME = join(isolatedHome, ".kiro");
+  process.env.PWD = isolatedHome;
   const runner = async (args: readonly string[]) => {
     calls.push([...args]);
     if (args[0] === "--version") return { code: 0, stdout: "skills 1.5.20", stderr: "" };
@@ -94,14 +99,15 @@ test("doctor and unregister use source-specific Skills CLI readback for Kiro", a
   console.log = (message: string) => void output.push(message);
   try {
     assert.equal(await doctor("kiro-cli", {} as never, () => ({ installed: true, detail: "fixture" }), runner, async json => json === sandbaseSkillRelease.sourceArg), true);
-    await unregister("kiro-cli", {} as never, () => ({ installed: true, detail: "fixture" }), runner, async json => json === sandbaseSkillRelease.sourceArg);
-  } finally { console.log = previousLog; }
+  } finally {
+    console.log = previousLog;
+    if (previousKiroHome === undefined) delete process.env.KIRO_HOME; else process.env.KIRO_HOME = previousKiroHome;
+    if (previousPwd === undefined) delete process.env.PWD; else process.env.PWD = previousPwd;
+  }
   assert.deepEqual(calls, [
     ["--version"], ["add", sandbaseSkillRelease.sourceArg, "--agent", "kiro-cli", "--list"], ["list", "-g", "-a", "kiro-cli", "--json"],
-    ["--version"], ["add", sandbaseSkillRelease.sourceArg, "--agent", "kiro-cli", "--list"], ["list", "-g", "-a", "kiro-cli", "--json"], ["remove", "sandbase", "-g", "-a", "kiro-cli"], ["list", "-g", "-a", "kiro-cli", "--json"],
   ]);
   assert.match(output[0]!, /mcp=not_configured, skill=already_installed/);
-  assert.match(output[1]!, /skill=removed/);
 });
 
 test("Kiro unregister removes independently owned MCP and Skill state", async () => {
