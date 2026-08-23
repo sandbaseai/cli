@@ -32,6 +32,17 @@ with specialized model gateways.
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+For a reproducible install, verify the immutable release archive before
+running it. The SHA-256 for `sandbaseai-cli-0.1.17.tgz` is
+`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`.
+
+```sh
+curl -fL -o sandbaseai-cli-0.1.17.tgz \
+  https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz
+echo '1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa  sandbaseai-cli-0.1.17.tgz' | shasum -a 256 -c -
+npx -y ./sandbaseai-cli-0.1.17.tgz connect
+```
+
 Approve the browser authorization once; each supported client can then discover,
 inspect, and run available SandBase models and APIs through the local MCP bridge.
 
