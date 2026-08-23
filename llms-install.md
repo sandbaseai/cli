@@ -27,6 +27,9 @@ Use the immutable v0.1.17 GitHub Release while npm `latest` is being updated:
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client <client-id>
 ```
 
+For an offline/integrity check, the archive's SHA-256 is
+`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`.
+
 Common client IDs include `codex`, `claude-code`, `cursor`, `gemini-cli`,
 `windsurf`, and `opencode`. To configure every supported client detected on the
 machine, omit `--client <client-id>`.
@@ -57,4 +60,3 @@ This removes only the SandBase-owned configuration. It leaves unrelated and
 user-managed MCP entries unchanged.
 
 Source: https://github.com/sandbaseai/cli
-
