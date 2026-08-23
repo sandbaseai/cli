@@ -238,7 +238,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 ## 链接
 
 - [SandBase 平台](https://sandbase.ai)
-- [文档](https://docs.sandbase.ai)
+- [文档](https://www.sandbase.ai/docs/)
 - [npm 包](https://www.npmjs.com/package/@sandbaseai/cli)
 - [控制台](https://sandbase.ai/console)
 
