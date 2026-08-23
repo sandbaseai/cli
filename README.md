@@ -24,6 +24,10 @@ Your AI coding assistant is smart, but it's trapped in a box. It can't search th
 
 **SandBase changes that.** One command connects your agent to 2,000+ AI models through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
 
+Building directly over HTTP instead of MCP? Start with the [SandBase API quickstart](https://www.sandbase.ai/docs/getting-started/)
+or compare the unified [LLM, image, and video API](https://blog.sandbase.ai/unified-ai-api-llm-image-video-2026/)
+with specialized model gateways.
+
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
