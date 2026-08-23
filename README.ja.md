@@ -228,7 +228,7 @@ SandBase でセットアップ時間を短縮できたら、[リポジトリに 
 ## リンク
 
 - [SandBase プラットフォーム](https://sandbase.ai)
-- [ドキュメント](https://docs.sandbase.ai)
+- [ドキュメント](https://www.sandbase.ai/docs/)
 - [npm パッケージ](https://www.npmjs.com/package/@sandbaseai/cli)
 - [ダッシュボード](https://sandbase.ai/console)
 
