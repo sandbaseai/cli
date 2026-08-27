@@ -60,6 +60,7 @@ The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing
 being enabled. The GitHub release tarball is built from the immutable `v0.1.17` tag;
 its SHA-256 is published with the release.
 
+Visit the [official SandBase CLI project page](https://sandbaseai.github.io/cli/) for a compact overview.
 For a security-focused walkthrough of client detection, MCP tools, and rollback,
 read the [25-client SandBase CLI setup guide](https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/).
 AI agents and automated installers can use the concise
