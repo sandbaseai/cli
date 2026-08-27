@@ -78,6 +78,7 @@ read its [Registry community showcase](https://github.com/modelcontextprotocol/r
 [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db),
 [MCPRepository](https://mcprepository.com/sandbaseai/cli),
 [VaultPlane](https://www.vaultplane.com/server/sandbase-cli),
+[AIMCP](https://www.aimcp.info/en/g/522d366e-114b-4d90-9f1a-552b4b3a9c86),
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
@@ -320,6 +321,7 @@ Community-curated listings:
 
 - [Official Registry community showcase](https://github.com/modelcontextprotocol/registry/discussions/1584)
 - [VaultPlane MCP directory](https://www.vaultplane.com/server/sandbase-cli)
+- [AIMCP directory](https://www.aimcp.info/en/g/522d366e-114b-4d90-9f1a-552b4b3a9c86)
 - [Awesome MCP](https://github.com/AlexMili/Awesome-MCP)
 - [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy)
 - [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
