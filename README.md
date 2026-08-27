@@ -74,6 +74,7 @@ Discover the bridge on [MCPRepository](https://mcprepository.com/sandbaseai/cli)
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators). Install its
 verified [`sandbase` Agent Skill from skills.sh](https://www.skills.sh/sandbaseai/cli/sandbase),
 the [`sandbaseai/cli/sandbase` listing on skills.re](https://skills.re/skills/sandbaseai/cli/sandbase),
+the [93/100 verified SandBase listing on vSkill](https://verified-skill.com/skills/sandbaseai/cli/sandbase),
 the [security-audited SandBase listing on Skillstore](https://skillstore.io/skills/sandbaseai-sandbase),
 or the versioned [`sandbaseai/sandbase` snapshot on Agent Skill Hub](https://agentskillhub.dev/u/sandbaseai/sk/sandbase).
 
