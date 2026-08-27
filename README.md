@@ -76,6 +76,8 @@ Discover the authenticated remote bridge in the [official MCP Registry](https://
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
+The Codex integration is also listed in
+[Awesome Codex CLI](https://github.com/milisp/awesome-codex-cli#model-context-protocol-mcp-servers).
 The Hermes integration is independently listed in the
 [Hermes Atlas](https://github.com/ksimback/hermes-ecosystem) ecosystem catalog and as beta in
 [Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent#integrations--bridges).
