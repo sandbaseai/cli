@@ -39,6 +39,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 `1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`。
 目前 npm 的 `latest` 标签仍是 v0.1.14，因此在可信发布启用完成前，请使用上面的版本化 GitHub 地址。
 
+项目已进入[官方 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)，并被[中国独立开发者项目（程序员版）](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)独立收录。
+
 就这样。你的 Agent 现在能访问一切。
 
 ## SandBase 开源技术栈
@@ -252,7 +254,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 - [SandBase 平台](https://sandbase.ai)
 - [文档](https://www.sandbase.ai/docs/)
 - [官方 MCP Registry 收录](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
-- [中国独立开发者项目程序员版收录](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md)
+- [中国独立开发者项目（程序员版）收录](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)
 - [npm 包](https://www.npmjs.com/package/@sandbaseai/cli)
 - [控制台](https://sandbase.ai/console)
 
