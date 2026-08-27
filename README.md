@@ -72,6 +72,7 @@ AI agents and automated installers can use the concise
 - **[SandBase for Codex](https://github.com/sandbaseai/sandbase-codex-plugin)** — official Codex plugin packaging the SandBase MCP bridge and guided Agent Skill; its required HOL security scan passes on `main`.
 
 Discover the authenticated remote bridge in the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli),
+read its [Registry community showcase](https://github.com/modelcontextprotocol/registry/discussions/1584), or find it through
 [Chinese Independent Developer](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github),
 [Awesome MCP](https://github.com/AlexMili/Awesome-MCP#ai-agents--memory),
 [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db),
@@ -316,6 +317,7 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 
 Community-curated listings:
 
+- [Official Registry community showcase](https://github.com/modelcontextprotocol/registry/discussions/1584)
 - [Awesome MCP](https://github.com/AlexMili/Awesome-MCP)
 - [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy)
 - [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
