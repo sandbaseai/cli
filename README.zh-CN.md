@@ -9,6 +9,7 @@
   <p align="center">
     <a href="https://github.com/sandbaseai/cli/releases/latest"><img alt="GitHub Release" src="https://img.shields.io/github/v/release/sandbaseai/cli"></a>
     <a href="https://github.com/sandbaseai/cli/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/sandbaseai/cli/actions/workflows/ci.yml/badge.svg"></a>
+    <a href="https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli"><img alt="官方 MCP Registry" src="https://img.shields.io/badge/MCP%20Registry-%E5%B7%B2%E6%94%B6%E5%BD%95-5a67d8"></a>
     <a href="https://github.com/sandbaseai/cli/blob/main/LICENSE"><img alt="开源许可" src="https://img.shields.io/github/license/sandbaseai/cli"></a>
     <a href="https://github.com/sandbaseai/cli/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/sandbaseai/cli?style=social"></a>
   </p>
@@ -44,6 +45,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — 自托管 Agent Runtime，提供持久会话、沙箱隔离、审批、审计与回放。
 - **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 个可安装 Skills，覆盖研究、社交情报、营销和商业工作流。
+- **[SandBase for Codex](https://github.com/sandbaseai/sandbase-codex-plugin)** — 官方 Codex 插件，封装 SandBase MCP 桥接器和引导式 Agent Skill。
 
 ---
 
@@ -249,6 +251,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 - [SandBase 平台](https://sandbase.ai)
 - [文档](https://www.sandbase.ai/docs/)
+- [官方 MCP Registry 收录](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
+- [中国独立开发者项目程序员版收录](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md)
 - [npm 包](https://www.npmjs.com/package/@sandbaseai/cli)
 - [控制台](https://sandbase.ai/console)
 
