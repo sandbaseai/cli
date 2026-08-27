@@ -137,6 +137,11 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 **[무료 계정 만들기 →](https://sandbase.ai)**
 
+## 실전 가이드
+
+- [Claude Code·Codex: 모델/API 탐색, 가격 확인, 실행](https://github.com/sandbaseai/cli/discussions/51)
+- [공식 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
+
 ## 라이선스
 
 Apache-2.0
