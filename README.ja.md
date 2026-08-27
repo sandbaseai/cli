@@ -234,6 +234,8 @@ SandBase でセットアップ時間を短縮できたら、[リポジトリに 
 
 - [SandBase プラットフォーム](https://sandbase.ai)
 - [ドキュメント](https://www.sandbase.ai/docs/)
+- [Claude Code・Codex向け実践チュートリアル](https://github.com/sandbaseai/cli/discussions/49)
+- [公式 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
 - [npm パッケージ](https://www.npmjs.com/package/@sandbaseai/cli)
 - [ダッシュボード](https://sandbase.ai/console)
 
