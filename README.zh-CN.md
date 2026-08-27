@@ -256,6 +256,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 - [文档](https://www.sandbase.ai/docs/)
 - [官方 MCP Registry 收录](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
 - [官方 Registry 社区技术展示](https://github.com/modelcontextprotocol/registry/discussions/1584)
+- [VaultPlane MCP 目录收录](https://www.vaultplane.com/server/sandbase-cli)
 - [中国独立开发者项目（程序员版）收录](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)
 - [npm 包](https://www.npmjs.com/package/@sandbaseai/cli)
 - [控制台](https://sandbase.ai/console)

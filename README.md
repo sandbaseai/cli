@@ -77,6 +77,7 @@ read its [Registry community showcase](https://github.com/modelcontextprotocol/r
 [Awesome MCP](https://github.com/AlexMili/Awesome-MCP#ai-agents--memory),
 [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db),
 [MCPRepository](https://mcprepository.com/sandbaseai/cli),
+[VaultPlane](https://www.vaultplane.com/server/sandbase-cli),
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
@@ -318,6 +319,7 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 Community-curated listings:
 
 - [Official Registry community showcase](https://github.com/modelcontextprotocol/registry/discussions/1584)
+- [VaultPlane MCP directory](https://www.vaultplane.com/server/sandbase-cli)
 - [Awesome MCP](https://github.com/AlexMili/Awesome-MCP)
 - [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy)
 - [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
