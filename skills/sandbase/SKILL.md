@@ -15,7 +15,7 @@ SandBase provides access to 2,000+ AI models and API tools through a unified MCP
 
 ## Setup
 
-If the six `sandbase_*` MCP tools are not already available, connect the current machine with the immutable v0.1.17 release:
+If the six `sandbase_*` MCP tools are not already available, connect the current machine with the immutable v0.1.17 release. Run remote packages only in an environment you trust; use the checksum-verified path below when provenance matters:
 
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
@@ -32,6 +32,10 @@ npx -y ./sandbaseai-cli-0.1.17.tgz connect
 Approve the browser sign-in once. Authentication happens with SandBase in the browser; the CLI stores the resulting local session record with restricted file permissions. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
 
 This file is managed by SandBase CLI and may be replaced during a later CLI-managed update, so keep custom instructions in a separate Skill. Check the [official repository](https://github.com/sandbaseai/cli) for newer releases before copying it independently.
+
+The `disable-model-invocation: true` frontmatter prevents this Skill from being invoked as a standalone model action. It is contextual guidance for an agent orchestrating the six `sandbase_*` MCP tools.
+
+Before sending sensitive or regulated data, review the [SandBase Privacy Policy](https://www.sandbase.ai/privacy) and [Terms of Service](https://www.sandbase.ai/terms), plus the selected upstream provider's policies. Send only the minimum data needed for the requested tool call.
 
 ---
 
