@@ -73,7 +73,8 @@ Discover the bridge on the [TensorBlock MCP Index](https://tensorblock.co/mcp/se
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
-The Hermes integration is independently listed as beta in
+The Hermes integration is independently listed in the
+[Hermes Atlas](https://github.com/ksimback/hermes-ecosystem) ecosystem catalog and as beta in
 [Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent#integrations--bridges).
 Install its
 verified [`sandbase` Agent Skill from skills.sh](https://www.skills.sh/sandbaseai/cli/sandbase),
@@ -309,6 +310,7 @@ Community-curated listings:
 - [Awesome MCP](https://github.com/AlexMili/Awesome-MCP)
 - [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy)
 - [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
+- [Hermes Atlas](https://github.com/ksimback/hermes-ecosystem)
 - [Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent)
 - [Awesome AI Tools](https://github.com/QAInsights/awesome-ai-tools)
 - [Awesome MCP Server](https://github.com/AIAnytime/Awesome-MCP-Server)
