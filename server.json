@@ -8,6 +8,20 @@
     "url": "https://github.com/sandbaseai/cli",
     "source": "github"
   },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://sandbase.ai/v1/mcp",
+      "headers": [
+        {
+          "name": "Authorization",
+          "description": "Bearer credential issued by the SandBase browser sign-in flow",
+          "isRequired": true,
+          "isSecret": true
+        }
+      ]
+    }
+  ],
   "packages": [
     {
       "registryType": "npm",
