@@ -28,6 +28,16 @@
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+想先验证兼容性、暂不登录也不修改本地配置？运行只读目录命令，确认当前版本支持的 25 个客户端：
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+```
+
+这里使用的是不可变的 GitHub `v0.1.17` 发布包；其 SHA-256 为
+`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`。
+目前 npm 的 `latest` 标签仍是 v0.1.14，因此在可信发布启用完成前，请使用上面的版本化 GitHub 地址。
+
 就这样。你的 Agent 现在能访问一切。
 
 ## SandBase 开源技术栈
