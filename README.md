@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>Give your AI agent superpowers. One command. 2,000+ AI models.</strong>
+    <strong>Give your AI agent superpowers. One command. 2,000+ AI models and APIs.</strong>
   </p>
   <p align="center">
     English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -16,14 +16,14 @@
 </p>
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI connects AI clients to 2,000+ AI models" width="100%">
+  <img src="https://raw.githubusercontent.com/sandbaseai/cli/main/.github/assets/sandbase-cli-hero.webp" alt="SandBase CLI connects AI clients to 2,000+ AI models and APIs" width="100%">
 </p>
 
 ---
 
 Your AI coding assistant is smart, but it's trapped in a box. It can't search the web, check social media, generate images, or access real-time data — unless you wire up each API yourself.
 
-**SandBase changes that.** One command connects your agent to 2,000+ AI models through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
+**SandBase changes that.** One command connects your agent to 2,000+ AI models and APIs through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
 
 Building directly over HTTP instead of MCP? Start with the [SandBase API quickstart](https://www.sandbase.ai/docs/getting-started/)
 or compare the unified [LLM, image, and video API](https://blog.sandbase.ai/unified-ai-api-llm-image-video-2026/)
@@ -222,7 +222,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 ```
 ┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
 │   Your Agent    │  MCP    │  Local Bridge │  HTTPS  │    SandBase API     │
-│  (Cursor, etc.) │────────▶│  (on-demand)  │────────▶│  2,000+ AI models  │
+│  (Cursor, etc.) │────────▶│  (on-demand)  │────────▶│ 2,000+ models/APIs │
 │                 │◀────────│               │◀────────│                    │
 └─────────────────┘         └───────────────┘         └────────────────────┘
 ```
@@ -249,7 +249,7 @@ sandbase catalog --json               # List all supported clients
 
 | Tool | Purpose |
 |------|---------|
-| `sandbase_discover` | Search all 2,000+ available AI models |
+| `sandbase_discover` | Search all 2,000+ available AI models and APIs |
 | `sandbase_inspect` | Get input schema, pricing, and ready-to-use template |
 | `sandbase_run` | Execute a model or API endpoint |
 | `sandbase_run_get` | Poll status/result of an async run (video gen, etc.) |

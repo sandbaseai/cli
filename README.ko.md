@@ -111,7 +111,7 @@ sandbase catalog --json               # 지원 클라이언트 목록
 
 | 도구 | 용도 |
 |------|------|
-| `sandbase_discover` | 2,000+ AI 모델 검색 |
+| `sandbase_discover` | 2,000+ AI 모델 및 API 검색 |
 | `sandbase_inspect` | 입력 스키마, 가격, 실행 템플릿 확인 |
 | `sandbase_run` | 모델 또는 API 실행 |
 | `sandbase_run_get` | 비동기 작업 상태/결과 조회 |

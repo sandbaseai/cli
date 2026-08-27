@@ -1,7 +1,7 @@
 # Install SandBase CLI
 
 SandBase CLI is an open-source onboarding tool and local stdio MCP bridge. It
-connects supported AI clients to the SandBase catalog of 2,000+ models without
+connects supported AI clients to the SandBase catalog of 2,000+ models and APIs without
 requiring separate provider API keys.
 
 ## Requirements

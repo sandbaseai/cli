@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>让你的 AI 助手拥有超能力。一行命令，2,000+ AI 模型。</strong>
+    <strong>让你的 AI 助手拥有超能力。一行命令，2,000+ AI 模型与 API。</strong>
   </p>
   <p align="center">
     <a href="./README.md">English</a> | 中文 | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -23,7 +23,7 @@
 
 你的 AI 编程助手很聪明，但它被困在一个盒子里。它不能搜索网页、查看社交媒体、生成图片、或获取实时数据 — 除非你自己逐个对接每个 API。
 
-**SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型。不用管理 API Key，不用折腾配置。
+**SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型与 API。不用管理 API Key，不用折腾配置。
 
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
@@ -175,8 +175,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 ```
 ┌─────────────────┐         ┌───────────────┐         ┌────────────────────┐
 │   你的 Agent    │  MCP    │  本地 Bridge  │  HTTPS  │    SandBase API     │
-│  (Cursor 等)    │────────▶│  (按需启动)   │────────▶│  2,000+ AI 模型    │
-│                 │◀────────│               │◀────────│  和 API             │
+│  (Cursor 等)    │────────▶│  (按需启动)   │────────▶│ 2,000+ 模型/API    │
+│                 │◀────────│               │◀────────│                    │
 └─────────────────┘         └───────────────┘         └────────────────────┘
 ```
 
@@ -202,7 +202,7 @@ sandbase catalog --json               # 列出所有支持的客户端
 
 | 工具 | 用途 |
 |------|------|
-| `sandbase_discover` | 搜索全部 2,000+ 可用 AI 模型 |
+| `sandbase_discover` | 搜索全部 2,000+ 可用 AI 模型与 API |
 | `sandbase_inspect` | 获取输入参数、定价和调用模板 |
 | `sandbase_run` | 执行模型或 API |
 | `sandbase_run_get` | 轮询异步任务状态/结果（视频生成等） |
