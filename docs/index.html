@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SandBase CLI | One MCP bridge to 2,000+ AI models and APIs</title>
+  <meta name="description" content="Connect Claude, Codex, Cursor, VS Code, and 21 more AI clients to 2,000+ models and APIs through six MCP tools.">
+  <meta name="theme-color" content="#0b7a53" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#07110e" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="https://sandbaseai.github.io/cli/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="SandBase CLI | One MCP bridge to 2,000+ AI models and APIs">
+  <meta property="og:description" content="Discover, compare, run, and track AI models from the clients you already use.">
+  <meta property="og:url" content="https://sandbaseai.github.io/cli/">
+  <meta property="og:image" content="https://sandbaseai.github.io/cli/assets/sandbase-cli-hero.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/sandbase-cli-icon.png">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f7f9f7;
+      --surface: #ffffff;
+      --surface-2: #edf4f0;
+      --text: #101713;
+      --muted: #526158;
+      --line: #cbd7d0;
+      --accent: #087f5b;
+      --accent-strong: #056044;
+      --accent-text: #ffffff;
+      --code: #0b1511;
+      --code-text: #d7fbe9;
+      --shadow: 0 20px 55px rgb(28 57 43 / 0.12);
+      --radius: 14px;
+      --max: 1180px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #07110e;
+        --surface: #0c1914;
+        --surface-2: #10251d;
+        --text: #ecf6f0;
+        --muted: #9eb3a8;
+        --line: #284036;
+        --accent: #32c48d;
+        --accent-strong: #67dcae;
+        --accent-text: #04110c;
+        --code: #030806;
+        --code-text: #bdf4da;
+        --shadow: 0 24px 64px rgb(0 0 0 / 0.32);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      text-rendering: optimizeLegibility;
+    }
+    a { color: inherit; }
+    img { display: block; max-width: 100%; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .shell { width: min(calc(100% - 40px), var(--max)); margin-inline: auto; }
+    .skip { position: absolute; left: -9999px; top: 8px; z-index: 9; }
+    .skip:focus { left: 12px; padding: 8px 12px; background: var(--surface); border: 2px solid var(--accent); }
+
+    nav {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 750; text-decoration: none; }
+    .brand img { width: 30px; height: 30px; border-radius: 8px; }
+    .nav-links { display: flex; align-items: center; gap: 24px; white-space: nowrap; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.93rem; font-weight: 650; }
+    .nav-links a:hover, .nav-links a:focus-visible { color: var(--accent); }
+
+    .hero {
+      min-height: calc(100dvh - 69px);
+      display: grid;
+      grid-template-columns: minmax(0, 0.86fr) minmax(420px, 1.14fr);
+      align-items: center;
+      gap: clamp(40px, 6vw, 88px);
+      padding-block: clamp(56px, 8vh, 90px);
+    }
+    .eyebrow { margin: 0 0 18px; color: var(--accent); font-size: 0.78rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { max-width: 760px; margin-bottom: 22px; font-size: clamp(3rem, 5vw, 4.2rem); line-height: 0.98; letter-spacing: -0.06em; }
+    h1 span { color: var(--accent); }
+    .lede { max-width: 540px; margin-bottom: 28px; color: var(--muted); font-size: clamp(1.05rem, 1.5vw, 1.25rem); }
+    .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+    .button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 10px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); font-weight: 750; text-decoration: none; white-space: nowrap; }
+    .button.primary { border-color: var(--accent); background: var(--accent); color: var(--accent-text); }
+    .button:hover, .button:focus-visible { border-color: var(--accent); transform: translateY(-1px); }
+    .hero-media { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: #030713; box-shadow: var(--shadow); }
+    .hero-media img { width: 100%; height: auto; aspect-ratio: 3 / 1; object-fit: cover; }
+
+    section { padding-block: clamp(72px, 9vw, 120px); }
+    .intro { max-width: 760px; margin-bottom: 54px; }
+    h2 { margin-bottom: 18px; font-size: clamp(2.2rem, 4.5vw, 4.2rem); line-height: 1.04; letter-spacing: -0.045em; }
+    .intro p { color: var(--muted); font-size: 1.08rem; }
+
+    .workflow { display: grid; grid-template-columns: minmax(250px, 0.7fr) minmax(0, 1.3fr); gap: clamp(36px, 8vw, 110px); align-items: start; }
+    .workflow-copy { position: sticky; top: 28px; }
+    .steps { display: grid; gap: 30px; counter-reset: step; }
+    .step { counter-increment: step; display: grid; grid-template-columns: 44px 1fr; gap: 18px; padding-bottom: 30px; border-bottom: 1px solid var(--line); }
+    .step::before { content: counter(step, decimal-leading-zero); color: var(--accent); font-family: ui-monospace, monospace; font-weight: 800; }
+    .step h3 { margin-bottom: 7px; font-size: 1.25rem; }
+    .step p { margin: 0; color: var(--muted); }
+
+    .command { margin: 0; padding: 24px; overflow-x: auto; border-radius: var(--radius); background: var(--code); color: var(--code-text); font-size: clamp(0.78rem, 1.3vw, 0.95rem); box-shadow: var(--shadow); }
+    .command .prompt { color: var(--accent-strong); }
+    .install-grid { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 22px; align-items: stretch; }
+    .client-panel { padding: 28px; border-radius: var(--radius); background: var(--surface-2); }
+    .client-panel strong { display: block; margin-bottom: 12px; font-size: 2.6rem; line-height: 1; letter-spacing: -0.05em; }
+    .client-panel p { margin: 0; color: var(--muted); }
+
+    .tools { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 24px; }
+    .tool-primary { padding: clamp(28px, 5vw, 58px); border-radius: var(--radius); background: var(--accent); color: var(--accent-text); }
+    .tool-primary h3 { max-width: 430px; font-size: clamp(2rem, 4vw, 3.4rem); line-height: 1.04; letter-spacing: -0.04em; }
+    .tool-primary code { display: inline-block; margin-top: 26px; padding: 6px 9px; border-radius: 7px; background: rgb(0 0 0 / 0.16); }
+    .tool-list { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .tool { padding: 22px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+    .tool code { color: var(--accent); font-weight: 800; }
+    .tool p { margin: 9px 0 0; color: var(--muted); font-size: 0.91rem; }
+
+    .proof { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(30px, 8vw, 110px); align-items: end; }
+    .proof-links { display: grid; gap: 14px; }
+    .proof-links a { display: flex; justify-content: space-between; gap: 20px; padding: 18px 0; border-bottom: 1px solid var(--line); color: var(--text); font-weight: 720; text-decoration: none; }
+    .proof-links a::after { content: "Open"; color: var(--accent); font-size: 0.85rem; }
+    .proof-links a:hover, .proof-links a:focus-visible { color: var(--accent); }
+
+    .final { padding: clamp(52px, 8vw, 92px); border-radius: var(--radius); background: var(--surface-2); text-align: center; }
+    .final h2 { max-width: 790px; margin-inline: auto; }
+    .final p { color: var(--muted); }
+    .final .button { margin-top: 12px; }
+    footer { display: flex; justify-content: space-between; gap: 20px; padding-block: 34px; color: var(--muted); font-size: 0.88rem; }
+    footer p { margin: 0; }
+
+    :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent), transparent 35%); outline-offset: 3px; }
+
+    @media (max-width: 820px) {
+      .shell { width: min(calc(100% - 28px), var(--max)); }
+      .nav-links a:not(:last-child) { display: none; }
+      .hero { min-height: auto; grid-template-columns: 1fr; padding-block: 54px 70px; }
+      h1 { font-size: clamp(3rem, 14vw, 4.7rem); }
+      .hero-media { order: -1; }
+      .workflow, .install-grid, .tools, .proof { grid-template-columns: 1fr; }
+      .workflow-copy { position: static; }
+      .tool-list { grid-template-columns: 1fr; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .button { transition: transform 160ms ease, border-color 160ms ease; }
+      .hero-copy { animation: arrive 520ms ease-out both; }
+      .hero-media { animation: arrive 620ms 90ms ease-out both; }
+      @keyframes arrive { from { opacity: 0; transform: translateY(12px); } }
+    }
+  </style>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"SoftwareApplication","name":"SandBase CLI","applicationCategory":"DeveloperApplication","operatingSystem":"macOS, Linux, Windows","url":"https://sandbaseai.github.io/cli/","downloadUrl":"https://github.com/sandbaseai/cli/releases/latest","license":"https://www.apache.org/licenses/LICENSE-2.0","description":"An open-source MCP bridge for 25 AI clients and 2,000+ AI models and APIs."}
+  </script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="shell">
+    <nav aria-label="Primary navigation">
+      <a class="brand" href="https://github.com/sandbaseai/cli"><img src="assets/sandbase-cli-icon.png" alt="">SandBase CLI</a>
+      <div class="nav-links">
+        <a href="#workflow">Workflow</a>
+        <a href="#tools">MCP tools</a>
+        <a href="https://github.com/sandbaseai/cli">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="hero shell">
+      <div class="hero-copy">
+        <p class="eyebrow">Open source MCP bridge</p>
+        <h1>One bridge. <span>2,000+ models.</span></h1>
+        <p class="lede">Discover, compare, run, and track AI models from the clients you already use.</p>
+        <div class="actions">
+          <a class="button primary" href="#install">Install the bridge</a>
+          <a class="button" href="https://github.com/sandbaseai/cli">View source</a>
+        </div>
+      </div>
+      <figure class="hero-media">
+        <img src="assets/sandbase-cli-hero.webp" alt="SandBase CLI connecting a command line interface to image, audio, data, search, and video AI services" width="2172" height="724">
+      </figure>
+    </div>
+
+    <section id="workflow" class="shell workflow">
+      <div class="workflow-copy">
+        <p class="eyebrow">A complete model workflow</p>
+        <h2>From question to result, without leaving your agent.</h2>
+      </div>
+      <div class="steps">
+        <article class="step"><div><h3>Discover</h3><p>Search a catalog of more than 2,000 models and APIs by task, provider, or capability.</p></div></article>
+        <article class="step"><div><h3>Inspect</h3><p>Read schemas, pricing, and execution requirements before spending credits.</p></div></article>
+        <article class="step"><div><h3>Run</h3><p>Execute text, image, video, audio, and multimodal workloads through one interface.</p></div></article>
+        <article class="step"><div><h3>Track</h3><p>Poll asynchronous jobs and review recent cost and balance from the same client.</p></div></article>
+      </div>
+    </section>
+
+    <section id="install" class="shell">
+      <div class="intro">
+        <p class="eyebrow">One command setup</p>
+        <h2>Connect the tools you already use.</h2>
+        <p>The interactive setup writes the right MCP configuration for your selected client.</p>
+      </div>
+      <div class="install-grid">
+        <pre class="command"><code><span class="prompt">$</span> npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect</code></pre>
+        <aside class="client-panel"><strong>25</strong><p>AI client targets, including Claude, Codex, Cursor, VS Code, Windsurf, and Gemini CLI.</p></aside>
+      </div>
+    </section>
+
+    <section id="tools" class="shell">
+      <div class="intro">
+        <p class="eyebrow">Six MCP tools</p>
+        <h2>A compact interface for a large model catalog.</h2>
+      </div>
+      <div class="tools">
+        <article class="tool-primary"><h3>Search first. Inspect before you run.</h3><code>model_search</code></article>
+        <div class="tool-list">
+          <article class="tool"><code>model_schema</code><p>Inputs, outputs, pricing, and requirements.</p></article>
+          <article class="tool"><code>model_run</code><p>Execute a selected model or API.</p></article>
+          <article class="tool"><code>prediction_poll</code><p>Follow asynchronous work to completion.</p></article>
+          <article class="tool"><code>usage_recent</code><p>Review recent usage and spend.</p></article>
+          <article class="tool"><code>balance_get</code><p>Check available account balance.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell proof">
+      <div>
+        <p class="eyebrow">Verify the project</p>
+        <h2>Public code. Public registry.</h2>
+        <p>Apache-2.0 licensed and independently discoverable across the MCP ecosystem.</p>
+      </div>
+      <div class="proof-links">
+        <a href="https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17">Official MCP Registry</a>
+        <a href="https://github.com/sandbaseai/cli">Source and releases</a>
+        <a href="https://github.com/modelcontextprotocol/registry/discussions/1584">Registry showcase</a>
+        <a href="https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db">Independent directory profile</a>
+      </div>
+    </section>
+
+    <section class="shell">
+      <div class="final">
+        <h2>Give your agent a wider model toolbox.</h2>
+        <p>Install SandBase CLI and choose your client.</p>
+        <a class="button primary" href="https://github.com/sandbaseai/cli#quick-start">Start with SandBase CLI</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="shell">
+    <p>SandBase CLI is open source under Apache-2.0.</p>
+    <p><a href="https://github.com/sandbaseai/cli">GitHub</a> · <a href="https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/">Guide</a></p>
+  </footer>
+</body>
+</html>
