@@ -67,6 +67,7 @@ AI agents and automated installers can use the concise
 
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — self-hosted agent runtime with persistent sessions, sandbox isolation, approvals, audit, and replay.
 - **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 installable Skills for research, social intelligence, marketing, and business workflows.
+- **[SandBase for Codex](https://github.com/sandbaseai/sandbase-codex-plugin)** — official Codex plugin packaging the SandBase MCP bridge and guided Agent Skill; its required HOL security scan passes on `main`.
 
 Discover the bridge on the [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db),
 [MCPRepository](https://mcprepository.com/sandbaseai/cli),
@@ -296,6 +297,7 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 - [CLI setup guide](https://www.sandbase.ai/docs/setup/cli)
 - CLI deep dive: [English](https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/) · [中文](https://blog.sandbase.ai/zh-CN/sandbase-cli-mcp-bridge-25-ai-clients/)
 - [npm Package](https://www.npmjs.com/package/@sandbaseai/cli)
+- [Official Codex Plugin](https://github.com/sandbaseai/sandbase-codex-plugin)
 - [Dashboard](https://sandbase.ai/console)
 
 ## Community
