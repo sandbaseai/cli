@@ -135,6 +135,11 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 **[Criar conta grátis →](https://sandbase.ai)**
 
+## Guia prático
+
+- [Claude Code e Codex: descobrir, conferir o preço e executar](https://github.com/sandbaseai/cli/discussions/54)
+- [Registro MCP oficial](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
+
 ## Licença
 
 Apache-2.0
