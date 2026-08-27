@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sandbaseai.github.io/cli/sitemap.xml

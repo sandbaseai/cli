@@ -1,0 +1,22 @@
+# SandBase CLI
+
+> Open-source CLI and local MCP bridge connecting 25 AI clients to 2,000+ AI models and APIs.
+
+SandBase CLI provides six MCP tools for model discovery, schema and pricing inspection, execution, asynchronous polling, recent usage, and account balance. The CLI is Apache-2.0 licensed. Hosted model and API calls can consume SandBase credits.
+
+## Official links
+
+- [Source repository](https://github.com/sandbaseai/cli)
+- [Project page](https://sandbaseai.github.io/cli/)
+- [Installation instructions](https://github.com/sandbaseai/cli/blob/main/llms-install.md)
+- [Latest verified release](https://github.com/sandbaseai/cli/releases/tag/v0.1.17)
+- [Official MCP Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
+- [Apache-2.0 license](https://github.com/sandbaseai/cli/blob/main/LICENSE)
+
+## Install
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+```
+
+For reproducible installation and the published SHA-256 checksum, follow the installation instructions linked above.
