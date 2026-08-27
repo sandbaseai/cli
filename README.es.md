@@ -75,6 +75,17 @@ Agent → SandBase Firecrawl → Datos estructurados
 | OpenCode, Qwen Code, Kimi CLI | |
 | Hermes, OpenClaw | |
 
+¿Quieres comprobar la compatibilidad antes de iniciar sesión o modificar la configuración local? Ejecuta el catálogo de solo lectura para verificar los 25 clientes compatibles:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+```
+
+Este comando usa el archivo inmutable de la versión `v0.1.17` en GitHub. SHA-256:
+`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`
+
+La etiqueta `latest` de npm todavía apunta a v0.1.14; hasta que se habilite Trusted Publishing, usa la URL versionada de GitHub anterior.
+
 ```sh
 # Conectar todos los clientes detectados
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
