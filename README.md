@@ -298,6 +298,8 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 
 Community-curated listings:
 
+- [Awesome MCP](https://github.com/AlexMili/Awesome-MCP)
+- [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy)
 - [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
 - [Awesome AI Tools](https://github.com/QAInsights/awesome-ai-tools)
 - [Awesome MCP Server](https://github.com/AIAnytime/Awesome-MCP-Server)
