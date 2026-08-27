@@ -306,6 +306,7 @@ If SandBase saves you setup time, [star the repository](https://github.com/sandb
 - [Documentation](https://www.sandbase.ai/docs/)
 - [CLI setup guide](https://www.sandbase.ai/docs/setup/cli)
 - CLI deep dive: [English](https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/) · [中文](https://blog.sandbase.ai/zh-CN/sandbase-cli-mcp-bridge-25-ai-clients/)
+- Six-tool practical workflow: [English](https://github.com/sandbaseai/cli/discussions/47) · [中文](https://github.com/sandbaseai/cli/discussions/48)
 - [npm Package](https://www.npmjs.com/package/@sandbaseai/cli)
 - [Official Codex Plugin](https://github.com/sandbaseai/sandbase-codex-plugin)
 - [Dashboard](https://sandbase.ai/console)
