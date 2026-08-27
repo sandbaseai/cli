@@ -2,7 +2,7 @@
   "name": "@sandbaseai/cli",
   "version": "0.1.17",
   "mcpName": "io.github.sandbaseai/cli",
-  "description": "Connect 2,000+ AI models to Cursor, Claude Code, Codex, Windsurf, and other MCP clients",
+  "description": "Connect 25 AI clients—including Claude Code, Codex, Cursor, Hermes, and OpenClaw—to 2,000+ models through a local MCP server",
   "type": "module",
   "bin": {
     "sandbase": "dist/cli.js"
@@ -49,6 +49,11 @@
     "codex",
     "windsurf",
     "gemini-cli",
+    "opencode",
+    "openclaw",
+    "hermes-agent",
+    "model-routing",
+    "multimodal-ai",
     "developer-tools",
     "automation"
   ],
