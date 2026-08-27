@@ -24,3 +24,32 @@ test("package declares the native Skill at the standard registry path", async ()
   assert.match(skill, /sandbase-cli-managed: sandbase/);
   assert.match(skill, /^disable-model-invocation: true$/m);
 });
+
+test("MCP Registry metadata exposes the authenticated remote endpoint", async () => {
+  const manifest = JSON.parse(await readFile(join(process.cwd(), "server.json"), "utf8")) as {
+    name?: string;
+    version?: string;
+    remotes?: Array<{
+      type?: string;
+      url?: string;
+      headers?: Array<{ name?: string; isRequired?: boolean; isSecret?: boolean }>;
+    }>;
+  };
+
+  assert.equal(manifest.name, "io.github.sandbaseai/cli");
+  assert.equal(manifest.version, "0.1.17");
+  assert.deepEqual(manifest.remotes, [
+    {
+      type: "streamable-http",
+      url: "https://sandbase.ai/v1/mcp",
+      headers: [
+        {
+          name: "Authorization",
+          description: "Bearer credential issued by the SandBase browser sign-in flow",
+          isRequired: true,
+          isSecret: true,
+        },
+      ],
+    },
+  ]);
+});

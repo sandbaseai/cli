@@ -7,9 +7,14 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Published npm version to register (without v)
+        description: Server version to register (without v)
         required: true
         type: string
+      remote_only:
+        description: Publish only the authenticated remote MCP endpoint without npm package metadata
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -26,7 +31,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
@@ -36,6 +41,7 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.workflow_run.head_branch }}
           MANUAL_VERSION: ${{ inputs.version }}
+          REMOTE_ONLY: ${{ inputs.remote_only }}
         run: |
           set -euo pipefail
           version="${RELEASE_TAG#v}"
@@ -46,37 +52,49 @@ jobs:
             echo "Invalid semantic version: $version" >&2
             exit 1
           fi
-          npm_version=""
-          for attempt in {1..30}; do
-            npm_version="$(npm view "@sandbaseai/cli@$version" version 2>/dev/null || true)"
-            if [ "$npm_version" = "$version" ]; then
-              break
+          if [ "$REMOTE_ONLY" = "true" ]; then
+            jq --arg version "$version" \
+              '.version = $version | del(.packages)' \
+              server.json > server.tmp.json
+          else
+            npm_version=""
+            for attempt in {1..30}; do
+              npm_version="$(npm view "@sandbaseai/cli@$version" version 2>/dev/null || true)"
+              if [ "$npm_version" = "$version" ]; then
+                break
+              fi
+              echo "Waiting for @sandbaseai/cli@$version to become available (attempt $attempt/30)"
+              sleep 10
+            done
+            if [ "$npm_version" != "$version" ]; then
+              echo "@sandbaseai/cli@$version is not available on npm" >&2
+              exit 1
             fi
-            echo "Waiting for @sandbaseai/cli@$version to become available (attempt $attempt/30)"
-            sleep 10
-          done
-          if [ "$npm_version" != "$version" ]; then
-            echo "@sandbaseai/cli@$version is not available on npm" >&2
-            exit 1
+            npm_mcp_name="$(npm view "@sandbaseai/cli@$version" mcpName)"
+            if [ "$npm_mcp_name" != "io.github.sandbaseai/cli" ]; then
+              echo "Published package does not contain the expected mcpName" >&2
+              exit 1
+            fi
+            jq --arg version "$version" \
+              '.version = $version | .packages |= map(.version = $version)' \
+              server.json > server.tmp.json
           fi
-          npm_mcp_name="$(npm view "@sandbaseai/cli@$version" mcpName)"
-          if [ "$npm_mcp_name" != "io.github.sandbaseai/cli" ]; then
-            echo "Published package does not contain the expected mcpName" >&2
-            exit 1
-          fi
-          jq --arg version "$version" \
-            '.version = $version | .packages |= map(.version = $version)' \
-            server.json > server.tmp.json
           mv server.tmp.json server.json
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Install MCP publisher
+        env:
+          MCP_PUBLISHER_VERSION: v1.7.9
+          MCP_PUBLISHER_SHA256: ab128162b0616090b47cf245afe0a23f3ef08936fdce19074f5ba0a4469281ac
         shell: bash
         run: |
           set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
           curl -fsSL \
-            "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" \
-            | tar xz mcp-publisher
+            "https://github.com/modelcontextprotocol/registry/releases/download/$MCP_PUBLISHER_VERSION/$archive" \
+            -o "$archive"
+          printf '%s  %s\n' "$MCP_PUBLISHER_SHA256" "$archive" | sha256sum -c -
+          tar xzf "$archive" mcp-publisher
 
       - name: Validate registry metadata
         run: ./mcp-publisher validate
@@ -95,5 +113,9 @@ jobs:
           set -euo pipefail
           response="$(curl -fsSL 'https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli')"
           jq -e --arg version "$VERSION" \
-            '.servers | any(.server.name == "io.github.sandbaseai/cli" and .server.version == $version)' \
+            '.servers | any(
+              .server.name == "io.github.sandbaseai/cli"
+              and .server.version == $version
+              and ((.server.remotes // []) | any(.url == "https://sandbase.ai/v1/mcp"))
+            )' \
             <<< "$response"
