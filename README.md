@@ -301,6 +301,7 @@ Community-curated listings:
 - [Awesome MCP](https://github.com/AlexMili/Awesome-MCP)
 - [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy)
 - [Awesome Gemini CLI](https://github.com/Piebald-AI/awesome-gemini-cli)
+- [Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent)
 - [Awesome AI Tools](https://github.com/QAInsights/awesome-ai-tools)
 - [Awesome MCP Server](https://github.com/AIAnytime/Awesome-MCP-Server)
 
