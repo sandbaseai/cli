@@ -71,7 +71,10 @@ AI agents and automated installers can use the concise
 Discover the bridge on [MCPRepository](https://mcprepository.com/sandbaseai/cli),
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
-[Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators). Install its
+[Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
+The Hermes integration is independently listed as beta in
+[Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent#integrations--bridges).
+Install its
 verified [`sandbase` Agent Skill from skills.sh](https://www.skills.sh/sandbaseai/cli/sandbase),
 the [`sandbaseai/cli/sandbase` listing on skills.re](https://skills.re/skills/sandbaseai/cli/sandbase),
 the [93/100 verified SandBase listing on vSkill](https://verified-skill.com/skills/sandbaseai/cli/sandbase),
