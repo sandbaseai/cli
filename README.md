@@ -68,7 +68,8 @@ AI agents and automated installers can use the concise
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — self-hosted agent runtime with persistent sessions, sandbox isolation, approvals, audit, and replay.
 - **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 installable Skills for research, social intelligence, marketing, and business workflows.
 
-Discover the bridge on [MCPRepository](https://mcprepository.com/sandbaseai/cli),
+Discover the bridge on the [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db),
+[MCPRepository](https://mcprepository.com/sandbaseai/cli),
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
