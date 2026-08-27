@@ -138,6 +138,11 @@ Agent → SandBase GPT-4o → 分析完了
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
+このコマンドは変更されない GitHub `v0.1.17` リリースアーカイブを使用します。SHA-256：
+`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`
+
+npm の `latest` は現在も v0.1.14 のため、Trusted Publishing が有効になるまでは上記のバージョン固定 GitHub URL を使用してください。
+
 ```sh
 # 検出されたすべてのクライアントを一度に接続
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect

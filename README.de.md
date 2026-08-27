@@ -63,6 +63,17 @@ Agent → SandBase Flux → 1024x1024 PNG
 | Gemini CLI, Amp, Warp | |
 | OpenCode, Qwen Code, Kimi CLI | |
 
+Möchtest du die Kompatibilität prüfen, bevor du dich anmeldest oder lokale Konfigurationen änderst? Mit dem schreibgeschützten Katalogbefehl kannst du die 25 unterstützten Clients überprüfen:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+```
+
+Der Befehl verwendet das unveränderliche GitHub-Release-Archiv `v0.1.17`. SHA-256-Prüfsumme:
+`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`
+
+Das npm-Tag `latest` verweist derzeit noch auf v0.1.14. Verwende bis zur Aktivierung von Trusted Publishing die oben angegebene versionierte GitHub-URL.
+
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
