@@ -28,6 +28,13 @@ Dein KI-Coding-Assistent ist schlau, aber in einer Box gefangen. Er kann nicht i
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+Oder installiere die offizielle Homebrew-Formel unter macOS oder Linux:
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
 Das war's. Dein Agent hat jetzt Zugriff auf alles.
 
 ## SandBase Open-Source-Stack
@@ -64,6 +71,7 @@ Katalog, Preise, Latenz und Verfügbarkeit können sich ändern. Verwende daher 
 | Kiro IDE, Kiro CLI, Windsurf | Claude Desktop |
 | Gemini CLI, Amp, Warp | |
 | OpenCode, Qwen Code, Kimi CLI | |
+| Hermes, OpenClaw | |
 
 Möchtest du die Kompatibilität prüfen, bevor du dich anmeldest oder lokale Konfigurationen änderst? Mit dem schreibgeschützten Katalogbefehl kannst du die 25 unterstützten Clients überprüfen:
 

@@ -28,6 +28,13 @@ Seu assistente de codificação IA é inteligente, mas está preso em uma caixa.
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+Ou instale a fórmula oficial do Homebrew no macOS ou Linux:
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
 É isso. Seu agente agora tem acesso a tudo.
 
 ## Stack open source da SandBase

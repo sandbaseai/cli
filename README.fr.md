@@ -28,6 +28,13 @@ Votre assistant de codage IA est intelligent, mais il est enfermé dans une boî
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+Ou installez la formule Homebrew officielle sur macOS ou Linux :
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
 C'est tout. Votre agent a maintenant accès à tout.
 
 ## Stack open source SandBase
@@ -64,6 +71,7 @@ Le catalogue, les prix, la latence et la disponibilité peuvent évoluer. Utilis
 | Kiro IDE, Kiro CLI, Windsurf | Claude Desktop |
 | Gemini CLI, Amp, Warp | |
 | OpenCode, Qwen Code, Kimi CLI | |
+| Hermes, OpenClaw | |
 
 Vous voulez vérifier la compatibilité avant de vous connecter ou de modifier la configuration locale ? Exécutez le catalogue en lecture seule pour confirmer les 25 clients pris en charge :
 

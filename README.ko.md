@@ -28,6 +28,13 @@ AI 코딩 어시스턴트는 똑똑하지만 상자 안에 갇혀 있습니다. 
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+macOS 또는 Linux에서는 공식 Homebrew Formula로 설치할 수도 있습니다.
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
 이게 전부입니다. 에이전트가 이제 모든 것에 접근할 수 있습니다.
 
 ## SandBase 오픈 소스 스택

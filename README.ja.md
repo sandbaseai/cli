@@ -28,6 +28,13 @@
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+macOS または Linux では、公式 Homebrew Formula も利用できます：
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
 これだけ。あなたのエージェントはすべてにアクセスできるようになりました。
 
 ## SandBase オープンソーススタック
