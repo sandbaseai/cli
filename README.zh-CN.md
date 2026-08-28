@@ -51,7 +51,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 项目已进入[官方 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)，并被[中国独立开发者项目（程序员版）](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)独立收录。
 
-查看[官方项目页](https://sandbaseai.github.io/cli/)和[中文工作流指南](https://github.com/sandbaseai/cli/discussions/48)。如果 SandBase CLI 对你有帮助，请[给仓库一个 Star](https://github.com/sandbaseai/cli)，让更多开发者发现它。
+查看[中文项目页](https://sandbaseai.github.io/cli/zh/)和[中文工作流指南](https://github.com/sandbaseai/cli/discussions/48)。如果 SandBase CLI 对你有帮助，请[给仓库一个 Star](https://github.com/sandbaseai/cli)，让更多开发者发现它。
 
 就这样。你的 Agent 现在能访问一切。
 
