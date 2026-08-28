@@ -37,37 +37,22 @@ Eso es todo. Tu agente ahora tiene acceso a todo.
 
 ---
 
-## Míralo en Acción
+## Flujo de agente verificable
 
-### "Busca tendencias sobre IA en Twitter"
+Después de conectar, pide a tu agente que siga esta secuencia auditable:
 
-```
-Agent → SandBase Twitter API → Top 10 posts
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-...
-```
+1. Usa `sandbase_discover` para encontrar modelos o API adecuados.
+2. Usa `sandbase_inspect` para revisar el esquema de entrada, los precios actuales y los requisitos.
+3. Confirma el endpoint, los parámetros y el posible costo antes de llamar a `sandbase_run`.
+4. Para tareas asíncronas, consulta `sandbase_run_get` con el `run_id` devuelto.
+5. Usa `sandbase_runs` para revisar el estado y el costo registrado de ejecuciones recientes.
+6. Usa `sandbase_account` para comprobar el saldo actual.
 
-### "Genera un logo minimalista para 'NightOwl'"
+Empieza, por ejemplo, con una solicitud de descubrimiento no facturable:
 
-```
-Agent → SandBase Flux → 1024x1024 PNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Generado: nightowl-logo.png
-  Costo: $0.003 | Tiempo: 2.1s
-```
+> Encuentra modelos de imagen para una ilustración cuadrada de producto. Compara las entradas y los precios actuales de los dos mejores candidatos. No ejecutes ninguno todavía.
 
-### "Extrae la tabla de precios de linear.app"
-
-```
-Agent → SandBase Firecrawl → Datos estructurados
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 3 planes extraídos:
-  Free: $0/mes — 250 issues
-  Standard: $8/usuario/mes — Ilimitado
-  Plus: $14/usuario/mes — Funciones avanzadas
-```
+El catálogo, los precios, la latencia y la disponibilidad pueden cambiar. Usa la respuesta actual de las herramientas en lugar de valores de ejemplo estáticos.
 
 ---
 

@@ -37,37 +37,22 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ---
 
-## 사용 예시
+## 검증 가능한 에이전트 워크플로
 
-### "AI 에이전트에 대한 Twitter 트렌드 가져와"
+연결 후 에이전트가 다음과 같이 확인 가능한 순서를 따르도록 요청하세요.
 
-```
-Agent → SandBase Twitter API → 상위 10개 게시물
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-...
-```
+1. `sandbase_discover`로 작업에 맞는 모델이나 API를 찾습니다.
+2. `sandbase_inspect`로 입력 스키마, 현재 가격, 실행 요구사항을 확인합니다.
+3. `sandbase_run`을 호출하기 전에 endpoint, 파라미터, 예상 비용을 확인합니다.
+4. 비동기 작업은 반환된 `run_id`로 `sandbase_run_get`을 조회합니다.
+5. `sandbase_runs`로 최근 실행 상태와 기록된 비용을 검토합니다.
+6. `sandbase_account`로 현재 계정 잔액을 확인합니다.
 
-### "'NightOwl'이라는 스타트업 로고 생성해줘"
+예를 들어 과금되지 않는 검색 요청부터 시작하세요.
 
-```
-Agent → SandBase Flux 이미지 생성 → 1024x1024 PNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 생성 완료: nightowl-logo.png
-  비용: $0.003 | 시간: 2.1초
-```
+> 정사각형 제품 일러스트에 적합한 이미지 모델을 찾고, 상위 두 후보의 필수 입력과 현재 가격을 비교해 줘. 아직 모델을 실행하지 마.
 
-### "linear.app 가격표를 스크래핑해서 정리해줘"
-
-```
-Agent → SandBase Firecrawl → 구조화된 데이터
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 3개 요금제 추출:
-  Free: $0/월 — 250개 이슈
-  Standard: $8/사용자/월 — 무제한
-  Plus: $14/사용자/월 — 고급 분석
-```
+카탈로그, 가격, 지연 시간, 가용성은 바뀔 수 있습니다. 고정된 예시 값 대신 현재 세션의 도구 응답을 사용하세요.
 
 ---
 

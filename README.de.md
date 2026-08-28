@@ -37,26 +37,22 @@ Das war's. Dein Agent hat jetzt Zugriff auf alles.
 
 ---
 
-## In Aktion
+## Verifizierbarer Agent-Workflow
 
-### "Suche nach KI-Trends auf Twitter"
+Bitte deinen Agenten nach dem Verbinden, diese nachvollziehbare Reihenfolge zu verwenden:
 
-```
-Agent → SandBase Twitter API → Top 10 Posts
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-...
-```
+1. Mit `sandbase_discover` passende Modelle oder APIs suchen.
+2. Mit `sandbase_inspect` Eingabeschema, aktuelle Preise und Anforderungen prüfen.
+3. Endpunkt, Parameter und mögliche Kosten bestätigen, bevor `sandbase_run` ausgeführt wird.
+4. Asynchrone Aufrufe mit `sandbase_run_get` und der zurückgegebenen `run_id` verfolgen.
+5. Mit `sandbase_runs` Status und erfasste Kosten kürzlich ausgeführter Aufrufe prüfen.
+6. Mit `sandbase_account` den aktuellen Kontostand prüfen.
 
-### "Erstelle ein minimalistisches Logo für 'NightOwl'"
+Beginne zum Beispiel mit einer nicht abrechenbaren Suchanfrage:
 
-```
-Agent → SandBase Flux → 1024x1024 PNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Generiert: nightowl-logo.png
-  Kosten: $0,003 | Zeit: 2,1s
-```
+> Finde Bildmodelle für eine quadratische Produktillustration. Vergleiche Eingaben und aktuelle Preise der zwei besten Kandidaten. Führe noch kein Modell aus.
+
+Katalog, Preise, Latenz und Verfügbarkeit können sich ändern. Verwende daher die aktuelle Tool-Antwort statt statischer Beispielwerte.
 
 ---
 

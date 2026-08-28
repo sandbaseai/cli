@@ -37,37 +37,22 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ---
 
-## Veja em Ação
+## Fluxo de agente verificável
 
-### "Busca tendências sobre IA no Twitter"
+Depois de conectar, peça ao agente para seguir esta sequência auditável:
 
-```
-Agent → SandBase Twitter API → Top 10 posts
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-...
-```
+1. Use `sandbase_discover` para encontrar modelos ou APIs adequados.
+2. Use `sandbase_inspect` para revisar o esquema de entrada, os preços atuais e os requisitos.
+3. Confirme o endpoint, os parâmetros e o possível custo antes de chamar `sandbase_run`.
+4. Para tarefas assíncronas, consulte `sandbase_run_get` com o `run_id` retornado.
+5. Use `sandbase_runs` para revisar o status e o custo registrado das execuções recentes.
+6. Use `sandbase_account` para verificar o saldo atual.
 
-### "Cria um logo minimalista para 'NightOwl'"
+Comece, por exemplo, com uma solicitação de descoberta não faturável:
 
-```
-Agent → SandBase Flux → PNG 1024x1024
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Gerado: nightowl-logo.png
-  Custo: $0,003 | Tempo: 2,1s
-```
+> Encontre modelos de imagem adequados para uma ilustração quadrada de produto. Compare as entradas e os preços atuais dos dois melhores candidatos. Não execute nenhum deles ainda.
 
-### "Extraia a tabela de preços do linear.app"
-
-```
-Agent → SandBase Firecrawl → Dados estruturados
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 3 planos extraídos:
-  Free: $0/mês — 250 issues
-  Standard: $8/usuário/mês — Ilimitado
-  Plus: $14/usuário/mês — Recursos avançados
-```
+Catálogo, preços, latência e disponibilidade podem mudar. Use a resposta atual das ferramentas em vez de valores estáticos de exemplo.
 
 ---
 

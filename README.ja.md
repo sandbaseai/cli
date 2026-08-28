@@ -37,65 +37,22 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ---
 
-## 実際の動作
+## 検証可能なエージェントワークフロー
 
-接続後は、自然言語でエージェントに依頼するだけ。
+接続後、エージェントに次の監査可能な手順を実行させます。
 
-### 「React 19の新機能を検索して」
+1. `sandbase_discover` でタスクに適したモデルや API を検索します。
+2. `sandbase_inspect` で入力スキーマ、現在の料金、実行要件を確認します。
+3. `sandbase_run` を呼び出す前に、エンドポイント、パラメータ、想定コストを確認します。
+4. 非同期タスクは、返された `run_id` を使って `sandbase_run_get` で追跡します。
+5. `sandbase_runs` で最近の実行状態と記録されたコストを確認します。
+6. `sandbase_account` で現在のアカウント残高を確認します。
 
-```
-Agent → SandBase Web Search → 0.8秒で10件の結果
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. "React 19 is Here: What's New" — react.dev
-2. "React 19 Compiler Deep Dive" — Dan Abramov
-3. "Migrating to React 19" — Vercel Engineering
-...
-```
+たとえば、課金されない検索リクエストから始めます。
 
-### 「TwitterでAIについてのトレンド投稿を取得して」
+> 正方形の商品イラストに適した画像モデルを探し、上位 2 候補の必須入力と現在の料金を比較してください。まだモデルは実行しないでください。
 
-```
-Agent → SandBase Twitter API → トップ10投稿
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-3. @swyx: "The MCP ecosystem is growing fast..." (8K ❤️)
-...
-```
-
-### 「'NightOwl'というスタートアップのミニマルなロゴを作って」
-
-```
-Agent → SandBase Flux画像生成 → 1024x1024 PNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 生成完了: nightowl-logo.png
-  スタイル: ミニマル、ダークテーマ
-  コスト: $0.003
-  所要時間: 2.1秒
-```
-
-### 「linear.appの料金表をスクレイピングして」
-
-```
-Agent → SandBase Firecrawlスクレイパー → 構造化データ
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 3つのプランを抽出:
-  Free: $0/月 — 250件まで
-  Standard: $8/ユーザー/月 — 無制限
-  Plus: $14/ユーザー/月 — 高度な機能 + 分析
-```
-
-### 「GPT-4oでこのPRをレビューして」
-
-```
-Agent → SandBase GPT-4o → 分析完了
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-2つの問題を発見:
-  ⚠️  useEffectに競合状態あり (42行目)
-  ⚠️  非同期コンポーネントにError Boundaryなし
-  ✓  型安全性は良好
-  ✓  テストカバレッジは十分
-```
+カタログ、料金、レイテンシ、可用性は変わる可能性があります。固定された例ではなく、現在のセッションで得られたツール応答を使用してください。
 
 ---
 

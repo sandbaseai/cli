@@ -37,26 +37,22 @@ C'est tout. Votre agent a maintenant accès à tout.
 
 ---
 
-## En Action
+## Workflow agent vérifiable
 
-### "Cherche les tendances IA sur Twitter"
+Après la connexion, demandez à votre agent de suivre cette séquence vérifiable :
 
-```
-Agent → SandBase Twitter API → Top 10 publications
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-...
-```
+1. Utiliser `sandbase_discover` pour trouver les modèles ou API adaptés.
+2. Utiliser `sandbase_inspect` pour lire le schéma d’entrée, les tarifs actuels et les prérequis.
+3. Confirmer l’endpoint, les paramètres et le coût potentiel avant d’appeler `sandbase_run`.
+4. Pour les tâches asynchrones, interroger `sandbase_run_get` avec le `run_id` retourné.
+5. Utiliser `sandbase_runs` pour vérifier l’état et le coût enregistré des exécutions récentes.
+6. Utiliser `sandbase_account` pour consulter le solde actuel.
 
-### "Génère un logo minimaliste pour 'NightOwl'"
+Commencez, par exemple, par une recherche non facturable :
 
-```
-Agent → SandBase Flux → PNG 1024x1024
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Généré : nightowl-logo.png
-  Coût : 0,003 $ | Temps : 2,1 s
-```
+> Trouve des modèles d’image adaptés à une illustration produit carrée. Compare les entrées requises et les tarifs actuels des deux meilleurs candidats. Ne lance encore aucun modèle.
+
+Le catalogue, les prix, la latence et la disponibilité peuvent évoluer. Utilisez la réponse actuelle des outils plutôt que des valeurs d’exemple statiques.
 
 ---
 
