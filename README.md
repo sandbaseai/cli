@@ -146,7 +146,8 @@ can change, so use the tool response from the current session rather than a
 static example.
 
 See the [complete Claude Code and Codex walkthrough](https://github.com/sandbaseai/cli/discussions/47)
-or the [Chinese workflow guide](https://github.com/sandbaseai/cli/discussions/48).
+or the [Chinese workflow guide](https://github.com/sandbaseai/cli/discussions/48). For a live
+catalog example, read the [GitHub connector discover-and-inspect dogfooding note](https://github.com/sandbaseai/cli/discussions/57).
 
 ---
 
