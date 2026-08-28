@@ -221,6 +221,30 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 OpenClaw currently exposes no supported Skill removal command, so `unregister`
 reports that limitation and leaves the verified SandBase Skill installed.
 
+### Hermes quickstart
+
+SandBase can install both its managed Hermes Skill and local MCP entry in one
+authorization transaction:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client hermes
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client hermes
+```
+
+`doctor` verifies the owned local credential, MCP entry, and Skill. Restart
+Hermes to confirm native discovery in a fresh client session, then use the
+SandBase Skill or MCP tools. A pre-existing, non-SandBase MCP entry named
+`sandbase` is left untouched. To remove only the managed Hermes configuration,
+Skill, and local credential while retaining the shared bridge for other clients:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client hermes
+```
+
+The integration is independently listed by
+[Hermes Atlas](https://github.com/ksimback/hermes-ecosystem) and
+[Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent#integrations--bridges).
+
 ---
 
 ## How It Works

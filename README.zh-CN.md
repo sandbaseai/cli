@@ -156,6 +156,29 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 OpenClaw 目前没有受支持的 Skill 移除命令，因此 `unregister` 会明确报告这一限制，
 并保留已经验证过身份的 SandBase Skill。
 
+### Hermes 快速开始
+
+SandBase 可以在同一次授权事务中安装由它管理的 Hermes Skill 和本地 MCP 条目：
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client hermes
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client hermes
+```
+
+`doctor` 会验证所有权明确的本地凭证、MCP 条目与 Skill。随后重启 Hermes，
+在新的客户端会话中确认原生发现，再使用 SandBase Skill 或 MCP 工具。如果已经存在
+一个并非 SandBase 管理、但同样名为 `sandbase` 的 MCP 条目，安装器会保持原样。
+若要只移除由 SandBase 管理的 Hermes 配置、Skill 和本地凭证，同时保留供其他客户端
+共用的 bridge：
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client hermes
+```
+
+该集成已被独立收录于
+[Hermes Atlas](https://github.com/ksimback/hermes-ecosystem) 和
+[Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent#integrations--bridges)。
+
 ---
 
 ## 工作原理
