@@ -16,6 +16,13 @@ SandBase CLI provides six MCP tools for model discovery, schema and pricing insp
 ## Install
 
 ```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
+Or run the immutable release directly:
+
+```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 

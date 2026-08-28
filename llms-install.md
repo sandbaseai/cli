@@ -19,9 +19,23 @@ a browser or change local configuration:
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
+## Install with Homebrew
+
+The official tap supports macOS and Linux:
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase catalog --json
+sandbase connect --client <client-id>
+```
+
+The formula installs the immutable v0.1.17 archive and verifies its published
+SHA-256 before installation.
+
 ## Connect a client
 
-Use the immutable v0.1.17 GitHub Release while npm `latest` is being updated:
+Alternatively, run the immutable v0.1.17 GitHub Release directly while npm
+`latest` is being updated:
 
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client <client-id>

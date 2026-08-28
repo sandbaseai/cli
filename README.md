@@ -34,6 +34,13 @@ with specialized model gateways.
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
 
+Or install the official Homebrew formula on macOS or Linux:
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
 For a reproducible install, verify the immutable release archive before
 running it. The SHA-256 for `sandbaseai-cli-0.1.17.tgz` is
 `1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`.
@@ -55,6 +62,8 @@ includes a verified 25-client catalog:
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
+
+Homebrew users can run the same read-only check with `sandbase catalog --json`.
 
 The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing is
 being enabled. The GitHub release tarball is built from the immutable `v0.1.17` tag;
