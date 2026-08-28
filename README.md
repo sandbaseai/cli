@@ -198,6 +198,29 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
+### OpenClaw quickstart
+
+Target OpenClaw directly, then ask the CLI to read back the managed MCP server
+and SandBase Skill before you rely on them:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client openclaw
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client openclaw
+```
+
+After `doctor` reports the credential, MCP bridge, and Skill as configured,
+restart OpenClaw and make a natural-language request that needs SandBase. If
+OpenClaw already has a non-SandBase MCP server named `sandbase`, the installer
+leaves it untouched instead of overwriting it. To remove the managed MCP entry
+and local credential later:
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client openclaw
+```
+
+OpenClaw currently exposes no supported Skill removal command, so `unregister`
+reports that limitation and leaves the verified SandBase Skill installed.
+
 ---
 
 ## How It Works

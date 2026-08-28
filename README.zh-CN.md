@@ -135,6 +135,27 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
 ```
 
+### OpenClaw 快速开始
+
+直接指定 OpenClaw，并在使用前让 CLI 回读验证由 SandBase 管理的 MCP 服务与 Skill：
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client openclaw
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client openclaw
+```
+
+当 `doctor` 确认凭证、MCP bridge 和 Skill 均已配置后，重启 OpenClaw，
+再用自然语言提出一个需要 SandBase 的请求。如果 OpenClaw 中已经存在一个并非
+SandBase 管理、但同样名为 `sandbase` 的 MCP 服务，安装器会保持原样，不会覆盖。
+以后若要移除由 SandBase 管理的 MCP 条目和本地凭证：
+
+```sh
+npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client openclaw
+```
+
+OpenClaw 目前没有受支持的 Skill 移除命令，因此 `unregister` 会明确报告这一限制，
+并保留已经验证过身份的 SandBase Skill。
+
 ---
 
 ## 工作原理
