@@ -6,6 +6,12 @@
   <p align="center">
     <a href="./README.md">English</a> | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | Português
   </p>
+  <p align="center">
+    <a href="https://github.com/sandbaseai/cli/releases/latest"><img alt="Versão do GitHub" src="https://img.shields.io/github/v/release/sandbaseai/cli"></a>
+    <a href="https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli"><img alt="Registro MCP oficial" src="https://img.shields.io/badge/MCP%20Registry-listed-5a67d8"></a>
+    <a href="https://github.com/sandbaseai/cli/blob/main/LICENSE"><img alt="Licença" src="https://img.shields.io/github/license/sandbaseai/cli"></a>
+    <a href="https://github.com/sandbaseai/cli/stargazers"><img alt="GitHub Stars" src="https://img.shields.io/github/stars/sandbaseai/cli?style=social"></a>
+  </p>
 </p>
 
 <p align="center">
