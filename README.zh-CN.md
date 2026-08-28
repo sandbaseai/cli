@@ -213,6 +213,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 - [SandBase 平台](https://sandbase.ai)
 - [文档](https://www.sandbase.ai/docs/)
 - [官方 MCP Registry 收录](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
+- [Glama MCP Connector 收录](https://glama.ai/mcp/connectors/io.github.sandbaseai/cli)
 - [官方 Registry 社区技术展示](https://github.com/modelcontextprotocol/registry/discussions/1584)
 - 六工具实战指南：[中文](https://github.com/sandbaseai/cli/discussions/48) · [English](https://github.com/sandbaseai/cli/discussions/47)
 - [VaultPlane MCP 目录收录](https://www.vaultplane.com/server/sandbase-cli)

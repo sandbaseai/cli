@@ -87,6 +87,7 @@ Discover the authenticated remote bridge in the [official MCP Registry](https://
 read its [Registry community showcase](https://github.com/modelcontextprotocol/registry/discussions/1584), or find it through
 [Chinese Independent Developer](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github),
 [Awesome MCP](https://github.com/AlexMili/Awesome-MCP#ai-agents--memory),
+[Glama](https://glama.ai/mcp/connectors/io.github.sandbaseai/cli),
 [TensorBlock MCP Index](https://tensorblock.co/mcp/servers/github-sandbaseai-cli-c4e113db),
 [MCPRepository](https://mcprepository.com/sandbaseai/cli),
 [VaultPlane](https://www.vaultplane.com/server/sandbase-cli),
