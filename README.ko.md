@@ -135,6 +135,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 **[무료 계정 만들기 →](https://sandbase.ai)**
 
+SandBase로 설정 시간을 절약했다면 [프로젝트에 Star를 남겨 주세요](https://github.com/sandbaseai/cli). 더 많은 에이전트 사용자가 프로젝트를 발견하는 데 도움이 됩니다.
+
 ## 실전 가이드
 
 - [Claude Code·Codex: 모델/API 탐색, 가격 확인, 실행](https://github.com/sandbaseai/cli/discussions/51)

@@ -133,6 +133,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 **[Crear cuenta gratis →](https://sandbase.ai)**
 
+Si SandBase te ahorra tiempo de configuración, [dale una estrella al proyecto](https://github.com/sandbaseai/cli). Así será más fácil que otros usuarios de agentes lo descubran.
+
 ## Guía práctica
 
 - [Claude Code y Codex: descubre, comprueba el precio y ejecuta modelos o API](https://github.com/sandbaseai/cli/discussions/50)
