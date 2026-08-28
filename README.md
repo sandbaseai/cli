@@ -109,80 +109,35 @@ or the versioned [`sandbaseai/sandbase` snapshot on Agent Skill Hub](https://age
 
 ---
 
-## See It In Action
+## A Verifiable Agent Workflow
 
-After connecting, just ask your agent naturally. It handles the rest.
+After connecting, ask your agent to follow the same inspectable sequence for
+search, data APIs, language models, image generation, video generation, and
+other catalog capabilities:
 
-> The outputs below are illustrative examples of the interaction pattern. Live
-> results, latency, availability, and pricing vary by provider and request; use
-> `sandbase_inspect` before running a model or API to see its current schema and
-> price.
+1. Use `sandbase_discover` to find candidates by task or capability.
+2. Use `sandbase_inspect` to read the current input schema, pricing, and
+   execution requirements.
+3. Confirm the selected endpoint, parameters, and possible cost before calling
+   `sandbase_run`.
+4. For asynchronous work, use `sandbase_run_get` with the returned `run_id`
+   instead of creating a duplicate run.
+5. Use `sandbase_runs` to review recent run status and recorded cost.
+6. Use `sandbase_account` to check the current account balance.
 
-### "Search the web for React 19 new features"
+For example, start with a non-billable discovery request:
 
-```
-Agent → SandBase Web Search → 10 results in 0.8s
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. "React 19 is Here: What's New" — react.dev
-2. "React 19 Compiler Deep Dive" — Dan Abramov's blog
-3. "Migrating to React 19" — Vercel Engineering
-...
-```
+> Find image models suitable for a square product illustration. Compare the
+> required inputs and current pricing for the best two candidates. Do not run
+> either model yet.
 
-### "Get trending posts about AI on Twitter"
+After reviewing the live response, explicitly approve the endpoint and inputs
+you want to run. Catalog entries, schemas, pricing, latency, and availability
+can change, so use the tool response from the current session rather than a
+static example.
 
-```
-Agent → SandBase Twitter API → Top 10 posts
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-3. @swyx: "The MCP ecosystem is growing fast..." (8K ❤️)
-...
-```
-
-### "Generate a minimalist logo for my startup 'NightOwl'"
-
-```
-Agent → SandBase Flux Image Gen → 1024x1024 PNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Generated: nightowl-logo.png
-  Style: Minimalist, dark theme
-  Cost: $0.003
-  Time: 2.1s
-```
-
-### "Scrape the pricing table from linear.app"
-
-```
-Agent → SandBase Firecrawl Scraper → Structured data
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Extracted 3 plans:
-  Free: $0/mo — Up to 250 issues
-  Standard: $8/user/mo — Unlimited issues + cycles
-  Plus: $14/user/mo — Advanced features + analytics
-```
-
-### "Use GPT-4o to review this pull request for issues"
-
-```
-Agent → SandBase GPT-4o → Analysis complete
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Found 2 issues:
-  ⚠️  Race condition in useEffect (line 42)
-  ⚠️  Missing error boundary around async component
-  ✓  Type safety looks good
-  ✓  Test coverage adequate
-```
-
-### "Create a 5-second product demo video"
-
-```
-Agent → SandBase Kling Video Gen → Async processing
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏳ Generating... (45s)
-✓ Output: product-demo.mp4 (5s, 720p)
-  Cost: $0.10
-```
+See the [complete Claude Code and Codex walkthrough](https://github.com/sandbaseai/cli/discussions/47)
+or the [Chinese workflow guide](https://github.com/sandbaseai/cli/discussions/48).
 
 ---
 
@@ -274,16 +229,16 @@ sandbase catalog --json               # List all supported clients
 | `sandbase_runs` | List your recent API calls with cost breakdown |
 | `sandbase_account` | Check account balance (free, no cost) |
 
-**Workflow your agent follows automatically:**
+**Recommended workflow:**
 
 ```
 discover → inspect → run
 ```
 
 ```
-1. sandbase_discover(q: "twitter search")        → finds matching tools
-2. sandbase_inspect(name: "twitter_timeline")    → gets schema + pricing
-3. sandbase_run(name: "twitter_timeline", ...)   → executes and returns data
+1. sandbase_discover(q: "twitter search")          → find current candidates
+2. sandbase_inspect(name: discovered_name)          → get schema and pricing
+3. sandbase_run(name: discovered_name, input: {...}) → run after confirmation
 ```
 
 ---
