@@ -145,8 +145,9 @@
     .final h2 { max-width: 790px; margin-inline: auto; }
     .final p { color: var(--muted); }
     .final .button { margin-top: 12px; }
-    footer { display: flex; justify-content: space-between; gap: 20px; padding-block: 34px; color: var(--muted); font-size: 0.88rem; }
+    footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px; padding-block: 34px; color: var(--muted); font-size: 0.88rem; }
     footer p { margin: 0; }
+    footer .languages { flex: 1 0 100%; }
 
     :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent), transparent 35%); outline-offset: 3px; }
 
@@ -274,6 +275,7 @@
 
   <footer class="shell">
     <p>SandBase CLI is open source under Apache-2.0.</p>
+    <p class="languages" aria-label="Read the documentation in another language">Read: <a href="https://github.com/sandbaseai/cli/blob/main/README.zh-CN.md" lang="zh-CN">中文</a> · <a href="https://github.com/sandbaseai/cli/blob/main/README.ja.md" lang="ja">日本語</a> · <a href="https://github.com/sandbaseai/cli/blob/main/README.ko.md" lang="ko">한국어</a> · <a href="https://github.com/sandbaseai/cli/blob/main/README.es.md" lang="es">Español</a> · <a href="https://github.com/sandbaseai/cli/blob/main/README.fr.md" lang="fr">Français</a> · <a href="https://github.com/sandbaseai/cli/blob/main/README.de.md" lang="de">Deutsch</a> · <a href="https://github.com/sandbaseai/cli/blob/main/README.pt-BR.md" lang="pt-BR">Português</a></p>
     <p><a href="https://github.com/sandbaseai/cli">GitHub</a> · <a href="https://blog.sandbase.ai/sandbase-cli-mcp-bridge-25-ai-clients/">Guide</a></p>
   </footer>
 </body>
