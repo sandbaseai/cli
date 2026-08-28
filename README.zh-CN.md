@@ -45,6 +45,12 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
+<p align="center">
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp" alt="SandBase CLI v0.1.17 只读目录审计显示 25 个客户端目标" width="49%"></a>
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp" alt="SandBase CLI v0.1.17 doctor 对空白隔离配置按预期安全失败" width="49%"></a>
+</p>
+<p align="center"><sub>来自不可变 v0.1.17 发布包的证据：不写配置的目录审计，以及针对空白隔离配置的受限 doctor 检查。</sub></p>
+
 这里使用的是不可变的 GitHub `v0.1.17` 发布包；其 SHA-256 为
 `1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`。
 目前 npm 的 `latest` 标签仍是 v0.1.14，因此在可信发布启用完成前，请使用上面的版本化 GitHub 地址。

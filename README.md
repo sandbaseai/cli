@@ -65,6 +65,12 @@ includes a verified 25-client catalog:
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
 ```
 
+<p align="center">
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp" alt="Read-only SandBase CLI v0.1.17 catalog audit showing 25 client targets" width="49%"></a>
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp" alt="SandBase CLI v0.1.17 doctor failing closed for an empty isolated profile" width="49%"></a>
+</p>
+<p align="center"><sub>Evidence captured from the immutable v0.1.17 release: a no-write catalog audit and a bounded doctor check against an empty isolated profile.</sub></p>
+
 Homebrew users can run the same read-only check with `sandbase catalog --json`.
 
 The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing is
