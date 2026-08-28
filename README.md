@@ -41,6 +41,8 @@ brew install sandbaseai/tap/sandbaseai-cli
 sandbase connect
 ```
 
+See the [Homebrew launch announcement and macOS/Linux CI evidence](https://github.com/sandbaseai/cli/discussions/55).
+
 For a reproducible install, verify the immutable release archive before
 running it. The SHA-256 for `sandbaseai-cli-0.1.17.tgz` is
 `1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`.
