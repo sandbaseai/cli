@@ -13,6 +13,17 @@ SandBase CLI provides six MCP tools for model discovery, schema and pricing insp
 - [Official MCP Registry entry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
 - [Apache-2.0 license](https://github.com/sandbaseai/cli/blob/main/LICENSE)
 
+## Documentation languages
+
+- [English](https://github.com/sandbaseai/cli/blob/main/README.md)
+- [简体中文](https://github.com/sandbaseai/cli/blob/main/README.zh-CN.md)
+- [日本語](https://github.com/sandbaseai/cli/blob/main/README.ja.md)
+- [한국어](https://github.com/sandbaseai/cli/blob/main/README.ko.md)
+- [Español](https://github.com/sandbaseai/cli/blob/main/README.es.md)
+- [Français](https://github.com/sandbaseai/cli/blob/main/README.fr.md)
+- [Deutsch](https://github.com/sandbaseai/cli/blob/main/README.de.md)
+- [Português do Brasil](https://github.com/sandbaseai/cli/blob/main/README.pt-BR.md)
+
 ## Install
 
 ```sh
