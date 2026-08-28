@@ -354,6 +354,9 @@ Community-curated listings:
 - [Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent)
 - [Awesome AI Tools](https://github.com/QAInsights/awesome-ai-tools)
 - [Awesome MCP Server](https://github.com/AIAnytime/Awesome-MCP-Server)
+- [Awesome Agent Cortex](https://github.com/0xNyk/awesome-agent-cortex)
+- [Awesome AI Agent Tools](https://github.com/michielhdoteth/awesome-ai-agent-tools)
+- [Awesome Codex CLI](https://github.com/milisp/awesome-codex-cli)
 
 ## License
 
