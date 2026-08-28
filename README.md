@@ -94,8 +94,10 @@ read its [Registry community showcase](https://github.com/modelcontextprotocol/r
 [MCP Server Hub](https://mcpserver.dev/s/sandbase-cli_r2sjd4x),
 [MCP Server Spot](https://www.mcpserverspot.com/servers/sandbase-cli), or the
 [Awesome AI API Proxy](https://github.com/howardpen9/awesome-ai-api-proxy#global-gateways--aggregators).
-The Codex integration has been submitted for review to
-[Awesome Codex CLI](https://github.com/milisp/awesome-codex-cli/issues/111).
+External maintainers have merged SandBase into
+[Awesome Codex CLI](https://github.com/milisp/awesome-codex-cli/pull/110),
+[Awesome Agent Skills](https://github.com/junminhong/awesome-agent-skills/pull/39), and
+[Awesome MCP Server](https://github.com/AIAnytime/Awesome-MCP-Server/pull/70).
 The Hermes integration is independently listed in the
 [Hermes Atlas](https://github.com/ksimback/hermes-ecosystem) ecosystem catalog and as beta in
 [Awesome Hermes Agent](https://github.com/0xNyk/awesome-hermes-agent#integrations--bridges).
