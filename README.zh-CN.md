@@ -26,6 +26,15 @@
 
 **SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型与 API。不用管理 API Key，不用折腾配置。
 
+在 macOS 或 Linux 上使用官方 Homebrew Formula：
+
+```sh
+brew install sandbaseai/tap/sandbaseai-cli
+sandbase connect
+```
+
+或者直接运行不可变的 v0.1.17 发布包：
+
 ```sh
 npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
 ```
@@ -42,6 +51,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 项目已进入[官方 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)，并被[中国独立开发者项目（程序员版）](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)独立收录。
 
+查看[官方项目页](https://sandbaseai.github.io/cli/)和[中文工作流指南](https://github.com/sandbaseai/cli/discussions/48)。如果 SandBase CLI 对你有帮助，请[给仓库一个 Star](https://github.com/sandbaseai/cli)，让更多开发者发现它。
+
 就这样。你的 Agent 现在能访问一切。
 
 ## SandBase 开源技术栈
@@ -52,75 +63,22 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ---
 
-## 看看效果
+## 一套可验证的 Agent 工作流
 
-连接后，用自然语言问你的 Agent 就行。
+连接后，让 Agent 按以下顺序工作，而不是直接猜测模型名称、输入字段或费用：
 
-### "搜索一下 React 19 的新特性"
+1. 使用 `sandbase_discover` 按任务或能力搜索候选模型与 API。
+2. 使用 `sandbase_inspect` 读取当前输入 Schema、价格和执行要求。
+3. 确认模型、参数和可能费用后，再使用 `sandbase_run` 执行。
+4. 对异步任务使用 `sandbase_run_get` 查询状态和结果。
+5. 使用 `sandbase_runs` 查看最近运行、状态与实际费用。
+6. 使用 `sandbase_account` 检查账户余额。
 
-```
-Agent → SandBase Web Search → 0.8 秒返回 10 条结果
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. "React 19 正式发布：全面解析新特性" — react.dev
-2. "React 19 Compiler 深度解析" — Dan Abramov
-3. "迁移到 React 19 指南" — Vercel Engineering
-...
-```
+例如，你可以要求：
 
-### "获取 Twitter 上关于 AI 的热门帖子"
+> 搜索适合生成产品演示图的模型。先比较输入字段和当前价格，只展示候选项，不要执行。
 
-```
-Agent → SandBase Twitter API → 返回 Top 10 帖子
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-1. @karpathy: "LLMs are the new CPUs..." (45K ❤️)
-2. @emollick: "Agent benchmarks just crossed..." (12K ❤️)
-3. @swyx: "The MCP ecosystem is growing fast..." (8K ❤️)
-...
-```
-
-### "帮我生成一个极简风格的 Logo，公司叫 'NightOwl'"
-
-```
-Agent → SandBase Flux 图像生成 → 1024x1024 PNG
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 已生成: nightowl-logo.png
-  风格: 极简, 暗色主题
-  费用: $0.003
-  耗时: 2.1 秒
-```
-
-### "抓取 linear.app 的定价表"
-
-```
-Agent → SandBase Firecrawl 抓取 → 结构化数据
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ 提取到 3 个方案:
-  Free: $0/月 — 最多 250 个 Issue
-  Standard: $8/人/月 — 无限 Issue + Cycles
-  Plus: $14/人/月 — 高级功能 + 分析
-```
-
-### "用 GPT-4o 帮我 Review 这个 PR"
-
-```
-Agent → SandBase GPT-4o → 分析完成
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-发现 2 个问题:
-  ⚠️  useEffect 中存在竞态条件 (第 42 行)
-  ⚠️  异步组件缺少 Error Boundary
-  ✓  类型安全良好
-  ✓  测试覆盖充分
-```
-
-### "生成一段 5 秒的产品演示视频"
-
-```
-Agent → SandBase Kling 视频生成 → 异步处理
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⏳ 生成中... (45 秒)
-✓ 输出: product-demo.mp4 (5秒, 720p)
-  费用: $0.10
-```
+选择模型后再明确要求执行。模型目录、Schema、价格和运行结果都会变化，因此应以工具当次返回的数据为准。不要把示例输出当作实时结果。
 
 ---
 
