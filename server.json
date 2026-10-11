@@ -3,7 +3,7 @@
   "name": "io.github.sandbaseai/cli",
   "title": "SandBase",
   "description": "Connect MCP clients to 2,000+ AI models without managing provider API keys.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "repository": {
     "url": "https://github.com/sandbaseai/cli",
     "source": "github"
@@ -26,7 +26,7 @@
     {
       "registryType": "npm",
       "identifier": "@sandbaseai/cli",
-      "version": "0.3.1",
+      "version": "0.3.2",
       "packageArguments": [
         {
           "type": "positional",
