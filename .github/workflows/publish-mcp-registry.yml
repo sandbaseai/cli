@@ -116,6 +116,6 @@ jobs:
             '.servers | any(
               .server.name == "io.github.sandbaseai/cli"
               and .server.version == $version
-              and ((.server.remotes // []) | any(.url == "https://sandbase.ai/v1/mcp"))
+              and ((.server.remotes // []) | any(.url == "https://api.sandbase.ai/v1/mcp" or .url == "https://sandbase.ai/v1/mcp"))
             )' \
             <<< "$response"

@@ -7,6 +7,17 @@ import { configPath, sandbaseHome } from "./paths.js";
 
 export const a1Clients = ["opencode", "qwen-code", "windsurf"] as const;
 export type A1Client = typeof a1Clients[number];
+
+// Endpoints an installed `sandbase` entry may legitimately point at, used to
+// prove SandBase ownership before touching a client config. The canonical API
+// host leads; the bare and www hosts stay recognized so configs written by
+// older CLI versions (before the api.sandbase.ai migration) are not rejected
+// as foreign on upgrade.
+export const OWNED_MCP_ENDPOINTS = [
+  "https://api.sandbase.ai/v1/mcp",
+  "https://sandbase.ai/v1/mcp",
+  "https://www.sandbase.ai/v1/mcp",
+] as const;
 export function isA1Client(client: string): client is A1Client { return a1Clients.includes(client as A1Client); }
 
 export interface A1CommandResult { code: number | null; stdout: string; stderr: string }
@@ -73,7 +84,7 @@ async function inspectConfig(client: A1Client, env = process.env, expectedBridge
       return entry === undefined ? { state: "missing", detail: "SandBase is not registered" } : openCodeOwned(entry, bridges) ? { state: "configured", detail: "global configuration ownership verified" } : { state: "conflict", detail: "the sandbase entry is not SandBase-owned" };
     }
     const servers = root.mcpServers === undefined ? undefined : objectMap(root.mcpServers, client); const entry = servers?.sandbase;
-    const endpoints = [...new Set(["https://sandbase.ai/v1/mcp", identity?.endpoint?.replace(/\/$/, ""), expectedEndpoint?.replace(/\/$/, "")].filter((value): value is string => !!value))];
+    const endpoints = [...new Set([...OWNED_MCP_ENDPOINTS, identity?.endpoint?.replace(/\/$/, ""), expectedEndpoint?.replace(/\/$/, "")].filter((value): value is string => !!value))];
     const owned = client === "qwen-code" ? qwenOwned(entry, bridges) : windsurfOwned(entry, endpoints, env);
     if (entry === undefined) return { state: "missing", detail: "SandBase is not registered" };
     if (!owned) return { state: "conflict", detail: "the sandbase entry is not SandBase-owned" };
@@ -127,7 +138,7 @@ export async function installA1(client: A1Client, bridge: string, credential: st
     catch (error) { await restoreSnapshot(path, backupPath); if (identityChanged) identityPrevious === undefined ? await rm(ownerPath, { force: true }) : await atomicWrite(ownerPath, identityPrevious); throw error; }
   }
   const root = parseObject(text, client); const servers = root.mcpServers === undefined ? {} : objectMap(root.mcpServers, client); const existing = servers.sandbase;
-  if (existing !== undefined && !windsurfOwned(existing, ["https://sandbase.ai/v1/mcp", mcpUrl.replace(/\/$/, "")], env)) throw new Error("windsurf: the sandbase entry is not SandBase-owned; no changes were made");
+  if (existing !== undefined && !windsurfOwned(existing, [...OWNED_MCP_ENDPOINTS, mcpUrl.replace(/\/$/, "")], env)) throw new Error("windsurf: the sandbase entry is not SandBase-owned; no changes were made");
   const desired = { serverUrl: mcpUrl, headers: { Authorization: windsurfAuthorization(env) } }; const next = applyJsonc(text, ["mcpServers", "sandbase"], desired);
   const secretPath = credentialPath(env); const currentSecret = await readOptional(secretPath); const configBackup = next === raw ? undefined : await backup(path); const secretBackup = currentSecret === credential ? undefined : await backup(secretPath);
   try {

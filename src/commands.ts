@@ -97,7 +97,7 @@ async function prepareOpenClawSkill(detected: Detection, log: (message: string) 
 }
 
 async function connectOpenClaw(deps: CommandDependencies): Promise<void> {
-  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log; const detect = deps.detect || detectClient;
+  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://api.sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log; const detect = deps.detect || detectClient;
   if (!(await prepareOpenClawSkill(detect("openclaw"), log, deps.openClawRunner, deps.openClawReadbackVerifier))) return;
   const previous = await store.get("openclaw"); const { authorizationId, exchange } = await authorize(api, "openclaw", { open: deps.open || openBrowser, sleep, log, ...(deps.signal ? { signal: deps.signal } : {}) }); let bridgeResult;
   try {
@@ -113,7 +113,7 @@ async function connectOpenClaw(deps: CommandDependencies): Promise<void> {
 }
 
 async function connectDesktop(client: Extract<Client, "claude-desktop" | "cowork">, deps: CommandDependencies): Promise<void> {
-  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log;
+  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://api.sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log;
   const previous = await store.get(client); const { authorizationId, exchange } = await authorize(api, client, { open: deps.open || openBrowser, sleep, log, ...(deps.signal ? { signal: deps.signal } : {}) }); let bridgeResult; let identityResult;
   try {
     await store.save(recordFor(client, exchange)); bridgeResult = await installBridge(); identityResult = await writeDesktopIdentity(client);
@@ -126,7 +126,7 @@ async function connectDesktop(client: Extract<Client, "claude-desktop" | "cowork
 }
 
 async function connectPromptAssisted(client: PromptAssistedClient, deps: CommandDependencies): Promise<void> {
-  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log;
+  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://api.sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log;
   const previous = await store.get(client); const { authorizationId, exchange } = await authorize(api, client, { open: deps.open || openBrowser, sleep, log, ...(deps.signal ? { signal: deps.signal } : {}) }); let bridgeResult;
   try {
     await store.save(recordFor(client, exchange)); bridgeResult = await installBridge();
@@ -139,7 +139,7 @@ async function connectPromptAssisted(client: PromptAssistedClient, deps: Command
 }
 
 async function connectChatGPT(deps: CommandDependencies): Promise<void> {
-  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log;
+  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://api.sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log;
   const previous = await store.get("chatgpt"); const { authorizationId, exchange } = await authorize(api, "chatgpt", { open: deps.open || openBrowser, sleep, log, ...(deps.signal ? { signal: deps.signal } : {}) }); let bridgeResult;
   try {
     await store.save(recordFor("chatgpt", exchange)); bridgeResult = await installBridge();
@@ -152,7 +152,7 @@ async function connectChatGPT(deps: CommandDependencies): Promise<void> {
 }
 
 async function connectOne(client: Client, deps: CommandDependencies): Promise<void> {
-  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log; const detect = deps.detect || detectClient;
+  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://api.sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log; const detect = deps.detect || detectClient;
   const profile = clientProfiles[client]; const capability = nativeCapabilities[client];
   const v2 = capabilityRegistry[client];
   if (client === "chatgpt") { await connectChatGPT(deps); return; }
@@ -186,7 +186,7 @@ async function connectOne(client: Client, deps: CommandDependencies): Promise<vo
 }
 
 async function connectAuto(deps: CommandDependencies): Promise<void> {
-  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log; const detect = deps.detect || detectClient;
+  const api = deps.api || new AuthorizationApi((process.env.SANDBASE_API_URL || "https://api.sandbase.ai").replace(/\/$/, "")); const store = deps.store || new FileCredentialStore(); const log = deps.log || console.log; const detect = deps.detect || detectClient;
   const targets: Client[] = await resolveAutoSharedSlots(plannedAutoClients(detect).filter(client => client !== "openclaw") as Client[],log);
   const nativeSkillTargets = clients.filter(target => targets.includes(target) && !!skillsAgentRegistry[target] && detect(target).installed);
   // Native Skills are an independent local lifecycle: do not let their result

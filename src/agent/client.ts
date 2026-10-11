@@ -10,7 +10,6 @@ import { sandbaseHome } from "../paths.js";
 import { clients, type Client, type CredentialRecord } from "../types.js";
 
 export const DEFAULT_MCP_URL = "https://api.sandbase.ai/v1/mcp";
-export const FALLBACK_MCP_URL = "https://www.sandbase.ai/v1/mcp";
 const PREFERENCE_TTL_MS = 6 * 60 * 60 * 1000;
 
 export type ErrorCode =
@@ -34,14 +33,17 @@ export function validMcpUrl(value: unknown): string | undefined {
   } catch { return undefined; }
 }
 
-/** Ordered endpoint candidates: the recorded URL first, then known-good mirrors of the same API. */
+/**
+ * Ordered endpoint candidates: the recorded URL first, then any extra mirrors
+ * the user explicitly opted into via SANDBASE_MCP_FALLBACK_URLS. The API is
+ * served only from api.sandbase.ai, so there is no implicit cross-host
+ * fallback — the main-site and bare hosts are not API entry points.
+ */
 export function endpointCandidates(primary: string, env = process.env): string[] {
   const out = [primary];
   const configured = env.SANDBASE_MCP_FALLBACK_URLS;
   if (configured !== undefined) {
     for (const item of configured.split(",").map(value => value.trim()).filter(Boolean)) { const url = validMcpUrl(item); if (url) out.push(url); }
-  } else {
-    try { const host = new URL(primary).hostname; if (host === "api.sandbase.ai" || host === "sandbase.ai") out.push(FALLBACK_MCP_URL); } catch { /* primary was validated by the caller */ }
   }
   return [...new Set(out)];
 }

@@ -51,28 +51,31 @@ test("credential precedence: env key, then stored key, then a connected client",
   await assert.rejects(resolveEndpoint({ client: "cursor" }, env), /No SandBase credential is stored for client "cursor"/);
 });
 
-test("the public API host gets the Cloudflare mirror as a fallback; overrides are honored", () => {
-  assert.deepEqual(endpointCandidates("https://api.sandbase.ai/v1/mcp", {}), ["https://api.sandbase.ai/v1/mcp", "https://www.sandbase.ai/v1/mcp"]);
+test("the API is reached only at its own host; explicit overrides are honored", () => {
+  // The API lives only on api.sandbase.ai: no implicit cross-host fallback.
+  assert.deepEqual(endpointCandidates("https://api.sandbase.ai/v1/mcp", {}), ["https://api.sandbase.ai/v1/mcp"]);
   assert.deepEqual(endpointCandidates("http://127.0.0.1:9/v1/mcp", {}), ["http://127.0.0.1:9/v1/mcp"]);
   assert.deepEqual(endpointCandidates("https://api.sandbase.ai/v1/mcp", { SANDBASE_MCP_FALLBACK_URLS: "" }), ["https://api.sandbase.ai/v1/mcp"]);
+  // Users can still opt into extra mirrors explicitly.
+  assert.deepEqual(endpointCandidates("https://api.sandbase.ai/v1/mcp", { SANDBASE_MCP_FALLBACK_URLS: "https://sandbase.ai/v1/mcp" }), ["https://api.sandbase.ai/v1/mcp", "https://sandbase.ai/v1/mcp"]);
 });
 
-test("an unreachable primary falls back to the mirror and the preference persists across processes", async () => {
-  const env = await home(); await connected(env);
+test("an explicitly configured mirror is used when the primary is unreachable, and the preference persists across processes", async () => {
+  const env = { ...(await home()), SANDBASE_MCP_FALLBACK_URLS: "https://sandbase.ai/v1/mcp" }; await connected(env);
   const { fetch, calls } = fakeFetch(call => call.url.includes("api.sandbase.ai") ? connectTimeout() : toolResult({ balance: "1.5", currency: "USD" }));
   const first = new SandBaseMCPClient(await resolveEndpoint({}, env), fetch, 1000, env);
   assert.equal((await first.tool("sandbase_account")).data.balance, "1.5");
-  assert.deepEqual(calls.map(call => new URL(call.url).host), ["api.sandbase.ai", "www.sandbase.ai"]);
+  assert.deepEqual(calls.map(call => new URL(call.url).host), ["api.sandbase.ai", "sandbase.ai"]);
   const second = new SandBaseMCPClient(await resolveEndpoint({}, env), fetch, 1000, env);
   await second.tool("sandbase_account");
-  assert.equal(new URL(calls.at(-1)!.url).host, "www.sandbase.ai"); assert.equal(calls.length, 3, "second process skips the dead primary");
+  assert.equal(new URL(calls.at(-1)!.url).host, "sandbase.ai"); assert.equal(calls.length, 3, "second process skips the dead primary");
 });
 
 test("network and HTTP failures carry a code and a next step", async () => {
   const env = await home(); await connected(env, "codex", "https://api.sandbase.ai/v1/mcp");
   const { fetch } = fakeFetch(() => connectTimeout());
   const result = await cli("balance", [], env, fetch);
-  assert.equal(result.code, 1); assert.match(result.err, /Error \[NETWORK\]: Cannot reach SandBase \(api\.sandbase\.ai: connection timed out; www\.sandbase\.ai: connection timed out\)/); assert.match(result.err, /Next: .*sandbase doctor/);
+  assert.equal(result.code, 1); assert.match(result.err, /Error \[NETWORK\]: Cannot reach SandBase \(api\.sandbase\.ai: connection timed out\)/); assert.match(result.err, /Next: .*sandbase doctor/);
   assert.equal(httpError(402, '{"error":"API key spending limit exceeded"}', "api.sandbase.ai").code, "INSUFFICIENT_BALANCE");
   assert.match(httpError(401, "<html>", "api.sandbase.ai").hint ?? "", /connect/);
   const json = await cli("balance", ["-j"], env, fetch);
@@ -164,11 +167,20 @@ test("keys add stores a 0600 key used before client records", async () => {
   assert.equal((await resolveEndpoint({}, env)).source, "client:codex");
 });
 
-test("doctor probe reports the mirror and balance, or the exact failure", async () => {
-  const ok = fakeFetch(call => call.url.includes("api.sandbase.ai") ? connectTimeout() : call.method === "tools/list" ? { body: { result: { tools: [{ name: "sandbase_discover" }] } } } : call.method === "initialize" ? { body: { result: {} } } : toolResult({ balance: "3.2" }));
+test("doctor probe reports the active host and balance, or the exact failure", async () => {
+  // Happy path: the API host answers directly, no cross-host fallback involved.
+  const ok = fakeFetch(call => call.method === "tools/list" ? { body: { result: { tools: [{ name: "sandbase_discover" }] } } } : call.method === "initialize" ? { body: { result: {} } } : toolResult({ balance: "3.2" }));
   const env = await home();
   const good = await probeEndpoint("codex", "secret", "https://api.sandbase.ai/v1/mcp", env, ok.fetch, 1000);
-  assert.equal(good.ok, true); assert.match(good.line, /network=ok, endpoint=www\.sandbase\.ai/); assert.match(good.line, /primary=api\.sandbase\.ai \(connection timed out\)/); assert.match(good.line, /balance=\$3\.2/);
+  assert.equal(good.ok, true); assert.match(good.line, /network=ok, endpoint=api\.sandbase\.ai/); assert.match(good.line, /balance=\$3\.2/); assert.doesNotMatch(good.line, /fallback=/);
+  // With an explicitly configured mirror, a dead primary is reported and the probe switches hosts.
+  const mirrorEnv = { ...env, SANDBASE_MCP_FALLBACK_URLS: "https://sandbase.ai/v1/mcp" };
+  const okMirror = fakeFetch(call => call.url.includes("api.sandbase.ai") ? connectTimeout() : call.method === "tools/list" ? { body: { result: { tools: [{ name: "sandbase_discover" }] } } } : call.method === "initialize" ? { body: { result: {} } } : toolResult({ balance: "3.2" }));
+  const viaMirror = await probeEndpoint("codex", "secret", "https://api.sandbase.ai/v1/mcp", mirrorEnv, okMirror.fetch, 1000);
+  assert.equal(viaMirror.ok, true); assert.match(viaMirror.line, /endpoint=sandbase\.ai/); assert.match(viaMirror.line, /primary=api\.sandbase\.ai \(connection timed out\)/);
+  // Unreachable with no mirror: a plain network failure on the one host.
+  const down = await probeEndpoint("codex", "secret", "https://api.sandbase.ai/v1/mcp", env, fakeFetch(() => connectTimeout()).fetch, 1000);
+  assert.equal(down.ok, false); assert.match(down.line, /network=failed, code=NETWORK/); assert.match(down.line, /api\.sandbase\.ai/);
   const denied = fakeFetch(() => ({ status: 401, body: '{"error":"invalid API key"}' }));
   const bad = await probeEndpoint("codex", "secret", "http://127.0.0.1:9/v1/mcp", env, denied.fetch, 1000);
   assert.equal(bad.ok, false); assert.match(bad.line, /network=failed, code=AUTH_FAILED/); assert.match(bad.line, /next_step=.*connect/); assert.doesNotMatch(bad.line, /secret/);
@@ -198,38 +210,48 @@ test("bridge keeps the server usable offline and turns tool failures into visibl
   const [init, list, call] = await bridge(env, offline.fetch, [{ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18" } }, { jsonrpc: "2.0", id: 2, method: "tools/list" }, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sandbase_discover", arguments: { q: "x" } } }]);
   assert.equal(init!.result.protocolVersion, "2025-06-18"); assert.match(init!.result.instructions, /unreachable/);
   assert.ok(list!.result.tools.some((tool: { name: string }) => tool.name === "sandbase_discover"));
-  assert.equal(call!.result.isError, true); assert.match(call!.result.content[0].text, /unreachable from this machine \(api\.sandbase\.ai: connection timed out; www\.sandbase\.ai: connection timed out\).*sandbase doctor/);
+  assert.equal(call!.result.isError, true); assert.match(call!.result.content[0].text, /unreachable from this machine \(api\.sandbase\.ai: connection timed out\).*sandbase doctor/);
 
+  // The mixed/failover scenario needs a second host to switch to; there is no
+  // implicit fallback, so configure one explicitly for this session. The API
+  // ships only on api.sandbase.ai — this mirror is a test fixture.
+  const mirrorEnv = { ...env, SANDBASE_MCP_FALLBACK_URLS: "https://sandbase.ai/v1/mcp" };
   const mixed = fakeFetch(call => call.url.includes("api.sandbase.ai") ? connectTimeout() : call.method === "tools/list" ? { body: { result: { tools: [{ name: "sandbase_discover", description: "live" }] } } } : call.method === "tools/call" && (call.params as { name: string }).name === "sandbase_account" ? { status: 402, body: '{"error":"API key spending limit exceeded"}' } : { body: { error: { code: -32603, message: "capability call failed" } } });
-  const [listed, failed, broke] = await bridge(env, mixed.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/list" }, { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "sandbase_run", arguments: {} } }, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sandbase_account", arguments: {} } }]);
+  const [listed, failed, broke] = await bridge(mirrorEnv, mixed.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/list" }, { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "sandbase_run", arguments: {} } }, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sandbase_account", arguments: {} } }]);
   assert.equal(listed!.result.tools[0].description, "live");
   assert.equal(failed!.result.isError, true); assert.match(failed!.result.content[0].text, /capability call failed\. The upstream provider failed\. Retry once/);
   assert.equal(broke!.result.isError, true); assert.match(broke!.result.content[0].text, /\(402\): API key spending limit exceeded.*console\/billing/);
   assert.ok(mixed.calls.filter(call => call.url.includes("api.sandbase.ai")).length <= 1, "after one fallback the session stays on the mirror");
 
-  const cachedOffline = await bridge(env, offline.fetch, [{ jsonrpc: "2.0", id: 9, method: "tools/list" }]);
+  const cachedOffline = await bridge(mirrorEnv, offline.fetch, [{ jsonrpc: "2.0", id: 9, method: "tools/list" }]);
   assert.equal(cachedOffline[0]!.result.tools[0].description, "live", "offline tools/list serves the last live list");
 });
 
 function resetAfterSend(): Error { const error = new TypeError("fetch failed") as TypeError & { cause?: unknown }; error.cause = { code: "ECONNRESET" }; return error; }
 
+// Failover is exercised through an explicitly configured mirror, since there
+// is no implicit cross-host fallback anymore. The mirror host here is only a
+// test fixture for the failover rules; the API itself ships only on
+// api.sandbase.ai.
+async function homeWithMirror(): Promise<NodeJS.ProcessEnv> { return { ...(await home()), SANDBASE_MCP_FALLBACK_URLS: "https://sandbase.ai/v1/mcp" }; }
+
 test("a paid run interrupted after sending is never replayed on the mirror", async () => {
-  const env = await home(); await connected(env);
+  const env = await homeWithMirror(); await connected(env);
   const { fetch, calls } = fakeFetch(call => call.url.includes("api.sandbase.ai") ? resetAfterSend() : toolResult({ prediction_id: "pred_dup", status: "completed", output: "x" }));
   const result = await cli("run", ["sandbase_paid", "-i", "{}", "-j"], env, fetch);
   assert.equal(result.code, 1);
   assert.equal(calls.filter(call => call.method === "tools/call").length, 1, "no second sandbase_run");
   assert.match(JSON.parse(result.out).error.message, /may have started a run/);
   const reads = fakeFetch(call => call.url.includes("api.sandbase.ai") ? resetAfterSend() : toolResult({ balance: "2" }));
-  assert.equal((await cli("balance", [], await (async () => { const e = await home(); await connected(e); return e; })(), reads.fetch)).code, 0, "idempotent reads may fail over");
+  assert.equal((await cli("balance", [], await (async () => { const e = await homeWithMirror(); await connected(e); return e; })(), reads.fetch)).code, 0, "idempotent reads may fail over");
 });
 
 test("HTTP 5xx on the primary fails over for idempotent calls only", async () => {
-  const env = await home(); await connected(env);
+  const env = await homeWithMirror(); await connected(env);
   const { fetch, calls } = fakeFetch(call => call.url.includes("api.sandbase.ai") ? { status: 502, body: "<html>bad gateway</html>" } : toolResult({ balance: "4" }));
   const ok = await cli("balance", [], env, fetch);
   assert.equal(ok.code, 0); assert.match(ok.out, /\$4/); assert.equal(calls.length, 2);
-  const env2 = await home(); await connected(env2);
+  const env2 = await homeWithMirror(); await connected(env2);
   const paid = fakeFetch(call => call.url.includes("api.sandbase.ai") ? { status: 502, body: "" } : toolResult({ prediction_id: "p", status: "completed" }));
   const failed = await cli("run", ["sandbase_paid", "-i", "{}"], env2, paid.fetch);
   assert.equal(failed.code, 1); assert.equal(paid.calls.length, 1); assert.match(failed.err, /\[UPSTREAM\].*HTTP 502/);
