@@ -79,6 +79,19 @@ test("network and HTTP failures carry a code and a next step", async () => {
   assert.equal(JSON.parse(json.out).error.code, "NETWORK"); assert.doesNotMatch(json.out + json.err, /test-credential-value/);
 });
 
+test("discover shows a HEALTH column and inspect shows a health line", async () => {
+  const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
+  const discover = fakeFetch(() => toolResult({ data: [{ tool_name: "sandbase_a", category: "api", vendor: "V", pricing: { base_price: "0.01" }, description: "x", metrics: { status: "stable", run_time_ms: { p50: 3543, p95: 27748 }, sample_size: 75 } }], count: 1 }));
+  const found = await cli("discover", ["-q", "a"], env, discover.fetch);
+  assert.match(found.out, /HEALTH/); assert.match(found.out, /stable 3\.5s/); assert.match(found.out, /break ties/);
+  const inspect = fakeFetch(() => toolResult({ tool_name: "sandbase_a", description: "x", pricing: { base_price: "0.01" }, inputSchema: { type: "object", properties: {} }, metrics: { status: "stable", run_time_ms: { p50: 3543, p95: 27748 }, sample_size: 75 } }));
+  const detail = await cli("inspect", ["sandbase_a"], env, inspect.fetch);
+  assert.match(detail.out, /Health: stable · 3\.5s typical, 27\.7s tail · 75 samples/);
+  // No metrics -> no HEALTH noise beyond the (empty) column.
+  const bare = fakeFetch(() => toolResult({ tool_name: "sandbase_b", description: "y", pricing: {}, inputSchema: { type: "object", properties: {} } }));
+  assert.doesNotMatch((await cli("inspect", ["sandbase_b"], env, bare.fetch)).out, /Health:/);
+});
+
 test("discover renders a table with price and next step; zero results show server hints", async () => {
   const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
   const { fetch, calls } = fakeFetch(call => toolResult(call.params?.arguments && (call.params.arguments as { q?: string }).q === "none" ? { data: [], count: 0, hints: ["Try different keywords."] } : { data: [{ tool_name: "sandbase_flux", category: "multimodal", vendor: "BFL", pricing: { base_price: "0.0480" }, run_count: 12, description: "Text to image" }], count: 1 }));
@@ -304,7 +317,7 @@ test("setup refreshes the bridge and SandBase-owned Skills but leaves edited Ski
     const lines: string[] = [];
     assert.equal(await setup(new FileCredentialStore(env.SANDBASE_HOME!), line => void lines.push(line)), true);
     assert.match(lines.join("\n"), /bridge: status=updated/); assert.match(lines.join("\n"), /claude-code: skill=updated/); assert.match(lines.join("\n"), /kiro: skill=modified/);
-    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.0/);
+    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.1/);
     assert.match(await readFile(join(kiroDir, "SKILL.md"), "utf8"), /user edit/);
   } finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });
