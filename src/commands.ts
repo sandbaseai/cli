@@ -19,6 +19,7 @@ import { claudeDesktopArtifactPath, readClaudeDesktopArtifactState, removeClaude
 import { coworkStatePath, readCoworkState, removeCoworkState, rollbackCoworkState } from "./cowork.js";
 import { atomicWrite, readOptional, restore } from "./fs-safe.js";
 import { configPath } from "./paths.js";
+import { probeEndpoint } from "./agent/probe.js";
 
 const sleep = (ms: number, signal?: AbortSignal) => new Promise<void>((resolve, reject) => { const t = setTimeout(resolve, ms); signal?.addEventListener("abort", () => { clearTimeout(t); reject(new Error("Authorization cancelled")); }, { once: true }); });
 type Detection = { installed: boolean; detail: string };
@@ -381,6 +382,49 @@ export async function doctor(client: ConnectClient = "auto", store: CredentialSt
     console.log(`${target}: status=${status}, mcp=${configured ? "configured" : "not_configured"}, skill=${skill}, invocation=${capability.invocation}, verification=${capability.verification}, shared_skill_references=${references.join(",") || "none"}, next_step=${skillDetail}`);
     healthy = healthy && detected.installed && !!credential && configured && !["missing", "modified"].includes(skill);
   }
+  if (!(await probeStoredCredentials(targets, store))) healthy = false;
+  return healthy;
+}
+
+/**
+ * Live runtime checks: flags an outdated shared bridge and makes one real
+ * authenticated round trip per distinct stored credential. Skipped with
+ * SANDBASE_DOCTOR_NETWORK=0 (offline fixtures and tests).
+ */
+async function probeStoredCredentials(targets: Client[], store: CredentialStore, env = process.env): Promise<boolean> {
+  if (env.SANDBASE_DOCTOR_NETWORK === "0") return true;
+  let ok = true;
+  if (await inspectBridge() === "invalid") { console.log("bridge: status=outdated, next_step=The local MCP bridge is from another CLI version. Run `npx -y @sandbaseai/cli@latest setup` to refresh it and the SandBase Skill, then restart your AI client."); ok = false; }
+  const seen = new Set<string>();
+  for (const target of targets) {
+    let record: CredentialRecord | undefined;
+    try { record = await store.get(target); } catch { continue; }
+    if (!record?.credential || !record.mcpUrl || seen.has(record.credential)) continue;
+    seen.add(record.credential);
+    const result = await probeEndpoint(target, record.credential, record.mcpUrl, env);
+    console.log(result.line); ok = ok && result.ok;
+  }
+  return ok;
+}
+
+const refreshableSkillClients: Client[] = ["claude-code", "cursor", "hermes", "kiro"];
+/**
+ * `sandbase setup`: refresh everything a newer CLI ships without a new browser
+ * sign-in — the shared MCP bridge and every SandBase-owned Skill copy — then
+ * verify connectivity. User-modified Skills are never overwritten.
+ */
+export async function setup(store: CredentialStore = new FileCredentialStore(), log: (line: string) => void = console.log): Promise<boolean> {
+  let healthy = true;
+  const connected: Client[] = [];
+  for (const client of clients) { try { const record = await store.get(client); if (record?.credential) connected.push(client); } catch { /* unreadable store is reported below */ } }
+  if (connected.length) { const bridge = await installBridge(); log(`bridge: status=${bridge.changed ? "updated" : "current"}, path=${bridge.path}`); }
+  else log(`bridge: status=skipped, next_step=No connected client yet. Run \`npx -y @sandbaseai/cli@latest connect\` to sign in once in the browser.`);
+  for (const client of refreshableSkillClients) {
+    const state = await inspectSkill(client);
+    if (state === "installed") { try { const result = await installSkill(client); log(`${client}: skill=${result.changed ? "updated" : "current"}`); } catch (error) { healthy = false; log(`${client}: skill=failed, reason=${safeFailure(error)}`); } }
+    else if (state === "modified") log(`${client}: skill=modified, next_step=A locally edited SandBase Skill was left untouched; replace it with https://www.sandbase.ai/skill.md if you want the latest guidance.`);
+  }
+  if (connected.length && !(await probeStoredCredentials(connected, store))) healthy = false;
   return healthy;
 }
 

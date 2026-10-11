@@ -22,7 +22,8 @@ test("package declares the native Skill at the standard registry path", async ()
   const skill = await readFile(join(process.cwd(), "skills", "sandbase", "SKILL.md"), "utf8");
   assert.match(skill, /name: sandbase/);
   assert.match(skill, /sandbase-cli-managed: sandbase/);
-  assert.match(skill, /^disable-model-invocation: true$/m);
+  assert.doesNotMatch(skill, /disable-model-invocation/);
+  assert.match(skill, /Proactively search SandBase/);
 });
 
 test("MCP Registry metadata exposes the authenticated remote endpoint", async () => {
@@ -37,7 +38,7 @@ test("MCP Registry metadata exposes the authenticated remote endpoint", async ()
   };
 
   assert.equal(manifest.name, "io.github.sandbaseai/cli");
-  assert.equal(manifest.version, "0.1.17");
+  assert.equal(manifest.version, JSON.parse(await readFile(join(process.cwd(), "package.json"), "utf8")).version);
   assert.deepEqual(manifest.remotes, [
     {
       type: "streamable-http",

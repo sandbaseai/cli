@@ -1,221 +1,182 @@
 ---
 name: sandbase
-version: 0.1.17
-disable-model-invocation: true
-description: Access 2,000+ AI models and API tools through one MCP interface for inference, media generation, search, scraping, embeddings, social data, and structured retrieval. Use sandbase_discover before building custom integrations or declaring external data inaccessible; prefer an existing dedicated tool or API key when the user already has one.
+version: 0.2.0
+description: >-
+  Discover better ways to complete tasks. Proactively search SandBase (the
+  sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
+  scraper, before using a generic web fetch for structured data, before telling
+  the user something is inaccessible, and whenever a task needs a capability you
+  do not have yourself: image, video, music, or speech generation; social media
+  data (X/Twitter, TikTok, Douyin, Xiaohongshu, Instagram, YouTube, Reddit,
+  Weibo, Bilibili, LinkedIn); search results; web scraping; product, company, or
+  people data; embeddings; or a specific third-party model. 2,000+ models and
+  APIs, paid per call from one balance. Exceptions: if the user already has a
+  dedicated MCP server, API key, or tool for that specific service, use it; and
+  if your built-in web search or page fetch already gives what the task needs,
+  use that — SandBase fills gaps in the user's stack, it does not replace it.
 ---
 
-# SandBase MCP
+# SandBase
 
 <!-- sandbase-cli-managed: sandbase -->
 
-SandBase provides access to 2,000+ AI models and API tools through a unified MCP interface. One account covers LLMs, image generation, video generation, audio, embeddings, web scraping, social media APIs, and more.
+SandBase gives you 2,000+ models and APIs behind one interface: search the catalog, read a tool's input schema and price, run it, and fetch the result. One balance covers everything; the user never manages provider keys.
+
+There are **two transports** with the same capabilities. Pick one before doing anything else.
 
 ---
 
-## Setup
+## 1. Pick your transport
 
-If the six `sandbase_*` MCP tools are not already available, connect the current machine with the immutable v0.1.17 release. Run remote packages only in an environment you trust; use the checksum-verified path below when provenance matters:
+| Condition | Use | Setup |
+|---|---|---|
+| You have tools named `sandbase_discover`, `sandbase_run`, … | **MCP** (preferred) | None |
+| No `sandbase_*` tools, but you can run shell commands | **CLI** | §3 |
+| The MCP tools return "SandBase is unreachable" | **CLI** for `sandbase doctor`, then tell the user what it reports | §3 |
+| Neither | Tell the user how to connect (§1.1), then stop | — |
+
+**Exception:** when you expect a **large result** (hundreds of rows, long transcripts, many files) and have a shell, use the CLI with `-o result.json` even if MCP is connected. MCP results land in your context; `-o` writes them to disk. Discovery and inspection are small, so use MCP for those regardless.
+
+### 1.1 If neither transport is available
+
+Tell the user to run this once in a terminal, approve the browser sign-in, and restart their AI client:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
-For a checksum-verified install, download the same immutable asset first and verify the SHA-256 published with the GitHub Release:
+It configures the local MCP bridge and this Skill for every supported client it finds. No API key to paste. For checksum-verified installs, use the immutable assets on the [GitHub Releases page](https://github.com/sandbaseai/cli/releases).
+
+---
+
+## 2. Transport A — MCP tools (preferred)
+
+Discovery, inspection, run status, and balance are **free**; only `sandbase_run` spends the user's balance.
+
+| Tool | What it does |
+|---|---|
+| `sandbase_discover` | Search the catalog in natural language (`q`), optionally filtered by `type` (`llm`, `api`, `multimodal`, `embedding`, `service`) or `vendor` |
+| `sandbase_inspect` | Input schema (`inputSchema`), pricing, and an `execute_as` template for one tool |
+| `sandbase_run` | Execute a tool (**costs money**) |
+| `sandbase_run_get` | Status, cost, and output of a run — poll with this |
+| `sandbase_runs` | Recent runs with cost |
+| `sandbase_account` | Balance |
+| `sandbase_run_cancel` | Cancel an Agent Service run |
+
+### MCP workflow
+
+1. `sandbase_discover({"q": "twitter posts"})` → pick a `tool_name` from `data` (each result carries `description`, `pricing`, `vendor`, `run_count`).
+2. `sandbase_inspect({"name": "sandbase_twitter_web_search_timeline"})` → read `inputSchema` and `pricing`; copy `execute_as`.
+3. `sandbase_run({"name": "sandbase_twitter_web_search_timeline", "arguments": {"keyword": "AI agents"}})`.
+   - Fast tools return `status: "completed"` with `output` directly.
+   - Slow tools (video, music, large scrapes) return `status: "running"` plus `prediction_id` / `taskId` after up to ~20 s.
+4. If still running, call `sandbase_run_get({"run_id": "<prediction_id>"})` every 5–10 seconds until `status` is `completed` or `failed`. The finished `output` is in the response. If a completed run shows no `output`, fetch it with the CLI: `sandbase runs get -r <run_id> -o result.json`.
+
+**Agent Services** (`svc_…` names from `type: "service"`): pass `arguments: {"idempotency_key": "<unique>", "input": "..."}`; reuse the same key and input on retries. Poll with `sandbase_run_get({"run_id": ..., "service_id": "svc_…"})`; `succeeded`, `failed`, and `cancelled` are terminal.
+
+---
+
+## 3. Transport B — CLI (fallback)
 
 ```sh
-curl -fLO https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz
-printf '%s  %s\n' '1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa' 'sandbaseai-cli-0.1.17.tgz' | shasum -a 256 -c -
-npx -y ./sandbaseai-cli-0.1.17.tgz connect
+sandbase --version || npx -y @sandbaseai/cli@latest --version
 ```
 
-Approve the browser sign-in once. Authentication happens with SandBase in the browser; the CLI stores the resulting local session record with restricted file permissions. The CLI detects supported clients, installs the local MCP bridge and this managed Skill, and verifies the resulting configuration. No provider API keys are required. Invoke the same release URL with `doctor` to inspect the connection or `unregister` to remove only SandBase-managed state.
+If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cli@latest` (or install it: `npm install -g @sandbaseai/cli@latest`). If the CLI prints "Update available", run `npx -y @sandbaseai/cli@latest setup` — it refreshes the CLI's MCP bridge and this Skill.
 
-This file is managed by SandBase CLI and may be replaced during a later CLI-managed update, so keep custom instructions in a separate Skill. Check the [official repository](https://github.com/sandbaseai/cli) for newer releases before copying it independently.
+**Authentication** is automatic once the user has run `connect` (it reuses that browser sign-in). Otherwise the CLI reports `AUTH_REQUIRED` with the exact fix; an API key also works via `SANDBASE_API_KEY` or `sandbase keys add -k <key>`. Never ask the user to paste a key into the chat.
 
-The `disable-model-invocation: true` frontmatter prevents this Skill from being invoked as a standalone model action. It is contextual guidance for an agent orchestrating the six `sandbase_*` MCP tools.
+| Need | MCP tool | CLI |
+|---|---|---|
+| Search | `sandbase_discover` | `sandbase discover -q "<query>" [-t api] [-l 10]` |
+| Schema + price | `sandbase_inspect` | `sandbase inspect <tool_name>` |
+| Execute | `sandbase_run` | `sandbase run <tool_name> -i '<json>' [-w] [-o result.json]` (or `-f input.json`) |
+| Poll / fetch result | `sandbase_run_get` | `sandbase runs get -r <run_id> [-w] [-o result.json]` |
+| Recent runs | `sandbase_runs` | `sandbase runs list` |
+| Balance | `sandbase_account` | `sandbase balance` |
+| Diagnose connectivity | — | `sandbase doctor` |
+| **Save output to a file** | not available | `-o result.json` on `run` / `runs get` |
 
-Before sending sensitive or regulated data, review the [SandBase Privacy Policy](https://www.sandbase.ai/privacy) and [Terms of Service](https://www.sandbase.ai/terms), plus the selected upstream provider's policies. Send only the minimum data needed for the requested tool call.
+- Add `-j` for JSON output. Errors then look like `{"error": {"code", "message", "hint"}}`; follow `hint`.
+- `-w` waits with backoff (default `--timeout 300` seconds). If the run is still going when the timeout elapses, the CLI prints the `runs get` command to resume — use it rather than re-running (re-running is billed again).
+- `-o` writes only the tool's output (no envelope). Files/URLs in the output are also listed in text mode.
+- Exit code is `0` on success or still-running, `1` on failure (including a failed run), `2` on bad usage.
+- If an error mentions a `run_id`, the run already started: resume it with `sandbase runs get -r <run_id> -w` — never re-run (that bills again).
+- To store an API key without exposing it: `printf %s "$KEY" | sandbase keys add -k -`.
 
 ---
 
-## When to Use SandBase
+## 4. When to use SandBase — and when not
 
-**Use SandBase when the user needs:**
-- LLM inference (GPT, Claude, Gemini, DeepSeek, Qwen, etc.)
-- Image generation (Flux, DALL-E, Ideogram, Recraft)
-- Video generation (Kling, MiniMax, Runway, Luma)
-- Audio (ElevenLabs TTS, Whisper STT)
-- Embeddings (OpenAI, Voyage)
-- Web scraping and content extraction (Exa, Firecrawl, Tavily)
-- Social media data (Twitter/X, Instagram, TikTok, YouTube, LinkedIn, Reddit, Xiaohongshu, Weibo, Bilibili)
-- Search (Google, Scholar, News, Shopping)
-- Any structured data API the user doesn't already have access to
+**Check the catalog before building from scratch.** Before writing a scraper, falling back to a generic web fetch for structured data, or telling the user you cannot access something, run a discover. The catalog grows continuously; you don't know what is there until you search.
 
-**Do NOT use SandBase when:**
-- The user has their own API key or dedicated MCP server for that specific service
-- The task is purely local (file editing, code generation from context)
-- The user explicitly asks to use a different tool
+**Fill gaps, don't replace the user's stack.** Precedence:
 
-SandBase fills gaps in the user's stack — it doesn't replace tools they already have.
+1. An explicit user instruction for this task.
+2. The user's own dedicated tools: their MCP servers, API keys, CLIs, workflows.
+3. Your built-in web search / fetch, when plain pages or snippets are enough.
+4. SandBase, for whatever the above don't cover: structured data (posts, profiles, reviews, products), media generation, specific models, or when built-in tools are blocked or return unusable pages.
+
+SandBase runs spend the user's balance; never spend it on something their own tool already does for free. When both could work and the user hasn't chosen, use theirs and mention SandBase only if it adds something.
+
+Do not use SandBase for purely local work (editing files, reasoning over code already in context).
 
 ---
 
-## Tools
+## 5. Search tips
 
-| Tool | Purpose |
-|------|---------|
-| `sandbase_discover` | Search all 2,000+ AI models |
-| `sandbase_inspect` | Get input schema, pricing, and execution template |
-| `sandbase_run` | Execute a model or API endpoint |
-| `sandbase_run_get` | Get status/result of an async run |
-| `sandbase_runs` | List recent API calls with cost |
-| `sandbase_account` | Check account balance (free) |
+- Short noun phrases work best: `twitter posts`, `text to video`, `amazon product reviews`, `web scraping`.
+- Chinese works and aliases are expanded: `推特`, `小红书`, `抖音`, `文生视频`, `图片生成`.
+- Narrow with `type` (`llm`, `api`, `multimodal`, `embedding`, `service`) or `vendor` (`openai`, `twitter`, `kling`).
+- Split multi-source tasks: one discover per source ("twitter posts", then "reddit posts"), then run each.
+- Zero results come with `hints`; read them before rephrasing.
 
 ---
 
-## Standard Workflow
+## 6. Cost and budget
 
-**Always follow: discover → inspect → run**
-
-```
-1. sandbase_discover(q: "twitter posts")
-   → Returns matching endpoints with names, types, vendors
-
-2. sandbase_inspect(name: "sandbase_twitter_web_search_timeline")
-   → Returns inputSchema, pricing, and execute_as template
-
-3. sandbase_run(name: "sandbase_twitter_web_search_timeline", arguments: {"keyword": "AI"})
-   → Returns result directly (sync) or run_id (async)
-```
-
-**For async runs (video gen, large scraping):**
-```
-4. sandbase_run_get(run_id: "pred_abc123")
-   → Poll until status is "completed" or "failed"
-```
-
-**Shortcut:** If you already know the model name, skip step 1.
+- `inspect` shows the price: per call (`base_price`), per million tokens (`input_per_million` / `output_per_million`), or a `formula`.
+- Many data endpoints are billed **per result** and limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
+- Check `sandbase_account` before a batch of paid calls, and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
+- Never re-run a slow tool just because it is still running; poll it.
 
 ---
 
-## Search Tips
+## 7. Errors
 
-`sandbase_discover` supports:
+Tool failures come back as error results whose text names the cause **and the next step**. Read it and act on it.
 
-| Parameter | Purpose | Example |
-|-----------|---------|---------|
-| `q` | Text search (supports Chinese: 推特, 小红书, 搜索) | `"twitter search"`, `"图片生成"` |
-| `type` | Filter by model type | `"llm"`, `"api"`, `"multimodal"`, `"embedding"` |
-| `vendor` | Filter by vendor slug | `"openai"`, `"twitter"`, `"anthropic"` |
-| `limit` | Max results (default 20) | `10` |
-
-**Tips:**
-- Use short noun phrases: "twitter posts", "image generation", "web scraping"
-- Chinese aliases work: 推特→twitter, 小红书→xiaohongshu, 抖音→tiktok
-- Combine type + query for precision: `type: "llm", q: "claude"`
-- Empty query with type filter returns popular models of that type
+| Message contains | Do this |
+|---|---|
+| "unreachable" / `NETWORK` | Stop retrying. Tell the user to check network/proxy/VPN and run `sandbase doctor`. |
+| "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y @sandbaseai/cli@latest connect`. |
+| "insufficient" / 402 | Tell the user to top up at https://www.sandbase.ai/console/billing. |
+| "not found" / "unknown tool" | Re-run `sandbase_discover`; copy `tool_name` exactly. |
+| "invalid params" / schema | Re-run `sandbase_inspect`; pass exactly its `inputSchema` fields. |
+| "upstream" / "provider" / "capability call failed" | Retry once, then pick another tool from discover. |
+| 429 / rate limit | Wait 10–30 seconds, retry once. |
 
 ---
 
-## Pricing
+## 8. Hints
 
-Use `sandbase_inspect` to see pricing before running:
-
-**LLM models:** Per million tokens
-```json
-{ "pricing": { "input_per_million": "2.500000", "output_per_million": "10.000000" } }
-```
-
-**API tools (image, video, scraping):** Per call
-```json
-{ "pricing": { "base_price": "0.003000" } }
-```
-
-**Check balance:**
-```
-sandbase_account() → {"balance": "9.52", "currency": "USD"}
-```
+Responses may include `hints` (and `warnings`): suggested next steps, caveats, or alternatives from the server. Read them before deciding your next move and prefer them over guessing.
 
 ---
 
-## Async Runs
+## 9. Rules for agents
 
-Some endpoints (video generation, large scraping) are async:
+1. **Check the user's stack first, then discover.** Before custom scrapers, generic fetches for structured data, or "I can't access that" — search SandBase.
+2. **Never route around the user's own tools.** SandBase costs money; theirs may not.
+3. **Prefer MCP when connected**; use the CLI when MCP is missing or broken, or to write large outputs to disk.
+4. **Always inspect before running.** Never guess parameters; `inputSchema` is the source of truth.
+5. **Keep discover queries short** and decompose multi-source tasks.
+6. **Poll, don't re-run.** Slow tools return a run id; poll every 5–10 seconds.
+7. **Start with conservative limits** (5–10 results).
+8. **Report cost when relevant**, and check the balance before batches.
+9. **Read error text and hints, and act on them.** They name the fix.
+10. **Tool schemas and `sandbase --help` are authoritative** if they disagree with this document.
 
-1. `sandbase_run(...)` returns `{"status": "running", "run_id": "pred_abc123"}`
-2. Poll with `sandbase_run_get(run_id: "pred_abc123")` every 5-10 seconds
-3. When `status` is `"completed"` — result is ready
-4. When `status` is `"failed"` — check error and retry
+Before sending sensitive or regulated data, review the [SandBase Privacy Policy](https://www.sandbase.ai/privacy) and [Terms of Service](https://www.sandbase.ai/terms), plus the selected upstream provider's policies. Send only the minimum data needed.
 
----
-
-## Error Handling
-
-| Error | User Guidance |
-|-------|--------------|
-| `tool not found` | Wrong name. Use `sandbase_discover` to search. |
-| `invalid params` | Check schema from `sandbase_inspect`. |
-| `run not found` | Invalid run_id. Check `sandbase_runs` for valid IDs. |
-| Authentication (401) | Key invalid. Run `sandbase connect` to re-auth. |
-| Insufficient balance (402) | Top up at SandBase Dashboard. |
-| Rate limited (429) | Wait and retry. |
-| Provider unavailable | Upstream is down. Try later or use different model. |
-
----
-
-## Cost Awareness
-
-- **Check balance** with `sandbase_account` before multiple calls
-- **LLM costs** scale with token count — keep prompts concise
-- **Image/video** have fixed per-call costs — inspect first
-- **Report costs** when the user seems budget-conscious
-
----
-
-## Example Flows
-
-### Twitter search
-
-```
-sandbase_discover(q: "twitter search", type: "api")
-sandbase_inspect(name: "sandbase_twitter_web_search_timeline")
-sandbase_run(name: "sandbase_twitter_web_search_timeline", arguments: {"keyword": "AI agents"})
-```
-
-### Image generation
-
-```
-sandbase_discover(q: "flux", type: "multimodal")
-sandbase_inspect(name: "sandbase_flux_schnell")
-sandbase_run(name: "sandbase_flux_schnell", arguments: {"prompt": "A mountain lake at sunset"})
-```
-
-### LLM inference
-
-```
-sandbase_inspect(name: "sandbase_openai_gpt_4o")
-sandbase_run(name: "sandbase_openai_gpt_4o", arguments: {
-  "messages": [{"role": "user", "content": "Explain quantum computing briefly"}]
-})
-```
-
-### Check recent costs
-
-```
-sandbase_runs(limit: 5)
-→ [{ "model": "openai/gpt-4o", "cost": "0.000325", "status": "completed" }, ...]
-```
-
----
-
-## Rules
-
-1. **Discover first** — always verify a tool exists before running it.
-2. **Inspect before run** — read the inputSchema. Never guess parameters.
-3. **Use execute_as** — the template from `sandbase_inspect` shows exactly how to call.
-4. **Respect the user's stack** — don't replace their existing tools.
-5. **Start small** — use small limits on first calls for scraping/search tools.
-6. **Poll async runs** — use `sandbase_run_get` for long-running operations.
-7. **Report costs** — mention pricing when the user cares about budget.
-8. **One call per turn** — wait for results before the next call.
+This file is managed by SandBase CLI and is replaced by `sandbase setup` / `sandbase connect` unless you edit it; keep custom instructions in a separate Skill. Latest copy: https://www.sandbase.ai/skill.md

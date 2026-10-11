@@ -270,10 +270,28 @@ The integration is independently listed by
 
 ```sh
 sandbase connect [--client <name>]    # Authorize + configure
-sandbase doctor [--client <name>]     # Health check
+sandbase setup                        # After upgrading: refresh the local bridge + Skill, test connectivity
+sandbase doctor [--client <name>]     # Local checks plus one real round trip to SandBase
 sandbase unregister [--client <name>] # Remove configuration
 sandbase catalog --json               # List all supported clients
 ```
+
+### Agent Commands (shell transport, same capabilities as the MCP tools)
+
+Agents without MCP, or with a broken MCP session, use the same catalog from a shell. Credentials come from `connect` automatically (or `SANDBASE_API_KEY` / `sandbase keys add -k <key>`).
+
+```sh
+sandbase discover -q "twitter posts"                       # search; -t api|llm|multimodal|embedding|service
+sandbase inspect sandbase_twitter_web_search_timeline       # fields, price, ready-to-run command
+sandbase run sandbase_twitter_web_search_timeline -i '{"keyword":"AI agents"}'
+sandbase run <video_tool> -i '{"prompt":"..."}' -w -o result.json   # wait with backoff, save output to disk
+sandbase runs get -r <run_id> -w -o result.json            # resume a long run instead of re-running it
+sandbase runs list | sandbase balance
+```
+
+`-j` prints JSON; errors are `{"error":{"code","message","hint"}}` with the next step in `hint`. Exit codes: `0` success or still running, `1` failure (including a failed run), `2` usage.
+
+If `api.sandbase.ai` is unreachable, the CLI and the MCP bridge fall back to `www.sandbase.ai` automatically, and the bridge keeps the SandBase tools visible with an actionable error instead of dropping the server.
 
 ### MCP Tools (available to your agent after connecting)
 
