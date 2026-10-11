@@ -17,11 +17,11 @@ for (const client of ["codex","claude-code","cursor","hermes"] as Client[]) test
   assert.equal(await unregister(client,env),true); const removed=await readFile(path,"utf8"); assert.ok(!removed.includes("safe bridge")); assert.ok(removed.includes("other") || removed.includes("model")); await rollback(one); assert.equal(await readFile(path,"utf8"),original);
 });
 
-test("Codex config raises the tool timeout and tells the bridge long waits are allowed", async () => {
+test("Codex config raises the tool timeout so long sync calls are not cut at 60s", async () => {
   const home=await mkdtemp(join(tmpdir(),"sandbase-codex-timeout-")); const env={HOME:home,CODEX_HOME:join(home,".codex")}; await mkdir(env.CODEX_HOME,{recursive:true});
   await configure("codex","/sandbase-mcp-bridge.mjs",env);
   const text=await readFile(join(env.CODEX_HOME,"config.toml"),"utf8");
-  assert.match(text,/^tool_timeout_sec = 1800$/m); assert.match(text,/SANDBASE_LONG_TOOL_CALLS = "1"/);
+  assert.match(text,/^tool_timeout_sec = 1800$/m);
   assert.equal(await isConfigured("codex",env),true);
 });
 

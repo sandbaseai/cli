@@ -58,7 +58,7 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 | `sandbase_discover` | Search the catalog in natural language (`q`), optionally filtered by `type` (`llm`, `api`, `multimodal`, `embedding`, `service`) or `vendor` |
 | `sandbase_inspect` | Input schema (`inputSchema`), pricing, and an `execute_as` template for one tool |
 | `sandbase_run` | Execute a tool (**costs money**) |
-| `sandbase_run_get` | Status, cost, and output of a run; through the bridge it waits for a run that is still going |
+| `sandbase_run_get` | Status, cost, and output of a run — poll with this |
 | `sandbase_runs` | Recent runs with cost |
 | `sandbase_account` | Balance |
 | `sandbase_run_cancel` | Cancel an Agent Service run |
@@ -67,8 +67,10 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 
 1. `sandbase_discover({"q": "twitter posts"})` → pick a `tool_name` from `data` (each result carries `description`, `pricing`, `vendor`, `run_count`).
 2. `sandbase_inspect({"name": "sandbase_twitter_web_search_timeline"})` → read `inputSchema` and `pricing`; copy `execute_as`.
-3. `sandbase_run({"name": "sandbase_twitter_web_search_timeline", "arguments": {"keyword": "AI agents"}})` waits for the result and returns `status: "completed"` with `output` in the same call. Most tools, including image generation, finish within that wait. In Claude Code and Codex the SandBase bridge keeps waiting for slow jobs too (video, music, large scrapes). Do not call it again while it is working.
-4. If it returns `status: "running"` (a slow job on a client that limits tool calls to about a minute), call `sandbase_run_get({"run_id": "<run_id>"})` — through the bridge it waits up to ~50 s and returns the `output` once ready. Repeat until `completed` or `failed`; never call `sandbase_run` again for the same job (that starts and bills a new run).
+3. `sandbase_run({"name": "sandbase_twitter_web_search_timeline", "arguments": {"keyword": "AI agents"}})`. There are two kinds of tools:
+   - **Sync** (LLMs, most data APIs): the call waits for the upstream and returns `status: "completed"` with `output` directly.
+   - **Async** (image, video, audio, other long jobs): the call returns at once with `status: "running"` and a `run_id` (also `prediction_id` / `taskId`).
+4. For an async run, call `sandbase_run_get({"run_id": "<run_id>"})` every 5–10 seconds until `status` is `completed` or `failed`; the finished `output` is in that response. A run that has finished but is still copying its files also reports `running` — keep polling. Never call `sandbase_run` again for the same job (that starts and bills a new run).
 
 **Agent Services** (`svc_…` names from `type: "service"`): pass `arguments: {"idempotency_key": "<unique>", "input": "..."}`; reuse the same key and input on retries. Poll with `sandbase_run_get({"run_id": ..., "service_id": "svc_…"})`; `succeeded`, `failed`, and `cancelled` are terminal.
 
@@ -88,18 +90,18 @@ If `sandbase` is not installed, prefix every command with `npx -y https://github
 |---|---|---|
 | Search | `sandbase_discover` | `sandbase discover -q "<query>" [-t api] [-l 10]` |
 | Schema + price | `sandbase_inspect` | `sandbase inspect <tool_name>` |
-| Execute (waits for the result) | `sandbase_run` | `sandbase run <tool_name> -i '<json>' [-o result.json]` (or `-f input.json`) |
-| Resume / fetch result | `sandbase_run_get` | `sandbase runs get -r <run_id> [-o result.json]` |
+| Execute | `sandbase_run` | `sandbase run <tool_name> -i '<json>' [-w] [-o result.json]` (or `-f input.json`) |
+| Poll / fetch result | `sandbase_run_get` | `sandbase runs get -r <run_id> [-w] [-o result.json]` |
 | Recent runs | `sandbase_runs` | `sandbase runs list` |
 | Balance | `sandbase_account` | `sandbase balance` |
 | Diagnose connectivity | — | `sandbase doctor` |
 | **Save output to a file** | not available | `-o result.json` on `run` / `runs get` |
 
 - Add `-j` for JSON output. Errors then look like `{"error": {"code", "message", "hint"}}`; follow `hint`.
-- `run` and `runs get` wait for the result (default `--timeout 300` seconds; `--no-wait` returns right after starting). The run id is printed to stderr as soon as the run starts. If the run is still going when the timeout elapses — or your shell command times out — resume with `sandbase runs get -r <run_id>` rather than re-running (re-running is billed again). Give long media runs a shell timeout of a few minutes.
+- `-w` waits with backoff (default `--timeout 300` seconds). If the run is still going when the timeout elapses, the CLI prints the `runs get` command to resume — use it rather than re-running (re-running is billed again).
 - `-o` writes only the tool's output (no envelope). Files/URLs in the output are also listed in text mode.
 - Exit code is `0` on success or still-running, `1` on failure (including a failed run), `2` on bad usage.
-- If an error mentions a `run_id`, the run already started: resume it with `sandbase runs get -r <run_id>` — never re-run (that bills again).
+- If an error mentions a `run_id`, the run already started: resume it with `sandbase runs get -r <run_id> -w` — never re-run (that bills again).
 - To store an API key without exposing it: `printf %s "$KEY" | sandbase keys add -k -`.
 
 ---
@@ -136,7 +138,7 @@ Do not use SandBase for purely local work (editing files, reasoning over code al
 - `inspect` shows the price: per call (`base_price`), per million tokens (`input_per_million` / `output_per_million`), or a `formula`.
 - Many data endpoints are billed **per result** and limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
 - Check `sandbase_account` before a batch of paid calls, and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
-- Never re-run a slow tool just because it is still running; wait for it with `sandbase_run_get`.
+- Never re-run a slow tool just because it is still running; poll it.
 
 ---
 
@@ -169,7 +171,7 @@ Responses may include `hints` (and `warnings`): suggested next steps, caveats, o
 3. **Prefer MCP when connected**; use the CLI when MCP is missing or broken, or to write large outputs to disk.
 4. **Always inspect before running.** Never guess parameters; `inputSchema` is the source of truth.
 5. **Keep discover queries short** and decompose multi-source tasks.
-6. **Run once, then wait.** `sandbase_run` returns the result; if a very long job comes back `running`, wait with `sandbase_run_get` — never re-run.
+6. **Poll, don't re-run.** Slow tools return a run id; poll every 5–10 seconds.
 7. **Start with conservative limits** (5–10 results).
 8. **Report cost when relevant**, and check the balance before batches.
 9. **Read error text and hints, and act on them.** They name the fix.

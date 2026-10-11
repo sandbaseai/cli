@@ -19,8 +19,8 @@ export interface AgentDeps { env?: NodeJS.ProcessEnv; fetchImpl?: FetchLike; out
 export const agentUsage = `SandBase agent commands (same capabilities as the sandbase_* MCP tools):
   sandbase discover -q "<what you need>" [-t llm|api|multimodal|embedding|service] [--vendor <slug>] [-l 10] [-j]
   sandbase inspect <tool_name> [-j]
-  sandbase run <tool_name> [-i '<json>' | -f input.json] [--timeout 300] [--no-wait] [-o result.json] [-j]
-  sandbase runs get -r <run_id> [--service <svc_id>] [--timeout 300] [--no-wait] [-o result.json] [-j]
+  sandbase run <tool_name> [-i '<json>' | -f input.json] [-w] [--timeout 300] [-o result.json] [-j]
+  sandbase runs get -r <run_id> [--service <svc_id>] [-w] [--timeout 300] [-o result.json] [-j]
   sandbase runs list [-l 10] [--model <model>] [--service <svc_id>] [-j]
   sandbase balance [-j]
   sandbase keys add -k - (reads the key from stdin) | keys list | keys remove
@@ -47,7 +47,7 @@ class Output {
     else this.err(`Error [${error.code}]: ${error.message}${error.runId ? `\nRun: ${error.runId}` : ""}${error.hint ? `\nNext: ${error.hint}` : ""}`);
   }
   notice(text: string): void { if (this.json) this.notes.push(text); else this.err(text); }
-  /** Always stderr (also in -j mode), so stdout stays parseable and an agent whose shell times out still sees it. */
+  /** Always stderr (also in -j mode), so stdout stays parseable. */
   progress(text: string): void { this.err(text); }
 }
 
@@ -120,7 +120,7 @@ async function assertWritableOutput(path: string | undefined): Promise<void> {
 
 /** After a run was accepted, every failure must still tell the agent how to resume it instead of re-running (and paying) again. */
 function withRunContext(error: unknown, view: RunView): SandBaseError {
-  const resume = `sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""}`;
+  const resume = `sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""} -w`;
   if (error instanceof SandBaseError) return new SandBaseError(error.code, error.message, `${error.hint ? `${error.hint} ` : ""}The run ${view.run_id} was already started; resume with \`${resume}\` instead of running it again.`, error.status, view.run_id);
   return new SandBaseError("TOOL_ERROR", error instanceof Error ? error.message : "Unknown failure", `The run ${view.run_id} was already started; resume with \`${resume}\`.`, undefined, view.run_id);
 }
@@ -175,7 +175,7 @@ function printRun(out: Output, view: RunView, outputFile?: string): void {
     if (outputFile) lines.push(`Saved output to ${outputFile}`);
     else { const text = typeof view.output === "string" ? view.output : JSON.stringify(view.output, null, 2); lines.push("Output:", text.length > 6000 ? `${text.slice(0, 6000)}\n…(truncated ${text.length - 6000} chars; rerun \`sandbase runs get -r ${view.run_id ?? "<run_id>"} -o result.json\` to save everything)` : text); }
   }
-  if (phase === "running" && view.run_id) lines.push(`Next: sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""}${outputFile ? ` -o ${outputFile}` : ""}   (waits for the result; do not run the tool again)`);
+  if (phase === "running" && view.run_id) lines.push(`Next: sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""} -w${outputFile ? ` -o ${outputFile}` : ""}   (poll every 5-10s; runs take 1-300s)`);
   if (phase === "succeeded" && !hasOutput(view) && view.run_id) lines.push(`Output is not available yet. Retry: sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""}${outputFile ? ` -o ${outputFile}` : ""}`);
   out.print(lines.join("\n"));
   printHints(out, view.hints);
@@ -263,7 +263,7 @@ async function inspect(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetc
   const meta = [data.model, data.category ?? data.type, data.vendor].filter(Boolean).join(" · ");
   const lines = [`${tool}${meta ? `  (${meta})` : ""}`, String(data.description ?? "").trim(), "", `Price: ${priceLine}`];
   lines.push("", rows.length ? `Input (send as JSON with -i):\n${table(["FIELD", "TYPE", "REQUIRED", "DESCRIPTION"], rows)}` : "Input: no parameters.");
-  lines.push("", "Run:", `  sandbase run ${tool} -i ${shellQuote(JSON.stringify(example))}${/video|image|audio|music|speech/i.test(`${data.category ?? ""} ${data.description ?? ""} ${tool}`) ? " -o result.json" : ""}`);
+  lines.push("", "Run:", `  sandbase run ${tool} -i ${shellQuote(JSON.stringify(example))}${/video|image|audio|music|speech/i.test(`${data.category ?? ""} ${data.description ?? ""} ${tool}`) ? " -w -o result.json" : ""}`);
   lines.push(`MCP: sandbase_run ${JSON.stringify({ name: tool, arguments: example })}`);
   out.print(lines.join("\n"));
   printHints(out, data.hints, data.notes);
@@ -271,11 +271,9 @@ async function inspect(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetc
 }
 
 async function run(argv: string[], out: Output, env: NodeJS.ProcessEnv, deps: Required<Pick<AgentDeps, "sleep" | "now">>, fetchImpl?: FetchLike): Promise<number> {
-  // Runs wait for the result by default; --no-wait returns right after starting. -w is kept for compatibility.
-  const { values, positionals } = parse(argv, { input: { type: "string", short: "i" }, file: { type: "string", short: "f" }, wait: { type: "boolean", short: "w" }, "no-wait": { type: "boolean" }, timeout: { type: "string" }, output: { type: "string", short: "o" } });
+  const { values, positionals } = parse(argv, { input: { type: "string", short: "i" }, file: { type: "string", short: "f" }, wait: { type: "boolean", short: "w" }, timeout: { type: "string" }, output: { type: "string", short: "o" } });
   const name = (positionals[0] ?? "").trim();
   if (!name) throw new SandBaseError("USAGE", "Pass the tool name to run.", "Example: sandbase run sandbase_twitter_web_search_timeline -i '{\"keyword\":\"AI agents\"}'");
-  const wait = !values["no-wait"];
   if (values.input && values.file) throw new SandBaseError("USAGE", "Use either -i or -f, not both.");
   const timeout = positiveSeconds(values.timeout, 300);
   let args: Record<string, unknown> = {};
@@ -298,8 +296,9 @@ async function run(argv: string[], out: Output, env: NodeJS.ProcessEnv, deps: Re
   if (typeof args.idempotency_key === "string" && view.service_id) view.idempotency_key = args.idempotency_key;
   if (!view.run_id) return finishRun(out, view, values.output);
   try {
-    if (wait && (phaseOf(view.status) === "running" || (phaseOf(view.status) === "succeeded" && !hasOutput(view)))) {
-      out.progress(`Run ${view.run_id} started; waiting for the result (up to ${timeout}s). If interrupted, resume with: sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""}${values.output ? ` -o ${values.output}` : ""}`);
+    if (values.wait && phaseOf(view.status) === "running") {
+      // stderr, also in -j mode: an agent whose shell times out still sees the run id to resume.
+      out.progress(`Run ${view.run_id} started; waiting for the result (up to ${timeout}s). If interrupted, resume with: sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""} -w${values.output ? ` -o ${values.output}` : ""}`);
       view = await pollRun(api, view, timeout, deps);
     }
     else if (phaseOf(view.status) !== "running" && view.cost === undefined && !view.service_id) {
@@ -312,15 +311,15 @@ async function run(argv: string[], out: Output, env: NodeJS.ProcessEnv, deps: Re
 async function runs(argv: string[], out: Output, env: NodeJS.ProcessEnv, deps: Required<Pick<AgentDeps, "sleep" | "now">>, fetchImpl?: FetchLike): Promise<number> {
   const [sub, ...rest] = argv;
   if (sub === "get") {
-    const { values, positionals } = parse(rest, { run: { type: "string", short: "r" }, service: { type: "string" }, wait: { type: "boolean", short: "w" }, "no-wait": { type: "boolean" }, timeout: { type: "string" }, output: { type: "string", short: "o" } });
+    const { values, positionals } = parse(rest, { run: { type: "string", short: "r" }, service: { type: "string" }, wait: { type: "boolean", short: "w" }, timeout: { type: "string" }, output: { type: "string", short: "o" } });
     const runId = (values.run ?? positionals[0] ?? "").trim();
-    if (!runId) throw new SandBaseError("USAGE", "Pass the run id with -r.", "Example: sandbase runs get -r pred_abc123 -o result.json");
+    if (!runId) throw new SandBaseError("USAGE", "Pass the run id with -r.", "Example: sandbase runs get -r pred_abc123 -w -o result.json");
     const timeout = positiveSeconds(values.timeout, 300);
     await assertWritableOutput(values.output);
     const api = await client(values, env, fetchImpl);
     let view = await readRun(api, runId, values.service);
     try {
-      if (!values["no-wait"]) view = await pollRun(api, view, timeout, deps);
+      if (values.wait) view = await pollRun(api, view, timeout, deps);
       return await finishRun(out, view, values.output);
     } catch (error) { throw withRunContext(error, view); }
   }
