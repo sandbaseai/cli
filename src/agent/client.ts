@@ -162,7 +162,7 @@ export class SandBaseMCPClient {
       const reason = describeNetworkFailure(error); this.attempts.push({ url, outcome: reason });
       if (!isIdempotentRequest(method, params) && !isPreSendFailure(error)) {
         // The request may already be running server-side; blindly retrying would bill twice.
-        throw new SandBaseError("NETWORK", `The request to ${host} was interrupted after it was sent (${reason}); it may have started a run.`, "Do not re-run yet. Check `sandbase runs list` for the run and poll it with `sandbase runs get -r <run_id> -w`.");
+        throw new SandBaseError("NETWORK", `The request to ${host} was interrupted after it was sent (${reason}); it may have started a run.`, "Do not re-run yet. Check `sandbase runs list` for the run and wait for it with `sandbase runs get -r <run_id>`.");
       }
       throw new SandBaseError("NETWORK", `Cannot reach SandBase at ${host} (${reason}).`, UNREACHABLE_HINT);
     }

@@ -17,6 +17,14 @@ for (const client of ["codex","claude-code","cursor","hermes"] as Client[]) test
   assert.equal(await unregister(client,env),true); const removed=await readFile(path,"utf8"); assert.ok(!removed.includes("safe bridge")); assert.ok(removed.includes("other") || removed.includes("model")); await rollback(one); assert.equal(await readFile(path,"utf8"),original);
 });
 
+test("Codex config raises the tool timeout and tells the bridge long waits are allowed", async () => {
+  const home=await mkdtemp(join(tmpdir(),"sandbase-codex-timeout-")); const env={HOME:home,CODEX_HOME:join(home,".codex")}; await mkdir(env.CODEX_HOME,{recursive:true});
+  await configure("codex","/sandbase-mcp-bridge.mjs",env);
+  const text=await readFile(join(env.CODEX_HOME,"config.toml"),"utf8");
+  assert.match(text,/^tool_timeout_sec = 1800$/m); assert.match(text,/SANDBASE_LONG_TOOL_CALLS = "1"/);
+  assert.equal(await isConfigured("codex",env),true);
+});
+
 test("Codex and Hermes leave a pre-existing unowned sandbase entry untouched",async()=>{ for(const client of ["codex","hermes"] as Client[]){ const home=await mkdtemp(join(tmpdir(),"sandbase-existing-")); const env={HOME:home,CODEX_HOME:join(home,".codex"),HERMES_HOME:join(home,".hermes")}; const path=client==="codex"?join(env.CODEX_HOME,"config.toml"):join(env.HERMES_HOME,"config.yaml"); const original=client==="codex"?'[mcp_servers.sandbase]\ncommand="old"\n[mcp_servers.other]\ncommand="keep"\n':'mcp_servers:\n  sandbase:\n    command: old\n  other:\n    command: keep\n'; await mkdir(join(path,".."),{recursive:true}); await writeFile(path,original); await assert.rejects(configure(client,"/new",env),/invalid/); assert.equal(await readFile(path,"utf8"),original); }});
 
 test("Claude Code and Cursor leave a pre-existing unowned sandbase key untouched",async()=>{ for(const client of ["claude-code","cursor"] as Client[]){ const home=await mkdtemp(join(tmpdir(),"sandbase-json-existing-")); const path=client==="claude-code"?join(home,".claude.json"):join(home,".cursor","mcp.json"); const original=JSON.stringify({theme:"keep",mcpServers:{sandbase:{command:"old"},other:{command:"keep"}}},null,2); await mkdir(join(path,".."),{recursive:true}); await writeFile(path,original); await assert.rejects(configure(client,"/new bridge",{HOME:home}),/invalid/); assert.equal(await readFile(path,"utf8"),original); }});

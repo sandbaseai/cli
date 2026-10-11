@@ -77,17 +77,46 @@ test("network and HTTP failures carry a code and a next step", async () => {
   assert.equal(JSON.parse(json.out).error.code, "NETWORK"); assert.doesNotMatch(json.out + json.err, /test-credential-value/);
 });
 
-test("discover shows a HEALTH column and inspect shows a health line", async () => {
+test("discover and inspect show no health column or line", async () => {
   const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
-  const discover = fakeFetch(() => toolResult({ data: [{ tool_name: "sandbase_a", category: "api", vendor: "V", pricing: { base_price: "0.01" }, description: "x", metrics: { status: "stable", run_time_ms: { p50: 3543, p95: 27748 }, sample_size: 75 } }], count: 1 }));
+  const discover = fakeFetch(() => toolResult({ data: [{ tool_name: "sandbase_a", category: "api", vendor: "V", pricing: { base_price: "0.01" }, description: "x", metrics: { status: "stable" } }], count: 1 }));
   const found = await cli("discover", ["-q", "a"], env, discover.fetch);
-  assert.match(found.out, /HEALTH/); assert.match(found.out, /stable 3\.5s/); assert.match(found.out, /break ties/);
-  const inspect = fakeFetch(() => toolResult({ tool_name: "sandbase_a", description: "x", pricing: { base_price: "0.01" }, inputSchema: { type: "object", properties: {} }, metrics: { status: "stable", run_time_ms: { p50: 3543, p95: 27748 }, sample_size: 75 } }));
-  const detail = await cli("inspect", ["sandbase_a"], env, inspect.fetch);
-  assert.match(detail.out, /Health: stable · 3\.5s typical, 27\.7s tail · 75 samples/);
-  // No metrics -> no HEALTH noise beyond the (empty) column.
-  const bare = fakeFetch(() => toolResult({ tool_name: "sandbase_b", description: "y", pricing: {}, inputSchema: { type: "object", properties: {} } }));
-  assert.doesNotMatch((await cli("inspect", ["sandbase_b"], env, bare.fetch)).out, /Health:/);
+  assert.match(found.out, /TOOL\s+TYPE\s+VENDOR\s+PRICE\s+DESCRIPTION/); assert.doesNotMatch(found.out, /HEALTH|stable/);
+  const inspect = fakeFetch(() => toolResult({ tool_name: "sandbase_a", description: "x", pricing: { base_price: "0.01" }, inputSchema: { type: "object", properties: {} }, metrics: { status: "stable" } }));
+  assert.doesNotMatch((await cli("inspect", ["sandbase_a"], env, inspect.fetch)).out, /Health/);
+});
+
+test("run waits for the result by default and announces the run id on stderr; --no-wait returns right away", async () => {
+  const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
+  let polls = 0;
+  const { fetch } = fakeFetch(call => {
+    const name = (call.params as { name?: string } | undefined)?.name;
+    if (name === "sandbase_run") return toolResult({ prediction_id: "pred_d", status: "running", output: null });
+    if (name === "sandbase_run_get") return toolResult(++polls < 3 ? { run_id: "pred_d", status: "running", hints: ["Run is still in progress."] } : { run_id: "pred_d", status: "completed", output: ["https://cdn.test/d.png"] });
+    return { body: { error: { code: -32601, message: "unexpected" } } };
+  });
+  const waited = await cli("run", ["sandbase_img", "-i", "{}"], env, fetch);
+  assert.equal(waited.code, 0, waited.err); assert.match(waited.out, /Status: completed/); assert.match(waited.out, /https:\/\/cdn\.test\/d\.png/);
+  assert.doesNotMatch(waited.out, /still in progress/, "a stale running hint never survives completion");
+  assert.match(waited.err, /Run pred_d started; waiting for the result.*sandbase runs get -r pred_d/);
+  polls = -100;
+  const quick = await cli("run", ["sandbase_img", "-i", "{}", "--no-wait"], env, fetch);
+  assert.equal(quick.code, 0); assert.match(quick.out, /Status: running/); assert.match(quick.out, /Next: sandbase runs get -r pred_d/);
+});
+
+test("run keeps waiting while a completed run's files are still being transferred", async () => {
+  const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
+  let polls = 0;
+  const { fetch } = fakeFetch(call => {
+    const name = (call.params as { name?: string } | undefined)?.name;
+    if (name === "sandbase_run") return toolResult({ prediction_id: "pred_t", status: "running", output: null });
+    if (name === "sandbase_run_get") return toolResult(++polls < 6 ? { run_id: "pred_t", status: "completed", hints: ["The run completed and its files are still being transferred. Poll sandbase_run_get again in a few seconds."] } : { run_id: "pred_t", status: "completed", output: ["https://cdn.test/t.mp4"] });
+    if (call.method === "tasks/result") return { body: { result: { structuredContent: { status: "completed", output: null } } } };
+    return { body: { error: { code: -32601, message: "unexpected" } } };
+  });
+  const result = await cli("run", ["sandbase_video", "-i", "{}", "-j"], env, fetch);
+  assert.equal(result.code, 0, result.err);
+  assert.deepEqual(JSON.parse(result.out).output, ["https://cdn.test/t.mp4"]);
 });
 
 test("discover renders a table with price and next step; zero results show server hints", async () => {
@@ -138,7 +167,7 @@ test("a run still going at --timeout prints the resume command; a failed run exi
   const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
   const running = fakeFetch(call => toolResult((call.params as { name?: string }).name === "sandbase_run" ? { prediction_id: "pred_2", status: "running" } : { run_id: "pred_2", status: "running" }));
   const slow = await cli("run", ["sandbase_video", "-i", "{}", "-w", "--timeout", "5"], env, running.fetch);
-  assert.equal(slow.code, 0); assert.match(slow.out, /still running when --timeout elapsed/); assert.match(slow.out, /Next: sandbase runs get -r pred_2 -w/);
+  assert.equal(slow.code, 0); assert.match(slow.out, /still running when --timeout elapsed/); assert.match(slow.out, /Next: sandbase runs get -r pred_2 /);
   const failing = fakeFetch(call => call.method === "tasks/result" ? { body: { result: { structuredContent: { status: "failed", error: { message: "content policy" } } } } } : toolResult((call.params as { name?: string }).name === "sandbase_run" ? { prediction_id: "pred_3", status: "running" } : { run_id: "pred_3", status: "failed" }));
   const failed = await cli("runs", ["get", "-r", "pred_3"], env, failing.fetch);
   assert.equal(failed.code, 1); assert.match(failed.out, /Status: failed/); assert.match(failed.out, /content policy/);
@@ -184,12 +213,17 @@ test("update notice compares semver and is suppressed when disabled", async () =
   assert.equal(await updateNotice({ ...env, SANDBASE_NO_UPDATE_CHECK: "1" }, registry), undefined);
 });
 
-async function bridge(env: NodeJS.ProcessEnv, fetch: FetchLike, lines: unknown[]): Promise<Array<Record<string, any>>> {
+async function bridge(env: NodeJS.ProcessEnv, fetch: FetchLike, lines: unknown[], client = "codex"): Promise<Array<Record<string, any>>> {
   const runtime = await import(pathToFileURL(join(process.cwd(), "assets", "mcp-bridge.mjs")).href) as { runMCPBridge(options: Record<string, unknown>): Promise<void> };
   const input = new PassThrough(), output = new PassThrough(); let text = "";
   output.on("data", chunk => { text += chunk; });
-  const done = runtime.runMCPBridge({ client: "codex", env, input, output, fetchImpl: fetch });
-  input.end(lines.map(line => JSON.stringify(line)).join("\n") + "\n");
+  const done = runtime.runMCPBridge({ client, env, input, output, fetchImpl: fetch, runPollMs: 5 });
+  // Like a real host, keep stdin open until every request has its answer.
+  input.write(lines.map(line => JSON.stringify(line)).join("\n") + "\n");
+  const ids = lines.map(line => (line as { id?: unknown }).id).filter(id => id !== undefined);
+  const answered = () => { const seen = new Set(text.split("\n").filter(Boolean).map(line => (JSON.parse(line) as { id?: unknown }).id)); return ids.every(id => seen.has(id)); };
+  for (let i = 0; i < 1000 && !answered(); i++) await new Promise(resolve => setTimeout(resolve, 5));
+  input.end();
   await done;
   return text.trim().split("\n").filter(Boolean).map(line => JSON.parse(line));
 }
@@ -212,6 +246,124 @@ test("bridge keeps the server usable offline and turns tool failures into visibl
 
   const cachedOffline = await bridge(env, offline.fetch, [{ jsonrpc: "2.0", id: 9, method: "tools/list" }]);
   assert.equal(cachedOffline[0]!.result.tools[0].description, "live", "offline tools/list serves the last live list");
+});
+
+test("bridge returns the finished run in the same sandbase_run call, with progress, for long-wait clients", async () => {
+  const env = await home(); await connected(env, "claude-code", "https://api.sandbase.ai/v1/mcp");
+  let polls = 0;
+  const { fetch, calls } = fakeFetch(call => {
+    const name = (call.params as { name?: string } | undefined)?.name;
+    if (name === "sandbase_run") return toolResult({ prediction_id: "pred_b", run_id: "pred_b", status: "running", output: null, hints: ["Poll sandbase_run_get"] });
+    if (name === "sandbase_run_get") return toolResult(++polls < 3 ? { run_id: "pred_b", status: "running" } : { run_id: "pred_b", status: "completed", cost: "0.1", output: ["https://cdn.test/b.mp4"] });
+    return { body: { error: { code: -32601, message: "unexpected" } } };
+  });
+  const out = await bridge(env, fetch, [{ jsonrpc: "2.0", id: 7, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} }, _meta: { progressToken: "tok" } } }], "claude-code");
+  const progress = out.filter(line => line.method === "notifications/progress");
+  const final = out.find(line => line.id === 7)!;
+  assert.ok(progress.length >= 1 && progress.every(line => line.params.progressToken === "tok"));
+  assert.equal(final.result.isError, false); assert.equal(final.result.structuredContent.status, "completed");
+  assert.match(final.result.content[0].text, /https:\/\/cdn\.test\/b\.mp4/);
+  assert.equal(calls.filter(call => (call.params as { name?: string }).name === "sandbase_run").length, 1, "the paid run is started once");
+});
+
+test("bridge waits through file transfer and reports a failed run as an error", async () => {
+  const env = await home(); await connected(env, "codex", "https://api.sandbase.ai/v1/mcp");
+  let polls = 0;
+  const transfer = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_x", status: "completed", output: null, hints: ["The run completed and its files are still being transferred. Poll sandbase_run_get again in a few seconds."] }) : toolResult(++polls < 2 ? { run_id: "pred_x", status: "completed", hints: ["The run completed and its files are still being transferred."] } : { run_id: "pred_x", status: "completed", output: ["https://cdn.test/x.mp4"] }));
+  const [done] = await bridge({ ...env, SANDBASE_LONG_TOOL_CALLS: "1" }, transfer.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }]);
+  assert.match(done!.result.content[0].text, /x\.mp4/);
+  const failing = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_f", status: "running" }) : toolResult({ run_id: "pred_f", status: "failed", error: { message: "content policy" } }));
+  const [failed] = await bridge({ ...env, SANDBASE_LONG_TOOL_CALLS: "1" }, failing.fetch, [{ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }]);
+  assert.equal(failed!.result.isError, true); assert.match(failed!.result.content[0].text, /Run pred_f failed: content policy/);
+});
+
+test("Codex gets long waits only when its config carries the long tool timeout", async () => {
+  const env = await home(); await connected(env, "codex", "https://api.sandbase.ai/v1/mcp");
+  const old = fakeFetch(() => toolResult({ prediction_id: "pred_o", status: "running" }));
+  await bridge(env, old.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }]);
+  assert.equal(old.calls.length, 1, "an older Codex config (60s timeout) gets no local wait on sandbase_run");
+  let polls = 0;
+  const configured = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_l", status: "running" }) : toolResult(++polls < 2 ? { run_id: "pred_l", status: "running" } : { run_id: "pred_l", status: "completed", output: ["ok"] }));
+  const [done] = await bridge({ ...env, SANDBASE_LONG_TOOL_CALLS: "1" }, configured.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }]);
+  assert.equal(done!.result.structuredContent.status, "completed");
+});
+
+test("bridge stops waiting on repeated poll failures or a revoked sign-in, and passes run_get tool errors through", async () => {
+  const env = await home(); await connected(env, "claude-code", "https://api.sandbase.ai/v1/mcp");
+  const outage = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_e", run_id: "pred_e", status: "running", hints: ["Poll sandbase_run_get"] }) : { status: 502, body: "bad gateway" });
+  const [stale] = await bridge(env, outage.fetch, [{ jsonrpc: "2.0", id: 4, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }], "claude-code");
+  assert.equal(stale!.id, 4); assert.equal(stale!.result.structuredContent.run_id, "pred_e", "the agent keeps the run id to resume");
+  assert.equal(outage.calls.length, 1 + 5, "gives up after 5 consecutive poll failures");
+  const revoked = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_r", status: "running" }) : { status: 401, body: '{"error":"invalid API key"}' });
+  await bridge(env, revoked.fetch, [{ jsonrpc: "2.0", id: 5, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }], "claude-code");
+  assert.equal(revoked.calls.length, 2, "a 401 stops the wait at once");
+  const missing = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_m", status: "running" }) : { body: { result: { content: [{ type: "text", text: "Run 'pred_m' was not found" }], structuredContent: { error: { code: "run_not_found" } }, isError: true } } });
+  const [notFound] = await bridge(env, missing.fetch, [{ jsonrpc: "2.0", id: 6, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }], "claude-code");
+  assert.equal(notFound!.id, 6); assert.equal(notFound!.result.isError, true); assert.match(notFound!.result.content[0].text, /not found/);
+});
+
+test("a long local wait does not block other calls, and notifications/cancelled ends it without a response", async () => {
+  const env = await home(); await connected(env, "claude-code", "https://api.sandbase.ai/v1/mcp");
+  const runtime = await import(pathToFileURL(join(process.cwd(), "assets", "mcp-bridge.mjs")).href) as { runMCPBridge(options: Record<string, unknown>): Promise<void> };
+  const { fetch } = fakeFetch(call => (call.params as { name?: string } | undefined)?.name === "sandbase_run" ? toolResult({ prediction_id: "pred_s", status: "running" }) : call.method === "tools/call" && (call.params as { name?: string }).name === "sandbase_account" ? toolResult({ balance: "1" }) : toolResult({ run_id: "pred_s", status: "running" }));
+  const input = new PassThrough(), output = new PassThrough(); const lines: Array<Record<string, any>> = [];
+  output.on("data", chunk => { for (const line of String(chunk).split("\n").filter(Boolean)) lines.push(JSON.parse(line)); });
+  const done = runtime.runMCPBridge({ client: "claude-code", env, input, output, fetchImpl: fetch, runPollMs: 5 });
+  input.write(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }) + "\n");
+  input.write(JSON.stringify({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "sandbase_account", arguments: {} } }) + "\n");
+  for (let i = 0; i < 200 && !lines.some(line => line.id === 2); i++) await new Promise(resolve => setTimeout(resolve, 5));
+  assert.ok(lines.some(line => line.id === 2), "another call is answered while the run is still being waited on");
+  assert.ok(!lines.some(line => line.id === 1), "the run is still waiting");
+  input.end(JSON.stringify({ jsonrpc: "2.0", method: "notifications/cancelled", params: { requestId: 1 } }) + "\n");
+  await done;
+  assert.ok(!lines.some(line => line.id === 1), "a cancelled request gets no response");
+});
+
+test("a cancel during the first server wait is honored, and closing stdin stops local waits", async () => {
+  const env = await home(); await connected(env, "claude-code", "https://api.sandbase.ai/v1/mcp");
+  const runtime = await import(pathToFileURL(join(process.cwd(), "assets", "mcp-bridge.mjs")).href) as { runMCPBridge(options: Record<string, unknown>): Promise<void> };
+  let release: () => void = () => {};
+  const held = new Promise<void>(resolve => { release = resolve; });
+  let polls = 0;
+  const slow: FetchLike = async (url, init) => {
+    const request = JSON.parse(init.body) as { id: unknown; params?: { name?: string } };
+    if (request.params?.name === "sandbase_run") await held;
+    if (request.params?.name === "sandbase_run_get") polls++;
+    const data = { prediction_id: "pred_h", status: "running" };
+    return { ok: true, status: 200, headers: { get: () => "application/json" }, text: async () => JSON.stringify({ jsonrpc: "2.0", id: request.id, result: { content: [{ type: "text", text: "" }], structuredContent: data, isError: false } }) };
+  };
+  const input = new PassThrough(), output = new PassThrough(); const lines: Array<Record<string, any>> = [];
+  output.on("data", chunk => { for (const line of String(chunk).split("\n").filter(Boolean)) lines.push(JSON.parse(line)); });
+  const done = runtime.runMCPBridge({ client: "claude-code", env, input, output, fetchImpl: slow, runPollMs: 5 });
+  input.write(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }) + "\n");
+  await new Promise(resolve => setTimeout(resolve, 20));
+  input.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/cancelled", params: { requestId: 1 } }) + "\n");
+  await new Promise(resolve => setTimeout(resolve, 20));
+  release();
+  await new Promise(resolve => setTimeout(resolve, 50));
+  assert.equal(polls, 0, "no local wait starts for a request cancelled while it was still at the server");
+  assert.ok(!lines.some(line => line.id === 1), "and it gets no response");
+
+  // stdin closing while a long local wait is in progress ends the bridge promptly.
+  const env2 = await home(); await connected(env2, "claude-code", "https://api.sandbase.ai/v1/mcp");
+  const running = fakeFetch(() => toolResult({ prediction_id: "pred_w", status: "running" }));
+  const input2 = new PassThrough(), output2 = new PassThrough();
+  const done2 = runtime.runMCPBridge({ client: "claude-code", env: env2, input: input2, output: output2, fetchImpl: running.fetch, runPollMs: 5 });
+  input2.write(JSON.stringify({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }) + "\n");
+  for (let i = 0; i < 100 && running.calls.length < 3; i++) await new Promise(resolve => setTimeout(resolve, 5));
+  const started = Date.now(); input2.end(); await done2; input.end(); await done;
+  assert.ok(Date.now() - started < 1000, "the bridge exits instead of polling for 20 minutes");
+});
+
+test("bridge leaves short-timeout clients' sandbase_run alone and Agent Service runs untouched", async () => {
+  const env = await home(); await connected(env, "cursor", "https://api.sandbase.ai/v1/mcp");
+  const { fetch, calls } = fakeFetch(() => toolResult({ prediction_id: "pred_c", status: "running" }));
+  const [result] = await bridge(env, fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "sandbase_video", arguments: {} } } }], "cursor");
+  assert.equal(result!.result.structuredContent.status, "running"); assert.equal(calls.length, 1, "no local wait inside a client with a 60s tool timeout");
+  const env2 = await home(); await connected(env2, "claude-code", "https://api.sandbase.ai/v1/mcp");
+  const svc = fakeFetch(() => toolResult({ run_id: "r1", service_id: "svc_1", status: "running" }));
+  const [service] = await bridge(env2, svc.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "sandbase_run", arguments: { name: "svc_1", arguments: { idempotency_key: "k" } } } }], "claude-code");
+  assert.equal(service!.result.structuredContent.status, "running"); assert.equal(svc.calls.length, 1);
 });
 
 function resetAfterSend(): Error { const error = new TypeError("fetch failed") as TypeError & { cause?: unknown }; error.cause = { code: "ECONNRESET" }; return error; }
@@ -250,7 +402,7 @@ test("unknown statuses keep polling, plain-text sync results complete, server ru
   const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
   const queued = fakeFetch(() => toolResult({ prediction_id: "pred_q", status: "IN_QUEUE" }));
   const q = await cli("run", ["sandbase_fal", "-i", "{}"], env, queued.fetch);
-  assert.equal(q.code, 0); assert.match(q.out, /Next: sandbase runs get -r pred_q -w/);
+  assert.equal(q.code, 0); assert.match(q.out, /Next: sandbase runs get -r pred_q /);
   const text = fakeFetch(() => ({ body: { result: { content: [{ type: "text", text: "hello world" }], isError: false } } }));
   const plain = await cli("run", ["sandbase_llm", "-i", "{}"], env, text.fetch);
   assert.equal(plain.code, 0); assert.match(plain.out, /Status: completed/); assert.match(plain.out, /hello world/);
@@ -263,7 +415,7 @@ test("failures after a run started keep the run id; an unwritable -o fails befor
   const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
   const { fetch, calls } = fakeFetch(call => (call.params as { name?: string }).name === "sandbase_run" ? toolResult({ prediction_id: "pred_k", status: "running" }) : connectTimeout());
   const lost = JSON.parse((await cli("run", ["sandbase_video", "-i", "{}", "-w", "-j"], env, fetch)).out);
-  assert.equal(lost.run_id, "pred_k"); assert.match(lost.error.hint, /sandbase runs get -r pred_k -w/);
+  assert.equal(lost.run_id, "pred_k"); assert.match(lost.error.hint, /sandbase runs get -r pred_k`/);
   const before = calls.length;
   const bad = await cli("run", ["sandbase_video", "-i", "{}", "-o", join(env.HOME!, "missing-dir", "x.json")], env, fetch);
   assert.equal(bad.code, 2); assert.match(bad.err, /nothing was run/); assert.equal(calls.length, before);
@@ -314,7 +466,7 @@ test("setup refreshes the bridge and SandBase-owned Skills but leaves edited Ski
     const lines: string[] = [];
     assert.equal(await setup(new FileCredentialStore(env.SANDBASE_HOME!), line => void lines.push(line)), true);
     assert.match(lines.join("\n"), /bridge: status=updated/); assert.match(lines.join("\n"), /claude-code: skill=updated/); assert.match(lines.join("\n"), /kiro: skill=modified/);
-    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.2/);
+    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.3/);
     assert.match(await readFile(join(kiroDir, "SKILL.md"), "utf8"), /user edit/);
   } finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });

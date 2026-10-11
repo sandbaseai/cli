@@ -27,7 +27,11 @@ export function detectClient(client: Client): {installed:boolean; detail:string}
   if (!profile.executable) return profile.mode === "auto" && existsSync(path) ? {installed:true,detail:"existing configuration"} : {installed:false,detail:"not detected"}; const result=spawnSync(profile.executable,["--version"],{encoding:"utf8",timeout:5000}); const detail=(result.stdout || result.stderr || "").trim().split("\n")[0] || "not found"; if (result.status===0) return {installed:true,detail}; if (client === "codex" && existsSync(path)) return {installed:true,detail:"Codex CLI probe failed; existing Codex configuration detected"}; return {installed:false,detail}; }
 const start = "# >>> sandbase managed >>>", end = "# <<< sandbase managed <<<";
 function block(client: Client, bridge: string): string {
-  if (client === "codex") return `${start}\n[mcp_servers.sandbase]\ncommand = "node"\nargs = ["${bridge.replaceAll("\\", "\\\\").replaceAll('"','\\"')}", "--client", "codex"]\nenv = { SANDBASE_CLI_MANAGED = "1" }\n${end}`;
+  // tool_timeout_sec: Codex cancels tool calls after 60s by default; the bridge
+  // waits for long runs (video, large scrapes) so they return their output.
+  // SANDBASE_LONG_TOOL_CALLS tells the bridge this config carries the long timeout
+  // (a bridge refreshed by `setup` under an older config keeps bounded waits).
+  if (client === "codex") return `${start}\n[mcp_servers.sandbase]\ncommand = "node"\nargs = ["${bridge.replaceAll("\\", "\\\\").replaceAll('"','\\"')}", "--client", "codex"]\ntool_timeout_sec = 1800\nenv = { SANDBASE_CLI_MANAGED = "1", SANDBASE_LONG_TOOL_CALLS = "1" }\n${end}`;
   return `  ${start}\n  sandbase:\n    command: node\n    args:\n      - ${JSON.stringify(bridge)}\n      - --client\n      - ${client}\n  ${end}`;
 }
 function managedText(raw: string, value: string): string { const re = new RegExp(`${start.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}[\\s\\S]*?${end.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}`, "m"); return re.test(raw) ? raw.replace(re, value) : raw.replace(/\s*$/, "") + (raw.trim() ? "\n\n" : "") + value + "\n"; }

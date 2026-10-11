@@ -22,6 +22,21 @@ const RECONNECT = "npx -y @sandbaseai/cli@latest connect";
 // Tool calls get no bridge-side deadline (long synchronous tools must be able to
 // finish); control-plane methods are bounded so offline detection stays quick.
 const CONTROL_TIMEOUT_MS = 60_000;
+// Runs are synchronous for the agent: the server waits up to ~50s per call, and
+// when a job is still going the bridge keeps waiting locally so the agent gets
+// the finished output instead of a run id to poll. Clients that allow long tool
+// calls (Claude Code; Codex with the tool_timeout_sec that connect writes) wait
+// in one call; others get bounded waits that stay under their 60s tool timeout.
+const RUN_POLL_MS = 3_000;
+const LONG_RUN_WAIT_MS = 20 * 60_000;
+const BOUNDED_RUN_WAIT_MS = 50_000;
+const MAX_POLL_FAILURES = 5;
+// Claude Code allows very long MCP tool calls by default. Codex only does when
+// its config raises tool_timeout_sec, which `connect` writes together with
+// SANDBASE_LONG_TOOL_CALLS=1 — so an older Codex config keeps bounded waits.
+function allowsLongToolCalls(client, env) {
+  return client === "claude-code" || (client === "codex" && env.SANDBASE_LONG_TOOL_CALLS === "1");
+}
 
 // Used only when SandBase is unreachable and no tools/list was ever cached.
 const offlineTools = [
@@ -92,6 +107,46 @@ function httpFailure(status, text, host) {
   if (status >= 500) return `SandBase returned HTTP ${status} from ${host}${suffix}. Temporary server error: retry in a minute; the user can run \`sandbase doctor\` if it persists.`;
   return `SandBase MCP request failed (${status}) at ${host}${suffix}.${hintFor(detail) ? ` ${hintFor(detail)}` : ""}`;
 }
+// Same rule as the CLI: only an explicit failure is failed; any status we do not
+// know (IN_QUEUE, created, …) is still running, so the bridge keeps waiting.
+const SUCCEEDED_STATUSES = new Set(["completed", "succeeded", "success", "done"]);
+const FAILED_STATUSES = new Set(["failed", "failure", "error", "errored", "cancelled", "canceled", "timeout", "timed_out", "expired", "rejected", "blocked", "stopped"]);
+function runPhase(status) {
+  const value = String(status ?? "").trim().toLowerCase();
+  return SUCCEEDED_STATUSES.has(value) ? "succeeded" : FAILED_STATUSES.has(value) ? "failed" : "running";
+}
+function structuredOf(payload) { const value = payload?.result?.structuredContent; return value && typeof value === "object" ? value : undefined; }
+/** A run result the bridge should keep waiting on: still running, or completed while its files are still being copied. */
+function awaitingRun(payload) {
+  const data = structuredOf(payload);
+  if (!data || payload?.result?.isError) return false;
+  if (data.service_id || String(data.tool_name ?? data.name ?? "").startsWith("svc_")) return false;
+  const phase = runPhase(data.status);
+  if (phase === "running") return true;
+  return phase === "succeeded" && (data.output === undefined || data.output === null) && /still being transferred/i.test(JSON.stringify(data.hints ?? ""));
+}
+function runIdOf(payload) { const data = structuredOf(payload) || {}; const id = data.run_id ?? data.prediction_id ?? data.taskId; return typeof id === "string" && id ? id : undefined; }
+function sleep(ms, signal) {
+  return new Promise(resolve => {
+    if (signal?.aborted) { resolve(); return; }
+    const timer = setTimeout(() => { signal?.removeEventListener("abort", stop); resolve(); }, ms);
+    const stop = () => { clearTimeout(timer); resolve(); };
+    signal?.addEventListener("abort", stop, { once: true });
+  });
+}
+/** The finished run as the agent should see it: output as text, failures as isError. */
+function finalRunResult(id, payload, runId) {
+  const data = structuredOf(payload) || {};
+  if (runPhase(data.status) === "failed") {
+    const error = data.error;
+    const detail = typeof error === "string" ? error : typeof error?.message === "string" ? error.message : "";
+    return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: `Run ${runId} failed${detail ? `: ${detail}` : ""}. Read the error, fix the arguments with sandbase_inspect if needed, then retry once or choose another tool from sandbase_discover.` }], structuredContent: data, isError: true } };
+  }
+  const output = data.output;
+  const text = output === undefined || output === null ? JSON.stringify(data) : typeof output === "string" ? output : JSON.stringify(output, null, 2);
+  return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text }], structuredContent: data, isError: false } };
+}
+
 function payloadsOf(text, contentType) {
   const out = [];
   if (!text.trim()) return out;
@@ -122,6 +177,7 @@ export async function runMCPBridge(options = {}) {
   const signal = options.signal;
   const env = options.env || process.env;
   const fetchImpl = options.fetchImpl || globalThis.fetch;
+  const runPollMs = Number.isFinite(options.runPollMs) && options.runPollMs > 0 ? options.runPollMs : RUN_POLL_MS;
   if (!allowedClients.has(client)) throw bridgeError("SandBase bridge client is invalid.");
 
   const home = env.SANDBASE_HOME || join(homedir(), ".sandbase");
@@ -163,18 +219,93 @@ export async function runMCPBridge(options = {}) {
     output.write(JSON.stringify(payload) + "\n");
   };
 
+  const post = async (request, timeoutMs) => {
+    const headers = { authorization: `Bearer ${record.credential}`, "content-type": "application/json", accept: "application/json, text/event-stream" };
+    if (session) headers["mcp-session-id"] = session;
+    const timeout = timeoutMs ? AbortSignal.timeout(timeoutMs) : undefined;
+    const combined = signal && timeout && typeof AbortSignal.any === "function" ? AbortSignal.any([signal, timeout]) : signal || timeout;
+    return fetchImpl(url, { method: "POST", headers, body: JSON.stringify(request), ...(combined ? { signal: combined } : {}) });
+  };
+
+  let pollSeq = 0;
+  /** One sandbase_run_get read: { payload } on an answer, { failed, fatal } on a transport/HTTP/protocol problem. */
+  const readRun = async (runId, timeoutMs) => {
+    const request = { jsonrpc: "2.0", id: `sandbase-bridge-poll-${++pollSeq}`, method: "tools/call", params: { name: "sandbase_run_get", arguments: { run_id: runId } } };
+    try {
+      const response = await post(request, Math.max(1_000, Math.min(CONTROL_TIMEOUT_MS, timeoutMs)));
+      const text = await response.text();
+      if (!response.ok) return { failed: true, fatal: response.status === 401 || response.status === 403 };
+      const payload = payloadsOf(text, response.headers.get("content-type") || "").find(item => item?.id === request.id && (item.result || item.error));
+      return payload?.result ? { payload } : { failed: true };
+    } catch { return { failed: true }; }
+  };
+
+  // One cancel handle per in-flight tools/call id, registered before the request
+  // is sent, so notifications/cancelled (or stdin closing) can stop it at any point.
+  const calls = new Map();
+  const CANCELLED = Symbol("cancelled");
+
+  /** Keep a still-running run going until it has a result or the wait budget passes. */
+  const awaitRun = async (request, initial, budgetMs, cancel) => {
+    const runId = runIdOf(initial);
+    if (!runId || budgetMs <= 0) return initial;
+    const progressToken = request.params?._meta?.progressToken;
+    const deadline = Date.now() + budgetMs;
+    const stop = signal && typeof AbortSignal.any === "function" ? AbortSignal.any([signal, cancel.signal]) : cancel.signal;
+    let latest = initial, progress = 0, failures = 0;
+    {
+      while (!stop.aborted && Date.now() + runPollMs <= deadline) {
+        await sleep(runPollMs, stop);
+        if (cancel.signal.aborted) return CANCELLED;
+        if (stop.aborted) break;
+        if (progressToken !== undefined) output.write(JSON.stringify({ jsonrpc: "2.0", method: "notifications/progress", params: { progressToken, progress: ++progress, message: `SandBase run ${runId} is still running` } }) + "\n");
+        const read = await readRun(runId, deadline - Date.now());
+        if (cancel.signal.aborted) return CANCELLED;
+        if (read.failed) {
+          // A revoked sign-in or a persistent outage must not turn into a silent
+          // multi-minute wait: give the agent the run id and stop.
+          if (read.fatal || ++failures >= MAX_POLL_FAILURES) break;
+          continue;
+        }
+        failures = 0;
+        latest = read.payload;
+        // A tool error while reading the run (e.g. run not found) goes to the agent as-is.
+        if (latest.result?.isError) return { ...latest, id: request.id };
+        if (!awaitingRun(latest)) return finalRunResult(request.id, latest, runId);
+      }
+    }
+    // Still running when the budget ran out: return the latest status (with its
+    // run id and next step) under the agent's request id.
+    return { ...latest, id: request.id };
+  };
+  const longWait = allowsLongToolCalls(client, env);
+  const runWaitBudget = request => {
+    if (request.method !== "tools/call") return 0;
+    const name = request.params?.name;
+    const args = request.params?.arguments || {};
+    if (name === "sandbase_run" && !String(args.name ?? "").startsWith("svc_")) return longWait ? LONG_RUN_WAIT_MS : 0;
+    if (name === "sandbase_run_get" && !args.service_id) return longWait ? LONG_RUN_WAIT_MS : BOUNDED_RUN_WAIT_MS;
+    return 0;
+  };
+
   const forward = async line => {
     let request;
     try { request = JSON.parse(line); } catch { return; }
     if (!request || typeof request !== "object" || Array.isArray(request)) return;
     const idempotent = isIdempotentRequest(request);
+    // A cancelled request stops its local wait; the notification still goes to the server.
+    if (request.method === "notifications/cancelled") calls.get(request.params?.requestId)?.abort();
+    const tracked = request.method === "tools/call" && request.id !== undefined;
+    const cancel = new AbortController();
+    if (tracked) calls.set(request.id, cancel);
+    try { await send(request, idempotent, cancel); }
+    finally { if (tracked && calls.get(request.id) === cancel) calls.delete(request.id); }
+  };
+
+  const send = async (request, idempotent, cancel) => {
     let response;
     try {
-      const headers = { authorization: `Bearer ${record.credential}`, "content-type": "application/json", accept: "application/json, text/event-stream" };
-      if (session) headers["mcp-session-id"] = session;
-      const timeout = request.method === "tools/call" ? undefined : AbortSignal.timeout(CONTROL_TIMEOUT_MS);
-      const combined = signal && timeout && typeof AbortSignal.any === "function" ? AbortSignal.any([signal, timeout]) : signal || timeout;
-      response = await fetchImpl(url, { method: "POST", headers, body: JSON.stringify(request), ...(combined ? { signal: combined } : {}) });
+      response = await post(request, request.method === "tools/call" ? undefined : CONTROL_TIMEOUT_MS);
     } catch (error) {
       if (signal?.aborted) return;
       const reason = describeNetworkFailure(error);
@@ -198,7 +329,24 @@ export async function runMCPBridge(options = {}) {
       output.write(request.method === "tools/call" ? toolError(request.id, message) : responseError(request.id, message));
       return;
     }
-    for (const payload of payloadsOf(text, response.headers.get("content-type") || "")) await deliver(request, payload);
+    const budget = runWaitBudget(request);
+    for (let payload of payloadsOf(text, response.headers.get("content-type") || "")) {
+      // MCP: no response is sent for a request the client cancelled.
+      if (cancel.signal.aborted && payload?.id === request.id) continue;
+      if (budget > 0 && payload?.id === request.id && awaitingRun(payload)) payload = await awaitRun(request, payload, budget, cancel);
+      if (payload === CANCELLED) continue;
+      await deliver(request, payload);
+    }
+  };
+  // Tool calls run concurrently (each answers by its own id), so a long run never
+  // blocks pings, other tools, or the client's cancellation of that run.
+  const inflight = new Set();
+  const dispatch = async line => {
+    let method;
+    try { method = JSON.parse(line)?.method; } catch { /* forward() ignores it */ }
+    if (method !== "tools/call") { await forward(line); return; }
+    const task = forward(line).catch(() => {}).finally(() => inflight.delete(task));
+    inflight.add(task);
   };
 
   const stopInput = () => { if (typeof input.destroy === "function") input.destroy(); };
@@ -212,11 +360,15 @@ export async function runMCPBridge(options = {}) {
         if (split < 0) break;
         const line = buffer.subarray(0, split).toString("utf8").trim();
         buffer = buffer.subarray(split + 1);
-        if (line) await forward(line);
+        if (line) await dispatch(line);
       }
     }
     const finalLine = buffer.toString("utf8").trim();
-    if (!signal?.aborted && finalLine) await forward(finalLine);
+    if (!signal?.aborted && finalLine) await dispatch(finalLine);
+    // The client closed stdin: nobody can receive a long wait's answer, so stop
+    // local waits now; requests already sent finish within their server budget.
+    for (const cancel of calls.values()) cancel.abort();
+    await Promise.allSettled([...inflight]);
   } catch (error) {
     if (!signal?.aborted) throw error;
   } finally { signal?.removeEventListener("abort", stopInput); }
