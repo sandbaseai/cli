@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -14,8 +14,8 @@ import { pathToFileURL } from "node:url";
 //    silently drops the server.
 // 2. Every tool failure reaches the model as an `isError` tool result that
 //    names the cause and the next step, instead of an opaque protocol error.
-// 3. The API is reached only at api.sandbase.ai; extra mirrors are tried only
-//    when the user opts in via SANDBASE_MCP_FALLBACK_URLS.
+// 3. The API is reached only at api.sandbase.ai (the single API host); a
+//    transport failure keeps the server usable via the offline responder.
 const allowedClients = new Set(["codex", "claude-code", "cursor", "gemini-cli", "hermes", "openclaw", "opencode", "qwen-code", "windsurf", "cursor-cli", "kimi-cli", "kiro", "kiro-cli", "amp", "crush", "iflow-cli", "warp", "claude-desktop", "cowork", "antigravity", "trae", "qoder", "workbuddy", "pi"]);
 const BILLING_URL = "https://www.sandbase.ai/console/billing";
 const RECONNECT = "npx -y @sandbaseai/cli@latest connect";
@@ -42,15 +42,6 @@ function validEndpoint(value) {
     const url = new URL(value);
     return ["http:", "https:"].includes(url.protocol) && !url.username && !url.password && !url.hash && url.pathname === "/v1/mcp" ? url.href : undefined;
   } catch { return undefined; }
-}
-export function endpointCandidates(primary, env = process.env) {
-  const out = [primary];
-  // The API is served only from api.sandbase.ai. There is no implicit
-  // cross-host fallback; users can still opt into extra mirrors explicitly.
-  if (env.SANDBASE_MCP_FALLBACK_URLS !== undefined) {
-    for (const item of env.SANDBASE_MCP_FALLBACK_URLS.split(",")) { const url = validEndpoint(item.trim()); if (url) out.push(url); }
-  }
-  return [...new Set(out)];
 }
 function parseCredential(raw, client) {
   let all;
@@ -138,24 +129,9 @@ export async function runMCPBridge(options = {}) {
   try { raw = await readFile(join(home, "credentials.json"), "utf8"); }
   catch { throw bridgeError("SandBase credential is unavailable. Run sandbase connect again."); }
   const record = parseCredential(raw, client);
-  const candidates = endpointCandidates(record.mcpUrl, env);
+  const url = record.mcpUrl;
+  const host = new URL(url).host;
   const toolsCache = join(home, "cache", "tools.json");
-  // Shared with the CLI: once a mirror answered, start there for 6 hours so an
-  // unreachable primary does not add a connect timeout to every new session.
-  const preferenceFile = join(home, "cache", "endpoint.json");
-  let preferred = 0;
-  try {
-    const cached = JSON.parse(await readFile(preferenceFile, "utf8"));
-    const index = candidates.indexOf(cached?.url);
-    if (cached?.primary === candidates[0] && index > 0 && Date.now() - (cached.savedAt || 0) < 6 * 60 * 60 * 1000) preferred = index;
-  } catch { /* no preference yet */ }
-  const rememberPreference = async index => {
-    try {
-      if (index === 0) { await rm(preferenceFile, { force: true }); return; }
-      await mkdir(join(home, "cache"), { recursive: true, mode: 0o700 });
-      await writeFile(preferenceFile, JSON.stringify({ primary: candidates[0], url: candidates[index], savedAt: Date.now() }) + "\n", { mode: 0o600 });
-    } catch { /* optimization only */ }
-  };
   let buffer = Buffer.alloc(0);
   let session;
 
@@ -192,60 +168,37 @@ export async function runMCPBridge(options = {}) {
     try { request = JSON.parse(line); } catch { return; }
     if (!request || typeof request !== "object" || Array.isArray(request)) return;
     const idempotent = isIdempotentRequest(request);
-    const failures = [];
-    let lastServerFailure;
-    const order = [...candidates.slice(preferred), ...candidates.slice(0, preferred)];
-    for (const [position, url] of order.entries()) {
-      const host = new URL(url).host;
-      const isLast = position === order.length - 1;
-      let response;
-      try {
-        const headers = { authorization: `Bearer ${record.credential}`, "content-type": "application/json", accept: "application/json, text/event-stream" };
-        if (session) headers["mcp-session-id"] = session;
-        const timeout = request.method === "tools/call" ? undefined : AbortSignal.timeout(CONTROL_TIMEOUT_MS);
-        const combined = signal && timeout && typeof AbortSignal.any === "function" ? AbortSignal.any([signal, timeout]) : signal || timeout;
-        response = await fetchImpl(url, { method: "POST", headers, body: JSON.stringify(request), ...(combined ? { signal: combined } : {}) });
-      } catch (error) {
-        if (signal?.aborted) return;
-        const reason = describeNetworkFailure(error);
-        if (!idempotent && !isPreSendFailure(error)) {
-          // The run may already be executing; replaying it on the mirror would bill twice.
-          if (request.id !== undefined) output.write(toolError(request.id, `The request to ${host} was interrupted after it was sent (${reason}); a run may have started. Do not call sandbase_run again yet: check sandbase_runs for the new run and poll it with sandbase_run_get.`));
-          return;
-        }
-        failures.push(`${host}: ${reason}`);
-        continue;
-      }
-      const text = await response.text();
-      if (response.status >= 500 && idempotent && !isLast) {
-        // Gateway/origin errors are what a mirror can fix; safe only for idempotent requests.
-        lastServerFailure = { status: response.status, text, host };
-        failures.push(`${host}: HTTP ${response.status}`);
-        continue;
-      }
-      const index = candidates.indexOf(url);
-      if (index !== preferred || failures.length) await rememberPreference(index);
-      preferred = index;
-      const nextSession = response.headers.get("mcp-session-id");
-      if (nextSession) session = nextSession;
-      if (!response.ok) {
-        if (request.id === undefined) return;
-        // Never let a server error during the handshake make the client drop SandBase.
-        if (response.status >= 500 && (request.method === "initialize" || request.method === "tools/list")) { await offline(request, `${host}: HTTP ${response.status}`); return; }
-        const message = httpFailure(response.status, text, host);
-        output.write(request.method === "tools/call" ? toolError(request.id, message) : responseError(request.id, message));
+    let response;
+    try {
+      const headers = { authorization: `Bearer ${record.credential}`, "content-type": "application/json", accept: "application/json, text/event-stream" };
+      if (session) headers["mcp-session-id"] = session;
+      const timeout = request.method === "tools/call" ? undefined : AbortSignal.timeout(CONTROL_TIMEOUT_MS);
+      const combined = signal && timeout && typeof AbortSignal.any === "function" ? AbortSignal.any([signal, timeout]) : signal || timeout;
+      response = await fetchImpl(url, { method: "POST", headers, body: JSON.stringify(request), ...(combined ? { signal: combined } : {}) });
+    } catch (error) {
+      if (signal?.aborted) return;
+      const reason = describeNetworkFailure(error);
+      if (!idempotent && !isPreSendFailure(error)) {
+        // The run may already be executing; blindly retrying would bill twice.
+        if (request.id !== undefined) output.write(toolError(request.id, `The request to ${host} was interrupted after it was sent (${reason}); a run may have started. Do not call sandbase_run again yet: check sandbase_runs for the new run and poll it with sandbase_run_get.`));
         return;
       }
-      for (const payload of payloadsOf(text, response.headers.get("content-type") || "")) await deliver(request, payload);
+      // Transport failure: keep the server usable (tools stay listed, calls get an actionable error).
+      await offline(request, `${host}: ${reason}`);
       return;
     }
-    if (lastServerFailure && failures.every(failure => /HTTP 5\d\d$/.test(failure)) && request.method !== "initialize" && request.method !== "tools/list") {
+    const text = await response.text();
+    const nextSession = response.headers.get("mcp-session-id");
+    if (nextSession) session = nextSession;
+    if (!response.ok) {
       if (request.id === undefined) return;
-      const message = httpFailure(lastServerFailure.status, lastServerFailure.text, lastServerFailure.host);
+      // Never let a server error during the handshake make the client drop SandBase.
+      if (response.status >= 500 && (request.method === "initialize" || request.method === "tools/list")) { await offline(request, `${host}: HTTP ${response.status}`); return; }
+      const message = httpFailure(response.status, text, host);
       output.write(request.method === "tools/call" ? toolError(request.id, message) : responseError(request.id, message));
       return;
     }
-    await offline(request, failures.join("; ") || "network error");
+    for (const payload of payloadsOf(text, response.headers.get("content-type") || "")) await deliver(request, payload);
   };
 
   const stopInput = () => { if (typeof input.destroy === "function") input.destroy(); };

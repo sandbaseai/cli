@@ -3,14 +3,13 @@
 // `sandbase doctor`. Every failure becomes a SandBaseError carrying a stable
 // code plus a concrete next step, so an agent reading the output knows what to
 // do instead of giving up.
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { sandbaseHome } from "../paths.js";
 import { clients, type Client, type CredentialRecord } from "../types.js";
 
 export const DEFAULT_MCP_URL = "https://api.sandbase.ai/v1/mcp";
-const PREFERENCE_TTL_MS = 6 * 60 * 60 * 1000;
+export const UNREACHABLE_HINT = "Check this machine's network, proxy, or VPN, then run `sandbase doctor` and retry.";
 
 export type ErrorCode =
   | "AUTH_REQUIRED" | "AUTH_FAILED" | "INSUFFICIENT_BALANCE" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED"
@@ -33,22 +32,7 @@ export function validMcpUrl(value: unknown): string | undefined {
   } catch { return undefined; }
 }
 
-/**
- * Ordered endpoint candidates: the recorded URL first, then any extra mirrors
- * the user explicitly opted into via SANDBASE_MCP_FALLBACK_URLS. The API is
- * served only from api.sandbase.ai, so there is no implicit cross-host
- * fallback — the main-site and bare hosts are not API entry points.
- */
-export function endpointCandidates(primary: string, env = process.env): string[] {
-  const out = [primary];
-  const configured = env.SANDBASE_MCP_FALLBACK_URLS;
-  if (configured !== undefined) {
-    for (const item of configured.split(",").map(value => value.trim()).filter(Boolean)) { const url = validMcpUrl(item); if (url) out.push(url); }
-  }
-  return [...new Set(out)];
-}
-
-export interface Endpoint { credential: string; urls: string[]; source: string }
+export interface Endpoint { credential: string; url: string; source: string }
 export interface StoredKey { key: string; mcpUrl?: string; addedAt: string }
 export function keyFilePath(env = process.env): string { return join(sandbaseHome(env), "cli-key.json"); }
 export async function readStoredKey(env = process.env): Promise<StoredKey | undefined> {
@@ -69,21 +53,21 @@ function usable(record: CredentialRecord | undefined, client: Client): record is
 export async function resolveEndpoint(options: { client?: string } = {}, env = process.env): Promise<Endpoint> {
   const override = env.SANDBASE_MCP_URL ? validMcpUrl(env.SANDBASE_MCP_URL) : undefined;
   if (env.SANDBASE_MCP_URL && !override) throw new SandBaseError("USAGE", "SANDBASE_MCP_URL must be an http(s) URL ending in /v1/mcp.");
-  if (env.SANDBASE_API_KEY) return { credential: env.SANDBASE_API_KEY, urls: endpointCandidates(override || DEFAULT_MCP_URL, env), source: "env:SANDBASE_API_KEY" };
+  if (env.SANDBASE_API_KEY) return { credential: env.SANDBASE_API_KEY, url: override || DEFAULT_MCP_URL, source: "env:SANDBASE_API_KEY" };
   const wanted = options.client || env.SANDBASE_CLIENT;
   if (!wanted) {
     const stored = await readStoredKey(env);
-    if (stored) return { credential: stored.key, urls: endpointCandidates(override || validMcpUrl(stored.mcpUrl) || DEFAULT_MCP_URL, env), source: "keys" };
+    if (stored) return { credential: stored.key, url: override || validMcpUrl(stored.mcpUrl) || DEFAULT_MCP_URL, source: "keys" };
   }
   const records = await readCredentials(env);
   if (wanted) {
     const record = records[wanted as Client];
     if (!usable(record, wanted as Client)) throw new SandBaseError("AUTH_REQUIRED", `No SandBase credential is stored for client "${wanted}".`, `Run \`${CONNECT_COMMAND} --client ${wanted}\`, or omit --client to use any connected client.`);
-    return { credential: record.credential, urls: endpointCandidates(override || record.mcpUrl, env), source: `client:${wanted}` };
+    return { credential: record.credential, url: override || validMcpUrl(record.mcpUrl) || DEFAULT_MCP_URL, source: `client:${wanted}` };
   }
   for (const client of clients) {
     const record = records[client];
-    if (usable(record, client)) return { credential: record.credential, urls: endpointCandidates(override || record.mcpUrl, env), source: `client:${client}` };
+    if (usable(record, client)) return { credential: record.credential, url: override || validMcpUrl(record.mcpUrl) || DEFAULT_MCP_URL, source: `client:${client}` };
   }
   throw new SandBaseError("AUTH_REQUIRED", "No SandBase credential found on this machine.", `Run \`${CONNECT_COMMAND}\` (browser sign-in, nothing to paste), or create an API key at ${keysUrl(env)} and run \`sandbase keys add -k <key>\` (or set SANDBASE_API_KEY).`);
 }
@@ -158,77 +142,42 @@ export type FetchLike = (url: string, init: { method: string; headers: Record<st
 
 export class SandBaseMCPClient {
   private session: string | undefined;
-  private preferred = 0;
   private nextId = 1;
   readonly attempts: Array<{ url: string; outcome: string }> = [];
-  constructor(readonly endpoint: Endpoint, private readonly fetchImpl: FetchLike = globalThis.fetch as unknown as FetchLike, private readonly timeoutMs = 120_000, private readonly env = process.env) {
-    // Each CLI invocation is a new process: remember which mirror answered so an
-    // unreachable primary costs one connect timeout per 6 hours, not per command.
-    try {
-      const cached = JSON.parse(readFileSync(this.preferenceFile(), "utf8")) as { primary?: string; url?: string; savedAt?: number };
-      const index = cached.url ? endpoint.urls.indexOf(cached.url) : -1;
-      if (cached.primary === endpoint.urls[0] && index > 0 && Date.now() - (cached.savedAt || 0) < PREFERENCE_TTL_MS) this.preferred = index;
-    } catch { /* no preference yet */ }
-  }
-  private preferenceFile(): string { return join(sandbaseHome(this.env), "cache", "endpoint.json"); }
-  private rememberPreference(index: number): void {
-    const primary = this.endpoint.urls[0];
-    try {
-      if (index === 0) { rmSync(this.preferenceFile(), { force: true }); return; }
-      mkdirSync(dirname(this.preferenceFile()), { recursive: true, mode: 0o700 });
-      writeFileSync(this.preferenceFile(), JSON.stringify({ primary, url: this.endpoint.urls[index], savedAt: Date.now() }) + "\n", { mode: 0o600 });
-    } catch { /* preference is an optimization only */ }
-  }
-  /** The endpoint that last answered (or the first candidate before any call). */
-  activeUrl(): string { return this.endpoint.urls[this.preferred] || this.endpoint.urls[0] || DEFAULT_MCP_URL; }
+  constructor(readonly endpoint: Endpoint, private readonly fetchImpl: FetchLike = globalThis.fetch as unknown as FetchLike, private readonly timeoutMs = 120_000, private readonly env = process.env) {}
+  /** The single API endpoint for this session. */
+  activeUrl(): string { return this.endpoint.url; }
 
   async rpc(method: string, params?: unknown): Promise<unknown> {
     const id = this.nextId++;
     const body = JSON.stringify({ jsonrpc: "2.0", id, method, ...(params === undefined ? {} : { params }) });
-    const idempotent = isIdempotentRequest(method, params);
-    const failures: string[] = [];
-    let lastServerError: SandBaseError | undefined;
-    const order = [...this.endpoint.urls.slice(this.preferred), ...this.endpoint.urls.slice(0, this.preferred)];
-    for (const [position, url] of order.entries()) {
-      const host = new URL(url).host;
-      const isLast = position === order.length - 1;
-      let response;
-      try {
-        const headers: Record<string, string> = { authorization: `Bearer ${this.endpoint.credential}`, "content-type": "application/json", accept: "application/json, text/event-stream", "x-sandbase-client": "cli" };
-        if (this.session) headers["mcp-session-id"] = this.session;
-        response = await this.fetchImpl(url, { method: "POST", headers, body, signal: AbortSignal.timeout(this.timeoutMs) });
-      } catch (error) {
-        const reason = describeNetworkFailure(error); this.attempts.push({ url, outcome: reason });
-        if (!idempotent && !isPreSendFailure(error)) {
-          // The request may already be running server-side; replaying it would bill twice.
-          throw new SandBaseError("NETWORK", `The request to ${host} was interrupted after it was sent (${reason}); it may have started a run.`, "Do not re-run yet. Check `sandbase runs list` for the run and poll it with `sandbase runs get -r <run_id> -w`.");
-        }
-        failures.push(`${host}: ${reason}`);
-        continue;
+    const url = this.endpoint.url;
+    const host = new URL(url).host;
+    let response;
+    try {
+      const headers: Record<string, string> = { authorization: `Bearer ${this.endpoint.credential}`, "content-type": "application/json", accept: "application/json, text/event-stream", "x-sandbase-client": "cli" };
+      if (this.session) headers["mcp-session-id"] = this.session;
+      response = await this.fetchImpl(url, { method: "POST", headers, body, signal: AbortSignal.timeout(this.timeoutMs) });
+    } catch (error) {
+      const reason = describeNetworkFailure(error); this.attempts.push({ url, outcome: reason });
+      if (!isIdempotentRequest(method, params) && !isPreSendFailure(error)) {
+        // The request may already be running server-side; blindly retrying would bill twice.
+        throw new SandBaseError("NETWORK", `The request to ${host} was interrupted after it was sent (${reason}); it may have started a run.`, "Do not re-run yet. Check `sandbase runs list` for the run and poll it with `sandbase runs get -r <run_id> -w`.");
       }
-      this.attempts.push({ url, outcome: `HTTP ${response.status}` });
-      const session = response.headers.get("mcp-session-id"); if (session) this.session = session;
-      const text = await response.text();
-      if (response.status >= 500 && idempotent && !isLast) {
-        // Gateway/origin errors are what a mirror can fix; only safe for idempotent calls.
-        lastServerError = httpError(response.status, text, host, this.env); failures.push(`${host}: HTTP ${response.status}`);
-        continue;
-      }
-      const index = this.endpoint.urls.indexOf(url);
-      if (index !== this.preferred || failures.length) this.rememberPreference(index);
-      this.preferred = index;
-      if (!response.ok) throw httpError(response.status, text, host, this.env);
-      const parsed = parseRpcBody(text, response.headers.get("content-type") || "", id);
-      if (!parsed) throw new SandBaseError("INVALID_RESPONSE", `Expected JSON-RPC from ${host} but got ${text ? `"${text.slice(0, 80).replace(/\s+/g, " ")}"` : "an empty body"}.`, "A proxy or captive portal may be intercepting traffic. Run `sandbase doctor`.");
-      if (parsed.error) {
-        const message = parsed.error.message || "request failed";
-        const code: ErrorCode = parsed.error.code === -32602 ? "INVALID_INPUT" : /unknown tool|tool(?: '[^']*')? (?:was )?not found|run not found|invalid service request/i.test(message) ? "NOT_FOUND" : "TOOL_ERROR";
-        throw new SandBaseError(code, message, hintForMessage(message, this.env));
-      }
-      return parsed.result;
+      throw new SandBaseError("NETWORK", `Cannot reach SandBase at ${host} (${reason}).`, UNREACHABLE_HINT);
     }
-    if (lastServerError && failures.every(failure => /HTTP 5\d\d$/.test(failure))) throw lastServerError;
-    throw new SandBaseError("NETWORK", `Cannot reach SandBase (${failures.join("; ")}).`, "Check your network, proxy, or VPN, then run `sandbase doctor`. Set SANDBASE_MCP_URL to use a different endpoint.");
+    this.attempts.push({ url, outcome: `HTTP ${response.status}` });
+    const session = response.headers.get("mcp-session-id"); if (session) this.session = session;
+    const text = await response.text();
+    if (!response.ok) throw httpError(response.status, text, host, this.env);
+    const parsed = parseRpcBody(text, response.headers.get("content-type") || "", id);
+    if (!parsed) throw new SandBaseError("INVALID_RESPONSE", `Expected JSON-RPC from ${host} but got ${text ? `"${text.slice(0, 80).replace(/\s+/g, " ")}"` : "an empty body"}.`, "A proxy or captive portal may be intercepting traffic. Run `sandbase doctor`.");
+    if (parsed.error) {
+      const message = parsed.error.message || "request failed";
+      const code: ErrorCode = parsed.error.code === -32602 ? "INVALID_INPUT" : /unknown tool|tool(?: '[^']*')? (?:was )?not found|run not found|invalid service request/i.test(message) ? "NOT_FOUND" : "TOOL_ERROR";
+      throw new SandBaseError(code, message, hintForMessage(message, this.env));
+    }
+    return parsed.result;
   }
 
   async tool(name: string, args: Record<string, unknown> = {}): Promise<ToolOutput> {

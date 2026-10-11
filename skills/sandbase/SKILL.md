@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.1
+version: 0.3.2
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
