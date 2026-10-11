@@ -1,6 +1,6 @@
 {
   "name": "sandbase",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Discover and run 2,000+ AI models and APIs (media generation, social data, search, scraping) through one MCP interface or CLI, paid per call from one balance.",
   "author": "SandBase AI",
   "license": "Apache-2.0",
