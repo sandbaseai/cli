@@ -14,10 +14,9 @@ import { pathToFileURL } from "node:url";
 //    silently drops the server.
 // 2. Every tool failure reaches the model as an `isError` tool result that
 //    names the cause and the next step, instead of an opaque protocol error.
-// 3. If the recorded endpoint is unreachable, a known mirror of the same API
-//    is tried automatically.
+// 3. The API is reached only at api.sandbase.ai; extra mirrors are tried only
+//    when the user opts in via SANDBASE_MCP_FALLBACK_URLS.
 const allowedClients = new Set(["codex", "claude-code", "cursor", "gemini-cli", "hermes", "openclaw", "opencode", "qwen-code", "windsurf", "cursor-cli", "kimi-cli", "kiro", "kiro-cli", "amp", "crush", "iflow-cli", "warp", "claude-desktop", "cowork", "antigravity", "trae", "qoder", "workbuddy", "pi"]);
-const FALLBACK_URL = "https://www.sandbase.ai/v1/mcp";
 const BILLING_URL = "https://www.sandbase.ai/console/billing";
 const RECONNECT = "npx -y @sandbaseai/cli@latest connect";
 // Tool calls get no bridge-side deadline (long synchronous tools must be able to
@@ -46,10 +45,10 @@ function validEndpoint(value) {
 }
 export function endpointCandidates(primary, env = process.env) {
   const out = [primary];
+  // The API is served only from api.sandbase.ai. There is no implicit
+  // cross-host fallback; users can still opt into extra mirrors explicitly.
   if (env.SANDBASE_MCP_FALLBACK_URLS !== undefined) {
     for (const item of env.SANDBASE_MCP_FALLBACK_URLS.split(",")) { const url = validEndpoint(item.trim()); if (url) out.push(url); }
-  } else {
-    try { const host = new URL(primary).hostname; if (host === "api.sandbase.ai" || host === "sandbase.ai") out.push(FALLBACK_URL); } catch { /* validated earlier */ }
   }
   return [...new Set(out)];
 }

@@ -42,7 +42,7 @@ test("MCP Registry metadata exposes the authenticated remote endpoint", async ()
   assert.deepEqual(manifest.remotes, [
     {
       type: "streamable-http",
-      url: "https://sandbase.ai/v1/mcp",
+      url: "https://api.sandbase.ai/v1/mcp",
       headers: [
         {
           name: "Authorization",

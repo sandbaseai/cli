@@ -86,7 +86,7 @@ test("Windsurf ownership requires the exact SandBase endpoint", async () => {
   await mkdir(join(token, ".."), { recursive: true });
   await writeFile(path, original);
   await writeFile(token, "third-party-secret", { mode: 0o600 });
-  await assert.rejects(installA1("windsurf", "/unused", "sandbase-secret", "https://sandbase.ai/v1/mcp", env), /not SandBase-owned/);
+  await assert.rejects(installA1("windsurf", "/unused", "sandbase-secret", "https://api.sandbase.ai/v1/mcp", env), /not SandBase-owned/);
   assert.equal(await readFile(path, "utf8"), original);
   assert.equal(await readFile(token, "utf8"), "third-party-secret");
 });
