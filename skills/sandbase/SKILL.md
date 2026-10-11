@@ -42,7 +42,7 @@ There are **two transports** with the same capabilities. Pick one before doing a
 Tell the user to run this once in a terminal, approve the browser sign-in, and restart their AI client:
 
 ```sh
-npx -y @sandbaseai/cli@latest connect
+npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz connect
 ```
 
 It configures the local MCP bridge and this Skill for every supported client it finds. No API key to paste. For checksum-verified installs, use the immutable assets on the [GitHub Releases page](https://github.com/sandbaseai/cli/releases).
@@ -79,10 +79,10 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 ## 3. Transport B — CLI (fallback)
 
 ```sh
-sandbase --version || npx -y @sandbaseai/cli@latest --version
+sandbase --version || npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz --version
 ```
 
-If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cli@latest` (or install it: `npm install -g @sandbaseai/cli@latest`). If the CLI prints "Update available", run `npx -y @sandbaseai/cli@latest setup` — it refreshes the CLI's MCP bridge and this Skill.
+If `sandbase` is not installed, prefix every command with `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz` (or install it: `npm install -g https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz`). If the CLI prints "Update available", run `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz setup` — it refreshes the CLI's MCP bridge and this Skill.
 
 **Authentication** is automatic once the user has run `connect` (it reuses that browser sign-in). Otherwise the CLI reports `AUTH_REQUIRED` with the exact fix; an API key also works via `SANDBASE_API_KEY` or `sandbase keys add -k <key>`. Never ask the user to paste a key into the chat.
 
@@ -149,7 +149,7 @@ Tool failures come back as error results whose text names the cause **and the ne
 | Message contains | Do this |
 |---|---|
 | "unreachable" / `NETWORK` | Stop retrying. Tell the user to check network/proxy/VPN and run `sandbase doctor`. |
-| "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y @sandbaseai/cli@latest connect`. |
+| "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz connect`. |
 | "insufficient" / 402 | Tell the user to top up at https://www.sandbase.ai/console/billing. |
 | "not found" / "unknown tool" | Re-run `sandbase_discover`; copy `tool_name` exactly. |
 | "invalid params" / schema | Re-run `sandbase_inspect`; pass exactly its `inputSchema` fields. |
