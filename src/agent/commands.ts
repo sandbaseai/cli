@@ -79,6 +79,28 @@ function collectUrls(value: unknown, found = new Set<string>()): Set<string> {
   return found;
 }
 function shellQuote(value: string): string { return `'${value.replace(/'/g, `'\\''`)}'`; }
+/** Verbose health line for inspect, e.g. "stable · 3.5s typical, 27.7s tail · 75 samples". */
+export function healthLine(metrics: unknown): string {
+  if (!metrics || typeof metrics !== "object") return "";
+  const m = metrics as { status?: unknown; run_time_ms?: { p50?: unknown; p95?: unknown }; sample_size?: unknown };
+  const status = typeof m.status === "string" ? m.status : "";
+  if (!status) return "";
+  const parts = [status];
+  const p50 = m.run_time_ms && typeof m.run_time_ms.p50 === "number" ? m.run_time_ms.p50 : undefined;
+  const p95 = m.run_time_ms && typeof m.run_time_ms.p95 === "number" ? m.run_time_ms.p95 : undefined;
+  if (p50 !== undefined) parts.push(p95 !== undefined ? `${(p50 / 1000).toFixed(1)}s typical, ${(p95 / 1000).toFixed(1)}s tail` : `${(p50 / 1000).toFixed(1)}s typical`);
+  if (typeof m.sample_size === "number") parts.push(`${m.sample_size} samples`);
+  return parts.join(" · ");
+}
+/** Compact health cell for the discover table, e.g. "healthy 4.2s" or "stable". Blank when absent. */
+export function formatHealth(metrics: unknown): string {
+  if (!metrics || typeof metrics !== "object") return "";
+  const m = metrics as { status?: unknown; run_time_ms?: { p50?: unknown } };
+  const status = typeof m.status === "string" ? m.status : "";
+  const p50 = m.run_time_ms && typeof m.run_time_ms.p50 === "number" ? m.run_time_ms.p50 : undefined;
+  if (!status) return "";
+  return p50 !== undefined ? `${status} ${(p50 / 1000).toFixed(1)}s` : status;
+}
 
 type OptionSpec = Record<string, { type: "string" | "boolean"; short?: string }>;
 const commonOptions = { json: { type: "boolean", short: "j" }, client: { type: "string" }, help: { type: "boolean", short: "h" } } as const;
@@ -204,8 +226,8 @@ async function discover(argv: string[], out: Output, env: NodeJS.ProcessEnv, fet
   const items = (Array.isArray(data.data) ? data.data : []) as Array<Record<string, unknown>>;
   if (out.json) { out.data(data); return 0; }
   if (!items.length) { out.print(`No tools matched "${q}". Try a shorter noun phrase, a synonym, or filter with -t.`); printHints(out, data.hints, data.warnings); return 0; }
-  const rows = items.map(item => [String(item.tool_name ?? item.name ?? item.id ?? ""), String(item.category ?? item.type ?? ""), String(item.vendor ?? item.vendor_slug ?? ""), formatPrice(item.pricing), item.run_count === undefined ? "" : String(item.run_count), truncate(String(item.description ?? ""), 70)]);
-  out.print([`Found ${items.length} tool${items.length === 1 ? "" : "s"}${q ? ` for "${q}"` : ""}:`, "", table(["TOOL", "TYPE", "VENDOR", "PRICE", "RUNS", "DESCRIPTION"], rows), "", "Next: sandbase inspect <TOOL>   (input schema, exact price, and a ready-to-run command)"].join("\n"));
+  const rows = items.map(item => [String(item.tool_name ?? item.name ?? item.id ?? ""), String(item.category ?? item.type ?? ""), String(item.vendor ?? item.vendor_slug ?? ""), formatPrice(item.pricing), formatHealth(item.metrics), truncate(String(item.description ?? ""), 60)]);
+  out.print([`Found ${items.length} tool${items.length === 1 ? "" : "s"}${q ? ` for "${q}"` : ""}:`, "", table(["TOOL", "TYPE", "VENDOR", "PRICE", "HEALTH", "DESCRIPTION"], rows), "", "Next: sandbase inspect <TOOL>   (input schema, exact price, and a ready-to-run command)", "HEALTH is advisory: prefer healthy/stable and lower latency to break ties; blank/unknown means no data, not unhealthy."].join("\n"));
   printHints(out, data.hints, data.warnings);
   return 0;
 }
@@ -256,6 +278,8 @@ async function inspect(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetc
   const priceLine = [formatPrice(pricing), typeof pricing.formula === "string" && pricing.formula ? `formula: ${pricing.formula}` : ""].filter(Boolean).join("  ");
   const meta = [data.model, data.category ?? data.type, data.vendor].filter(Boolean).join(" · ");
   const lines = [`${tool}${meta ? `  (${meta})` : ""}`, String(data.description ?? "").trim(), "", `Price: ${priceLine}`];
+  const health = healthLine(data.metrics);
+  if (health) lines.push(`Health: ${health}`);
   lines.push("", rows.length ? `Input (send as JSON with -i):\n${table(["FIELD", "TYPE", "REQUIRED", "DESCRIPTION"], rows)}` : "Input: no parameters.");
   lines.push("", "Run:", `  sandbase run ${tool} -i ${shellQuote(JSON.stringify(example))}${/video|image|audio|music|speech/i.test(`${data.category ?? ""} ${data.description ?? ""} ${tool}`) ? " -w -o result.json" : ""}`);
   lines.push(`MCP: sandbase_run ${JSON.stringify({ name: tool, arguments: example })}`);

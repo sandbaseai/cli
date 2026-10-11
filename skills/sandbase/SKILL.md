@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.0
+version: 0.3.1
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -155,6 +155,22 @@ Tool failures come back as error results whose text names the cause **and the ne
 | "invalid params" / schema | Re-run `sandbase_inspect`; pass exactly its `inputSchema` fields. |
 | "upstream" / "provider" / "capability call failed" | Retry once, then pick another tool from discover. |
 | 429 / rate limit | Wait 10–30 seconds, retry once. |
+
+---
+
+## 7b. Health
+
+`discover` and `inspect` may include a `metrics` block per tool: `status` (healthy / stable / degraded / outage / unknown) plus `run_time_ms` (p50 and p95). The CLI shows a HEALTH column in discover and a Health line in inspect.
+
+| Status | Meaning |
+|---|---|
+| `healthy` | Confirmed working in the last few minutes |
+| `stable` | No very recent sample, but a strong 24h record |
+| `degraded` | Elevated failures — usually still works |
+| `outage` | Not working right now |
+| `unknown` *(or missing)* | Not enough data — never a warning |
+
+**Use health to break ties, never to filter.** Between two tools that both fit, prefer the healthier and faster one. Never skip a tool because its status is unknown or absent — that just means low traffic. Metrics are a platform-wide aggregate and can be briefly missing on a given call; if you need it, call again.
 
 ---
 
