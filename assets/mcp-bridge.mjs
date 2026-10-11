@@ -165,7 +165,7 @@ export async function runMCPBridge(options = {}) {
   const offline = async (request, reason) => {
     const id = request.id;
     if (id === undefined) return;
-    const message = `SandBase is unreachable from this machine (${reason}). Tell the user to check their network, proxy, or VPN, then run \`sandbase doctor\` in a terminal. Do not retry this call until connectivity is restored.`;
+    const message = `SandBase is unreachable from this machine (${reason}). api.sandbase.ai is the only API host, so there is no automatic fallback. Tell the user to run \`sandbase doctor\` in a terminal, and if api.sandbase.ai is blocked here (proxy, firewall, or regional routing) to set SANDBASE_MCP_FALLBACK_URLS to a reachable mirror (each ending in /v1/mcp). Do not retry this call until connectivity is restored.`;
     if (request.method === "initialize") {
       const version = typeof request.params?.protocolVersion === "string" ? request.params.protocolVersion : "2025-06-18";
       output.write(JSON.stringify({ jsonrpc: "2.0", id, result: { protocolVersion: version, capabilities: { tools: { listChanged: false } }, serverInfo: { name: "sandbase", title: "SandBase", version: "bridge-offline" }, instructions: `SandBase tools are available but the service is currently unreachable (${reason}). Tool calls return an error with the fix until connectivity is restored.` } }) + "\n");

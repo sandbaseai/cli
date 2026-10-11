@@ -75,7 +75,7 @@ test("network and HTTP failures carry a code and a next step", async () => {
   const env = await home(); await connected(env, "codex", "https://api.sandbase.ai/v1/mcp");
   const { fetch } = fakeFetch(() => connectTimeout());
   const result = await cli("balance", [], env, fetch);
-  assert.equal(result.code, 1); assert.match(result.err, /Error \[NETWORK\]: Cannot reach SandBase \(api\.sandbase\.ai: connection timed out\)/); assert.match(result.err, /Next: .*sandbase doctor/);
+  assert.equal(result.code, 1); assert.match(result.err, /Error \[NETWORK\]: Cannot reach SandBase \(api\.sandbase\.ai: connection timed out\)/); assert.match(result.err, /Next: .*sandbase doctor/); assert.match(result.err, /SANDBASE_MCP_FALLBACK_URLS/);
   assert.equal(httpError(402, '{"error":"API key spending limit exceeded"}', "api.sandbase.ai").code, "INSUFFICIENT_BALANCE");
   assert.match(httpError(401, "<html>", "api.sandbase.ai").hint ?? "", /connect/);
   const json = await cli("balance", ["-j"], env, fetch);
@@ -210,7 +210,7 @@ test("bridge keeps the server usable offline and turns tool failures into visibl
   const [init, list, call] = await bridge(env, offline.fetch, [{ jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18" } }, { jsonrpc: "2.0", id: 2, method: "tools/list" }, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sandbase_discover", arguments: { q: "x" } } }]);
   assert.equal(init!.result.protocolVersion, "2025-06-18"); assert.match(init!.result.instructions, /unreachable/);
   assert.ok(list!.result.tools.some((tool: { name: string }) => tool.name === "sandbase_discover"));
-  assert.equal(call!.result.isError, true); assert.match(call!.result.content[0].text, /unreachable from this machine \(api\.sandbase\.ai: connection timed out\).*sandbase doctor/);
+  assert.equal(call!.result.isError, true); assert.match(call!.result.content[0].text, /unreachable from this machine \(api\.sandbase\.ai: connection timed out\).*sandbase doctor/); assert.match(call!.result.content[0].text, /SANDBASE_MCP_FALLBACK_URLS/);
 
   // The mixed/failover scenario needs a second host to switch to; there is no
   // implicit fallback, so configure one explicitly for this session. The API
@@ -339,7 +339,7 @@ test("setup refreshes the bridge and SandBase-owned Skills but leaves edited Ski
     const lines: string[] = [];
     assert.equal(await setup(new FileCredentialStore(env.SANDBASE_HOME!), line => void lines.push(line)), true);
     assert.match(lines.join("\n"), /bridge: status=updated/); assert.match(lines.join("\n"), /claude-code: skill=updated/); assert.match(lines.join("\n"), /kiro: skill=modified/);
-    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.1/);
+    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.2/);
     assert.match(await readFile(join(kiroDir, "SKILL.md"), "utf8"), /user edit/);
   } finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });

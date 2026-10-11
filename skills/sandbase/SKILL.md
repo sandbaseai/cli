@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.1
+version: 0.3.2
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -148,7 +148,7 @@ Tool failures come back as error results whose text names the cause **and the ne
 
 | Message contains | Do this |
 |---|---|
-| "unreachable" / `NETWORK` | Stop retrying. Tell the user to check network/proxy/VPN and run `sandbase doctor`. |
+| "unreachable" / `NETWORK` | Stop retrying. Run `sandbase doctor`. api.sandbase.ai is the only API host, so if it is blocked here (proxy, firewall, or regional routing) set `SANDBASE_MCP_FALLBACK_URLS` to a reachable mirror (each ending in /v1/mcp). |
 | "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz connect`. |
 | "insufficient" / 402 | Tell the user to top up at https://www.sandbase.ai/console/billing. |
 | "not found" / "unknown tool" | Re-run `sandbase_discover`; copy `tool_name` exactly. |

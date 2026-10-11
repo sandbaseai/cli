@@ -17,7 +17,7 @@ export async function probeEndpoint(label: string, credential: string, mcpUrl: s
     const host = new URL(client.activeUrl()).host;
     const primaryHost = new URL(mcpUrl).host;
     const primaryFailure = client.attempts.find(attempt => new URL(attempt.url).host === primaryHost && !attempt.outcome.startsWith("HTTP"));
-    const fallback = host !== primaryHost && primaryFailure ? `, primary=${primaryHost} (${primaryFailure.outcome}), fallback=${host} (the MCP bridge switches automatically)` : "";
+    const fallback = host !== primaryHost && primaryFailure ? `, primary=${primaryHost} (${primaryFailure.outcome}), using configured mirror=${host}` : "";
     const tools = Array.isArray(listed?.tools) ? listed.tools.length : 0;
     const balance = account.data.balance === undefined ? "unknown" : `$${String(account.data.balance)}`;
     const low = Number(account.data.balance) <= 0 ? ", next_step=Balance is empty; top up before running paid tools." : "";

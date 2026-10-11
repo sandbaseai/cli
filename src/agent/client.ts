@@ -10,6 +10,10 @@ import { sandbaseHome } from "../paths.js";
 import { clients, type Client, type CredentialRecord } from "../types.js";
 
 export const DEFAULT_MCP_URL = "https://api.sandbase.ai/v1/mcp";
+// What to try when SandBase cannot be reached. api.sandbase.ai is the only API
+// host (#64), so a network/proxy/firewall block there has no implicit fallback —
+// the one self-serve escape is pointing the CLI at a reachable mirror.
+export const UNREACHABLE_HINT = "Run `sandbase doctor` to pinpoint it. If api.sandbase.ai is blocked on this network (proxy, firewall, or regional routing), set SANDBASE_MCP_FALLBACK_URLS to a reachable mirror (comma-separated, each ending in /v1/mcp), or SANDBASE_MCP_URL to replace the endpoint.";
 const PREFERENCE_TTL_MS = 6 * 60 * 60 * 1000;
 
 export type ErrorCode =
@@ -228,7 +232,7 @@ export class SandBaseMCPClient {
       return parsed.result;
     }
     if (lastServerError && failures.every(failure => /HTTP 5\d\d$/.test(failure))) throw lastServerError;
-    throw new SandBaseError("NETWORK", `Cannot reach SandBase (${failures.join("; ")}).`, "Check your network, proxy, or VPN, then run `sandbase doctor`. Set SANDBASE_MCP_URL to use a different endpoint.");
+    throw new SandBaseError("NETWORK", `Cannot reach SandBase (${failures.join("; ")}).`, UNREACHABLE_HINT);
   }
 
   async tool(name: string, args: Record<string, unknown> = {}): Promise<ToolOutput> {
