@@ -20,7 +20,7 @@ test("Cursor and Codex converge on one owned shared native Skill", async () => {
   assert.equal(cursor.state, "configured"); assert.equal(codex.state, "already_configured");
   assert.equal(skillPath("cursor", env), sharedSkillPath(env)); assert.equal(skillPath("codex", env), sharedSkillPath(env));
   const content = await readFile(sharedSkillPath(env), "utf8");
-  assert.match(content, /^name: sandbase$/m); assert.match(content, /^disable-model-invocation: true$/m); assert.match(content, /sandbase-cli-managed: sandbase/);
+  assert.match(content, /^name: sandbase$/m); assert.doesNotMatch(content, /disable-model-invocation/); assert.match(content, /sandbase-cli-managed: sandbase/);
   assert.doesNotMatch(content, /(?:sk-|cln-|authorization|credential|\/Users\/|C:\\Users\\)/i);
   const again = await installSkill("cursor", env); assert.equal(again.state, "already_configured"); assert.equal(again.changed, false);
 });
@@ -102,7 +102,7 @@ test("concurrent shared installs are idempotent and clean only verified legacy p
   await writeFile(legacy, await readFile(join(process.cwd(), "skills", "sandbase", "SKILL.md"), "utf8"));
   const results = await Promise.all([installSkill("cursor", env), installSkill("codex", env)]);
   assert.ok(results.some(result => result.state === "configured"));
-  assert.match(await readFile(sharedSkillPath(env), "utf8"), /disable-model-invocation: true/);
+  assert.match(await readFile(sharedSkillPath(env), "utf8"), /sandbase-cli-managed: sandbase/);
   await assert.rejects(() => readFile(legacy, "utf8"));
 });
 

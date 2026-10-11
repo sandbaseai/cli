@@ -204,10 +204,28 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 
 ```sh
 sandbase connect [--client <name>]    # 授权 + 配置
-sandbase doctor [--client <name>]     # 健康检查
+sandbase setup                        # 升级后：刷新本地 bridge 与 Skill，并测试连通性
+sandbase doctor [--client <name>]     # 本地检查 + 一次真实的 SandBase 往返请求
 sandbase unregister [--client <name>] # 移除配置
 sandbase catalog --json               # 列出所有支持的客户端
 ```
+
+### Agent 命令（Shell 通道，与 MCP 工具能力一致）
+
+没有 MCP、或 MCP 会话异常时，Agent 可以直接在 Shell 里使用同一套目录。凭据自动复用 `connect` 的浏览器登录结果（也可用 `SANDBASE_API_KEY` 或 `sandbase keys add -k <key>`）。
+
+```sh
+sandbase discover -q "推特搜索"                              # 搜索；-t api|llm|multimodal|embedding|service
+sandbase inspect sandbase_twitter_web_search_timeline       # 参数、价格、可直接运行的命令
+sandbase run sandbase_twitter_web_search_timeline -i '{"keyword":"AI agents"}'
+sandbase run <视频工具> -i '{"prompt":"..."}' -w -o result.json   # 带退避等待完成，结果写入文件
+sandbase runs get -r <run_id> -w -o result.json            # 续查长任务，不要重新运行
+sandbase runs list | sandbase balance
+```
+
+`-j` 输出 JSON；错误格式为 `{"error":{"code","message","hint"}}`，`hint` 给出下一步。退出码：`0` 成功或仍在运行，`1` 失败（含任务失败），`2` 参数错误。
+
+`api.sandbase.ai` 不可达时，CLI 与 MCP bridge 会自动切换到 `www.sandbase.ai`；bridge 会继续展示 SandBase 工具，并返回可执行的错误提示，而不是让客户端丢掉整个 server。
 
 ### MCP 工具（连接后你的 Agent 可以使用）
 

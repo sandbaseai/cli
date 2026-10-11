@@ -1,8 +1,8 @@
 {
   "name": "@sandbaseai/cli",
-  "version": "0.1.17",
+  "version": "0.2.0",
   "mcpName": "io.github.sandbaseai/cli",
-  "description": "Connect 25 AI clients—including Claude Code, Codex, Cursor, Hermes, and OpenClaw—to 2,000+ models through a local MCP server",
+  "description": "Give 25 AI clients—Claude Code, Codex, Cursor, Hermes, OpenClaw and more—2,000+ models and APIs through one MCP server and an agent-friendly CLI",
   "type": "module",
   "bin": {
     "sandbase": "dist/cli.js"
@@ -20,7 +20,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "npm run build && tsc -p tsconfig.test.json && node --test dist-test/test/*.test.js",
+    "test": "npm run build && tsc -p tsconfig.test.json && node --import ./dist-test/test/setup.js --test dist-test/test/*.test.js",
     "lint": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
     "audit:package": "bash scripts/audit-package.sh",
     "prepack": "npm run build"
