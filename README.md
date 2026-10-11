@@ -291,7 +291,7 @@ sandbase runs list | sandbase balance
 
 `-j` prints JSON; errors are `{"error":{"code","message","hint"}}` with the next step in `hint`. Exit codes: `0` success or still running, `1` failure (including a failed run), `2` usage.
 
-If `api.sandbase.ai` is unreachable, the CLI and the MCP bridge fall back to `www.sandbase.ai` automatically, and the bridge keeps the SandBase tools visible with an actionable error instead of dropping the server.
+Sync tools (LLMs, most data APIs) return their result directly; async tools (image, video, audio jobs) return a run id — wait with `-w`, or fetch later with `sandbase runs get -r <run_id>`. If `api.sandbase.ai` is unreachable, the bridge keeps the SandBase tools visible with an actionable error instead of dropping the server.
 
 ### MCP Tools (available to your agent after connecting)
 

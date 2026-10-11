@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.2
+version: 0.3.3
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -67,10 +67,10 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 
 1. `sandbase_discover({"q": "twitter posts"})` → pick a `tool_name` from `data` (each result carries `description`, `pricing`, `vendor`, `run_count`).
 2. `sandbase_inspect({"name": "sandbase_twitter_web_search_timeline"})` → read `inputSchema` and `pricing`; copy `execute_as`.
-3. `sandbase_run({"name": "sandbase_twitter_web_search_timeline", "arguments": {"keyword": "AI agents"}})`.
-   - Fast tools return `status: "completed"` with `output` directly.
-   - Slow tools (video, music, large scrapes) return `status: "running"` plus `prediction_id` / `taskId` after up to ~20 s.
-4. If still running, call `sandbase_run_get({"run_id": "<prediction_id>"})` every 5–10 seconds until `status` is `completed` or `failed`. The finished `output` is in the response. If a completed run shows no `output`, fetch it with the CLI: `sandbase runs get -r <run_id> -o result.json`.
+3. `sandbase_run({"name": "sandbase_twitter_web_search_timeline", "arguments": {"keyword": "AI agents"}})`. There are two kinds of tools:
+   - **Sync** (LLMs, most data APIs): the call waits for the upstream and returns `status: "completed"` with `output` directly.
+   - **Async** (image, video, audio, other long jobs): the call returns at once with `status: "running"` and a `run_id` (also `prediction_id` / `taskId`).
+4. For an async run, call `sandbase_run_get({"run_id": "<run_id>"})` every 5–10 seconds until `status` is `completed` or `failed`; the finished `output` is in that response. A run that has finished but is still copying its files also reports `running` — keep polling. Never call `sandbase_run` again for the same job (that starts and bills a new run).
 
 **Agent Services** (`svc_…` names from `type: "service"`): pass `arguments: {"idempotency_key": "<unique>", "input": "..."}`; reuse the same key and input on retries. Poll with `sandbase_run_get({"run_id": ..., "service_id": "svc_…"})`; `succeeded`, `failed`, and `cancelled` are terminal.
 
@@ -155,22 +155,6 @@ Tool failures come back as error results whose text names the cause **and the ne
 | "invalid params" / schema | Re-run `sandbase_inspect`; pass exactly its `inputSchema` fields. |
 | "upstream" / "provider" / "capability call failed" | Retry once, then pick another tool from discover. |
 | 429 / rate limit | Wait 10–30 seconds, retry once. |
-
----
-
-## 7b. Health
-
-`discover` and `inspect` may include a `metrics` block per tool: `status` (healthy / stable / degraded / outage / unknown) plus `run_time_ms` (p50 and p95). The CLI shows a HEALTH column in discover and a Health line in inspect.
-
-| Status | Meaning |
-|---|---|
-| `healthy` | Confirmed working in the last few minutes |
-| `stable` | No very recent sample, but a strong 24h record |
-| `degraded` | Elevated failures — usually still works |
-| `outage` | Not working right now |
-| `unknown` *(or missing)* | Not enough data — never a warning |
-
-**Use health to break ties, never to filter.** Between two tools that both fit, prefer the healthier and faster one. Never skip a tool because its status is unknown or absent — that just means low traffic. Metrics are a platform-wide aggregate and can be briefly missing on a given call; if you need it, call again.
 
 ---
 

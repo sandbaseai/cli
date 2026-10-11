@@ -1,6 +1,6 @@
 {
   "name": "@sandbaseai/cli",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "mcpName": "io.github.sandbaseai/cli",
   "description": "Give 25 AI clients—Claude Code, Codex, Cursor, Hermes, OpenClaw and more—2,000+ models and APIs through one MCP server and an agent-friendly CLI",
   "type": "module",

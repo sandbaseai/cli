@@ -77,17 +77,32 @@ test("network and HTTP failures carry a code and a next step", async () => {
   assert.equal(JSON.parse(json.out).error.code, "NETWORK"); assert.doesNotMatch(json.out + json.err, /test-credential-value/);
 });
 
-test("discover shows a HEALTH column and inspect shows a health line", async () => {
+test("discover and inspect show no health column or line", async () => {
   const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
-  const discover = fakeFetch(() => toolResult({ data: [{ tool_name: "sandbase_a", category: "api", vendor: "V", pricing: { base_price: "0.01" }, description: "x", metrics: { status: "stable", run_time_ms: { p50: 3543, p95: 27748 }, sample_size: 75 } }], count: 1 }));
+  const discover = fakeFetch(() => toolResult({ data: [{ tool_name: "sandbase_a", category: "api", vendor: "V", pricing: { base_price: "0.01" }, description: "x", metrics: { status: "stable" } }], count: 1 }));
   const found = await cli("discover", ["-q", "a"], env, discover.fetch);
-  assert.match(found.out, /HEALTH/); assert.match(found.out, /stable 3\.5s/); assert.match(found.out, /break ties/);
-  const inspect = fakeFetch(() => toolResult({ tool_name: "sandbase_a", description: "x", pricing: { base_price: "0.01" }, inputSchema: { type: "object", properties: {} }, metrics: { status: "stable", run_time_ms: { p50: 3543, p95: 27748 }, sample_size: 75 } }));
-  const detail = await cli("inspect", ["sandbase_a"], env, inspect.fetch);
-  assert.match(detail.out, /Health: stable · 3\.5s typical, 27\.7s tail · 75 samples/);
-  // No metrics -> no HEALTH noise beyond the (empty) column.
-  const bare = fakeFetch(() => toolResult({ tool_name: "sandbase_b", description: "y", pricing: {}, inputSchema: { type: "object", properties: {} } }));
-  assert.doesNotMatch((await cli("inspect", ["sandbase_b"], env, bare.fetch)).out, /Health:/);
+  assert.match(found.out, /TOOL\s+TYPE\s+VENDOR\s+PRICE\s+DESCRIPTION/); assert.doesNotMatch(found.out, /HEALTH|stable/);
+  const inspect = fakeFetch(() => toolResult({ tool_name: "sandbase_a", description: "x", pricing: { base_price: "0.01" }, inputSchema: { type: "object", properties: {} }, metrics: { status: "stable" } }));
+  assert.doesNotMatch((await cli("inspect", ["sandbase_a"], env, inspect.fetch)).out, /Health/);
+});
+
+test("run -w keeps waiting while files are transferred, drops stale hints, and announces the run id on stderr", async () => {
+  const env = await home(); await connected(env, "codex", "http://127.0.0.1:9/v1/mcp");
+  let polls = 0;
+  const { fetch } = fakeFetch(call => {
+    const name = (call.params as { name?: string } | undefined)?.name;
+    if (name === "sandbase_run") return toolResult({ prediction_id: "pred_t", status: "running", output: null, hints: ["Run is still in progress."] });
+    if (name === "sandbase_run_get") return toolResult(++polls < 6 ? { run_id: "pred_t", status: "completed", hints: ["The run completed and its files are still being transferred. Poll sandbase_run_get again in a few seconds."] } : { run_id: "pred_t", status: "completed", output: ["https://cdn.test/t.mp4"] });
+    if (call.method === "tasks/result") return { body: { result: { structuredContent: { status: "completed", output: null } } } };
+    return { body: { error: { code: -32601, message: "unexpected" } } };
+  });
+  const json = await cli("run", ["sandbase_video", "-i", "{}", "-w", "-j"], env, fetch);
+  assert.equal(json.code, 0, json.err);
+  assert.deepEqual(JSON.parse(json.out).output, ["https://cdn.test/t.mp4"]);
+  assert.match(json.err, /Run pred_t started; waiting for the result.*sandbase runs get -r pred_t -w/);
+  polls = 0;
+  const text = await cli("run", ["sandbase_video", "-i", "{}", "-w"], env, fetch);
+  assert.match(text.out, /Status: completed/); assert.doesNotMatch(text.out, /still in progress|being transferred/);
 });
 
 test("discover renders a table with price and next step; zero results show server hints", async () => {
@@ -314,7 +329,7 @@ test("setup refreshes the bridge and SandBase-owned Skills but leaves edited Ski
     const lines: string[] = [];
     assert.equal(await setup(new FileCredentialStore(env.SANDBASE_HOME!), line => void lines.push(line)), true);
     assert.match(lines.join("\n"), /bridge: status=updated/); assert.match(lines.join("\n"), /claude-code: skill=updated/); assert.match(lines.join("\n"), /kiro: skill=modified/);
-    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.2/);
+    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.3/);
     assert.match(await readFile(join(kiroDir, "SKILL.md"), "utf8"), /user edit/);
   } finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });

@@ -47,6 +47,8 @@ class Output {
     else this.err(`Error [${error.code}]: ${error.message}${error.runId ? `\nRun: ${error.runId}` : ""}${error.hint ? `\nNext: ${error.hint}` : ""}`);
   }
   notice(text: string): void { if (this.json) this.notes.push(text); else this.err(text); }
+  /** Always stderr (also in -j mode), so stdout stays parseable. */
+  progress(text: string): void { this.err(text); }
 }
 
 function truncate(value: string, width: number): string { const flat = value.replace(/\s+/g, " ").trim(); return flat.length > width ? `${flat.slice(0, width - 1)}…` : flat; }
@@ -79,29 +81,6 @@ function collectUrls(value: unknown, found = new Set<string>()): Set<string> {
   return found;
 }
 function shellQuote(value: string): string { return `'${value.replace(/'/g, `'\\''`)}'`; }
-/** Verbose health line for inspect, e.g. "stable · 3.5s typical, 27.7s tail · 75 samples". */
-export function healthLine(metrics: unknown): string {
-  if (!metrics || typeof metrics !== "object") return "";
-  const m = metrics as { status?: unknown; run_time_ms?: { p50?: unknown; p95?: unknown }; sample_size?: unknown };
-  const status = typeof m.status === "string" ? m.status : "";
-  if (!status) return "";
-  const parts = [status];
-  const p50 = m.run_time_ms && typeof m.run_time_ms.p50 === "number" ? m.run_time_ms.p50 : undefined;
-  const p95 = m.run_time_ms && typeof m.run_time_ms.p95 === "number" ? m.run_time_ms.p95 : undefined;
-  if (p50 !== undefined) parts.push(p95 !== undefined ? `${(p50 / 1000).toFixed(1)}s typical, ${(p95 / 1000).toFixed(1)}s tail` : `${(p50 / 1000).toFixed(1)}s typical`);
-  if (typeof m.sample_size === "number") parts.push(`${m.sample_size} samples`);
-  return parts.join(" · ");
-}
-/** Compact health cell for the discover table, e.g. "healthy 4.2s" or "stable". Blank when absent. */
-export function formatHealth(metrics: unknown): string {
-  if (!metrics || typeof metrics !== "object") return "";
-  const m = metrics as { status?: unknown; run_time_ms?: { p50?: unknown } };
-  const status = typeof m.status === "string" ? m.status : "";
-  const p50 = m.run_time_ms && typeof m.run_time_ms.p50 === "number" ? m.run_time_ms.p50 : undefined;
-  if (!status) return "";
-  return p50 !== undefined ? `${status} ${(p50 / 1000).toFixed(1)}s` : status;
-}
-
 type OptionSpec = Record<string, { type: "string" | "boolean"; short?: string }>;
 const commonOptions = { json: { type: "boolean", short: "j" }, client: { type: "string" }, help: { type: "boolean", short: "h" } } as const;
 function parse<T extends OptionSpec>(argv: string[], options: T) {
@@ -167,14 +146,19 @@ async function pollRun(client: SandBaseMCPClient, initial: RunView, timeoutSecon
   let view = initial, delay = 1000, emptyCompletions = 0;
   for (;;) {
     const phase = phaseOf(view.status);
-    // A completed media run can briefly report no output while its files are transferred.
-    if (phase === "failed" || (phase === "succeeded" && (hasOutput(view) || emptyCompletions >= 8))) return view;
-    if (phase === "succeeded") emptyCompletions++;
+    // A completed media run reports no output while its files are transferred:
+    // keep waiting for those until the timeout; other empty completions (e.g. no
+    // stored output) settle after a few reads.
+    const transferring = phase === "succeeded" && !hasOutput(view) && /still being transferred/i.test(JSON.stringify(view.hints ?? ""));
+    if (phase === "failed" || (phase === "succeeded" && !transferring && (hasOutput(view) || emptyCompletions >= 3))) return view;
+    if (phase === "succeeded" && !transferring) emptyCompletions++;
     if (deps.now() + delay > deadline) return { ...view, timed_out: true };
     await deps.sleep(delay); delay = Math.min(Math.round(delay * 1.5), 10_000);
     const next = await readRun(client, initial.run_id, initial.service_id);
     const tool = view.tool ?? next.tool;
-    view = { ...view, ...next, ...(tool ? { tool } : {}) };
+    // Hints describe the latest state only; a stale "still in progress" must not survive completion.
+    const { hints: _staleHints, ...rest } = view;
+    view = { ...rest, ...next, ...(tool ? { tool } : {}) };
   }
 }
 
@@ -226,8 +210,8 @@ async function discover(argv: string[], out: Output, env: NodeJS.ProcessEnv, fet
   const items = (Array.isArray(data.data) ? data.data : []) as Array<Record<string, unknown>>;
   if (out.json) { out.data(data); return 0; }
   if (!items.length) { out.print(`No tools matched "${q}". Try a shorter noun phrase, a synonym, or filter with -t.`); printHints(out, data.hints, data.warnings); return 0; }
-  const rows = items.map(item => [String(item.tool_name ?? item.name ?? item.id ?? ""), String(item.category ?? item.type ?? ""), String(item.vendor ?? item.vendor_slug ?? ""), formatPrice(item.pricing), formatHealth(item.metrics), truncate(String(item.description ?? ""), 60)]);
-  out.print([`Found ${items.length} tool${items.length === 1 ? "" : "s"}${q ? ` for "${q}"` : ""}:`, "", table(["TOOL", "TYPE", "VENDOR", "PRICE", "HEALTH", "DESCRIPTION"], rows), "", "Next: sandbase inspect <TOOL>   (input schema, exact price, and a ready-to-run command)", "HEALTH is advisory: prefer healthy/stable and lower latency to break ties; blank/unknown means no data, not unhealthy."].join("\n"));
+  const rows = items.map(item => [String(item.tool_name ?? item.name ?? item.id ?? ""), String(item.category ?? item.type ?? ""), String(item.vendor ?? item.vendor_slug ?? ""), formatPrice(item.pricing), truncate(String(item.description ?? ""), 60)]);
+  out.print([`Found ${items.length} tool${items.length === 1 ? "" : "s"}${q ? ` for "${q}"` : ""}:`, "", table(["TOOL", "TYPE", "VENDOR", "PRICE", "DESCRIPTION"], rows), "", "Next: sandbase inspect <TOOL>   (input schema, exact price, and a ready-to-run command)"].join("\n"));
   printHints(out, data.hints, data.warnings);
   return 0;
 }
@@ -278,8 +262,6 @@ async function inspect(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetc
   const priceLine = [formatPrice(pricing), typeof pricing.formula === "string" && pricing.formula ? `formula: ${pricing.formula}` : ""].filter(Boolean).join("  ");
   const meta = [data.model, data.category ?? data.type, data.vendor].filter(Boolean).join(" · ");
   const lines = [`${tool}${meta ? `  (${meta})` : ""}`, String(data.description ?? "").trim(), "", `Price: ${priceLine}`];
-  const health = healthLine(data.metrics);
-  if (health) lines.push(`Health: ${health}`);
   lines.push("", rows.length ? `Input (send as JSON with -i):\n${table(["FIELD", "TYPE", "REQUIRED", "DESCRIPTION"], rows)}` : "Input: no parameters.");
   lines.push("", "Run:", `  sandbase run ${tool} -i ${shellQuote(JSON.stringify(example))}${/video|image|audio|music|speech/i.test(`${data.category ?? ""} ${data.description ?? ""} ${tool}`) ? " -w -o result.json" : ""}`);
   lines.push(`MCP: sandbase_run ${JSON.stringify({ name: tool, arguments: example })}`);
@@ -314,7 +296,11 @@ async function run(argv: string[], out: Output, env: NodeJS.ProcessEnv, deps: Re
   if (typeof args.idempotency_key === "string" && view.service_id) view.idempotency_key = args.idempotency_key;
   if (!view.run_id) return finishRun(out, view, values.output);
   try {
-    if (values.wait && phaseOf(view.status) === "running") view = await pollRun(api, view, timeout, deps);
+    if (values.wait && phaseOf(view.status) === "running") {
+      // stderr, also in -j mode: an agent whose shell times out still sees the run id to resume.
+      out.progress(`Run ${view.run_id} started; waiting for the result (up to ${timeout}s). If interrupted, resume with: sandbase runs get -r ${view.run_id}${view.service_id ? ` --service ${view.service_id}` : ""} -w${values.output ? ` -o ${values.output}` : ""}`);
+      view = await pollRun(api, view, timeout, deps);
+    }
     else if (phaseOf(view.status) !== "running" && view.cost === undefined && !view.service_id) {
       try { const { data: detail } = await api.tool("sandbase_run_get", { run_id: view.run_id }); if (detail.cost !== undefined) view.cost = detail.cost; } catch { /* cost is informational */ }
     }
