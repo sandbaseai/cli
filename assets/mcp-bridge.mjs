@@ -19,6 +19,8 @@ import { pathToFileURL } from "node:url";
 const allowedClients = new Set(["codex", "claude-code", "cursor", "gemini-cli", "hermes", "openclaw", "opencode", "qwen-code", "windsurf", "cursor-cli", "kimi-cli", "kiro", "kiro-cli", "amp", "crush", "iflow-cli", "warp", "claude-desktop", "cowork", "antigravity", "trae", "qoder", "workbuddy", "pi"]);
 const BILLING_URL = "https://www.sandbase.ai/console/billing";
 const RECONNECT = "npx -y @sandbaseai/cli@latest connect";
+const KEYS_URL = "https://www.sandbase.ai/console/keys";
+const SPENDING_LIMIT = `This SandBase key reached the spending limit set on it. Stop and tell the user: topping up does not lift it; they can raise or remove the limit at ${KEYS_URL}, then retry.`;
 // Tool calls get no bridge-side deadline (long synchronous tools must be able to
 // finish); control-plane methods are bounded so offline detection stays quick.
 const CONTROL_TIMEOUT_MS = 60_000;
@@ -71,9 +73,11 @@ export function isIdempotentRequest(request) {
 }
 export function hintFor(message) {
   const text = String(message || "").toLowerCase();
+  // Before auth: "API key spending limit exceeded" is neither a sign-in nor a balance problem.
+  if (/spending limit/.test(text)) return SPENDING_LIMIT;
   // Auth first: "API key not found" is a sign-in problem, not a misspelled tool.
   if (/unauthori[sz]ed|api key|credential|revoked|expired|authenticat|sign-in|signin/.test(text)) return `The SandBase sign-in is not valid. Ask the user to run \`${RECONNECT}\` in a terminal.`;
-  if (/insufficient (balance|credit|funds)|payment required|spending limit|top up/.test(text)) return `Tell the user their SandBase balance is insufficient; they can top up at ${BILLING_URL}.`;
+  if (/insufficient (balance|credit|funds)|payment required|top up/.test(text)) return `Tell the user their SandBase balance is insufficient; they can top up at ${BILLING_URL}.`;
   if (/rate.?limit|too many requests|429/.test(text)) return "Rate limited: wait 10-30 seconds, then retry once.";
   if (/run .*not found|task not found/.test(text)) return "Use the prediction_id/run_id returned by sandbase_run, or list recent runs with sandbase_runs. Agent Service runs also need service_id.";
   if (/invalid service request|unknown tool|tool(?: '[^']*')? (?:was )?not found|model not found|tool name is required/.test(text)) return "Check the exact tool name with sandbase_discover (names look like sandbase_twitter_web_search_timeline), then sandbase_inspect it.";
@@ -86,7 +90,8 @@ function httpFailure(status, text, host) {
   try { const parsed = JSON.parse(text); const e = parsed?.error; detail = typeof e === "string" ? e : typeof e?.message === "string" ? e.message : typeof parsed?.message === "string" ? parsed.message : ""; } catch { /* non-JSON gateway body is never forwarded */ }
   const suffix = detail ? `: ${detail.slice(0, 300)}` : "";
   if (status === 401) return `SandBase rejected the saved sign-in (401)${suffix}. Ask the user to run \`${RECONNECT}\` in a terminal to sign in again.`;
-  if (status === 402) return `SandBase balance is insufficient or a spending limit was reached (402)${suffix}. The user can top up at ${BILLING_URL}.`;
+  if (status === 402 && /spending limit/i.test(detail)) return `${SPENDING_LIMIT} (402${suffix})`;
+  if (status === 402) return `SandBase balance is insufficient (402)${suffix}. The user can top up at ${BILLING_URL}.`;
   if (status === 403) return `This SandBase credential is not allowed for this request (403)${suffix}. Ask the user to run \`${RECONNECT}\`.`;
   if (status === 429) return `SandBase rate limit reached (429)${suffix}. Wait 10-30 seconds, then retry once.`;
   if (status >= 500) return `SandBase returned HTTP ${status} from ${host}${suffix}. Temporary server error: retry in a minute; the user can run \`sandbase doctor\` if it persists.`;

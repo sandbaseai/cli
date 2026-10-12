@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.4
+version: 0.3.5
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -84,6 +84,19 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 
 **Agent Services** (`svc_…` names from `type: "service"`): pass `arguments: {"idempotency_key": "<unique>", "input": "..."}`; reuse the same key and input on retries. Poll with `sandbase_run_get({"run_id": ..., "service_id": "svc_…"})`; `succeeded`, `failed`, and `cancelled` are terminal.
 
+### Run statuses
+
+| Status | Meaning | Do this |
+|---|---|---|
+| `pending` | Accepted, waiting to start | Poll every 5–10 s |
+| `running` | Executing (on the first `sandbase_run` reply this also covers a job whose files are still being copied) | Poll every 5–10 s |
+| `completed` / `succeeded` | Done; `output` holds the result | Use or save the output. If `output` is missing, read `hints`: "still being transferred" means poll again in a few seconds; "no stored output" means stop polling |
+| `failed` | Ended with an error; read `error` | Fix the input (inspect) and retry once, or pick another tool |
+| `timeout` | Hit the provider's time limit | Retry once with a smaller job, or pick another tool |
+| `cancelled` | Stopped on request (Agent Services only) | Nothing to poll |
+
+Any other value means still in progress: keep polling. Statuses are lowercase. Most runs finish in 1–120 seconds; video can take several minutes.
+
 ---
 
 ## 3. Transport B — CLI (fallback)
@@ -92,7 +105,14 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 sandbase --version || npx -y @sandbaseai/cli@latest --version
 ```
 
-If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cli@latest` (or install it: `npm install -g @sandbaseai/cli@latest`). If the CLI prints "Update available", run `npx -y @sandbaseai/cli@latest setup` — it refreshes the CLI's MCP bridge and this Skill.
+If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cli@latest` (or install it: `npm install -g @sandbaseai/cli@latest`).
+
+**Keep the CLI and this Skill on the same version.** Run `npx -y @sandbaseai/cli@latest setup` (it refreshes the CLI's MCP bridge and this Skill) when any of these is true:
+
+- The CLI prints "Update available".
+- `sandbase --version` does not match the `version` at the top of this file.
+
+Always move both to the latest; never downgrade one to match the other. If they still differ after `setup`, save the latest copy from https://www.sandbase.ai/SKILL.md over this file.
 
 **Authentication** is automatic once the user has run `connect` (it reuses that browser sign-in). Otherwise the CLI reports `AUTH_REQUIRED` with the exact fix; an API key also works via `SANDBASE_API_KEY` or `sandbase keys add -k <key>`. Never ask the user to paste a key into the chat.
 
@@ -113,6 +133,50 @@ If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cl
 - Exit code is `0` on success or still-running, `1` on failure (including a failed run), `2` on bad usage.
 - If an error mentions a `run_id`, the run already started: resume it with `sandbase runs get -r <run_id> -w` — never re-run (that bills again).
 - To store an API key without exposing it: `printf %s "$KEY" | sandbase keys add -k -`.
+
+### Local files → URL
+
+Many tools (image-to-video, voice cloning, transcription, image editing) take a **URL**, not a file. When the user's file is only on their machine, upload it first (free; needs a shell):
+
+```sh
+sandbase upload ./photo.png
+# -> URL: https://…/uploads/2026/10/….png
+```
+
+Pass that URL in the tool's URL field (`image_url`, `audio_url`, `video_url`, …). Accepted: images (jpg, png, webp, gif) up to 20 MB, audio (mp3, m4a, wav, ogg, aac, flac) up to 50 MB, video (mp4, mov, webm) up to 100 MB. **Anyone with the URL can read the file**, so ask before uploading anything private. If the file is already online, pass its URL directly instead.
+
+### Example flows
+
+Compare two platforms (one discover and one run per source, small limits, results to disk):
+
+```sh
+sandbase discover -q "twitter posts"
+sandbase discover -q "reddit posts"
+sandbase inspect <twitter_tool>      # read inputSchema, pass one search term
+sandbase inspect <reddit_tool>
+sandbase run <twitter_tool> -i '{"keyword":"AI agents","limit":10}' -w -o twitter.json
+sandbase run <reddit_tool> -i '{"query":"AI agents","limit":10}' -w -o reddit.json
+# then read both files and compare
+```
+
+Turn a local photo into a video (upload, then an async run you poll):
+
+```sh
+sandbase upload ./photo.png                       # -> URL: https://…
+sandbase discover -q "image to video"
+sandbase inspect <video_tool>
+sandbase run <video_tool> -i '{"image_url":"https://…","prompt":"slow pan"}'
+# -> Run: <run_id>  Status: running
+sandbase runs get -r <run_id> -w -o video.json    # waits, then saves the output
+```
+
+Large or reusable input: write the JSON to a file and pass it with `-f`:
+
+```sh
+sandbase run <tool_name> -f params.json -w -o result.json
+```
+
+Field names above are placeholders; always use the ones from `inspect`.
 
 ---
 
@@ -149,6 +213,7 @@ Do not use SandBase for purely local work (editing files, reasoning over code al
 - Many data endpoints are billed **per result** and limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
 - Check `sandbase_account` before a batch of paid calls, and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
 - Never re-run a slow tool just because it is still running; poll it.
+- A key can carry a **spending limit** set in the Dashboard. When it is reached, calls fail with "spending limit" until the user raises or removes it; topping up does not help.
 
 ---
 
@@ -160,9 +225,11 @@ Tool failures come back as error results whose text names the cause **and the ne
 |---|---|
 | "unreachable" / `NETWORK` | Stop retrying. Tell the user to check network/proxy/VPN and run `sandbase doctor`. |
 | "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y @sandbaseai/cli@latest connect`. |
-| "insufficient" / 402 | Tell the user to top up at https://www.sandbase.ai/console/billing. |
+| "spending limit" (402 / `SPENDING_LIMIT`) | Stop. Tell the user this key reached its spending limit; they can raise or remove it at https://www.sandbase.ai/console/keys. Topping up does not lift it. Do not retry until they do. |
+| "insufficient" balance (402 / `INSUFFICIENT_BALANCE`) | Tell the user to top up at https://www.sandbase.ai/console/billing. |
 | "not found" / "unknown tool" | Re-run `sandbase_discover`; copy `tool_name` exactly. |
 | "invalid params" / schema | Re-run `sandbase_inspect`; pass exactly its `inputSchema` fields. |
+| A tool rejects a local path where it wants a URL | Upload the file with `sandbase upload <file>` and pass the URL (§3). |
 | "upstream" / "provider" / "capability call failed" | Retry once, then pick another tool from discover. |
 | 429 / rate limit | Wait 10–30 seconds, retry once. |
 
@@ -181,11 +248,13 @@ Responses may include `hints` (and `warnings`): suggested next steps, caveats, o
 3. **Prefer MCP when connected**; use the CLI when MCP is missing or broken, or to write large outputs to disk.
 4. **Always inspect before running.** Never guess parameters; `inputSchema` is the source of truth.
 5. **Keep discover queries short** and decompose multi-source tasks.
-6. **Poll, don't re-run.** Slow tools return a run id; poll every 5–10 seconds.
+6. **Poll, don't re-run.** Slow tools return a run id; poll every 5–10 seconds. Save large or file results with `-o <file>`.
 7. **Start with conservative limits** (5–10 results).
 8. **Report cost when relevant**, and check the balance before batches.
-9. **Read error text and hints, and act on them.** They name the fix.
-10. **Tool schemas and `sandbase --help` are authoritative** if they disagree with this document.
+9. **Read error text and hints, and act on them.** They name the fix. A spending limit or empty balance is the user's call: stop and tell them.
+10. **Keep the CLI and this Skill on the same, latest version** (§3).
+11. **Ask before uploading private files**; uploaded URLs are publicly readable.
+12. **Tool schemas and `sandbase --help` are authoritative** if they disagree with this document.
 
 Before sending sensitive or regulated data, review the [SandBase Privacy Policy](https://www.sandbase.ai/privacy) and [Terms of Service](https://www.sandbase.ai/terms), plus the selected upstream provider's policies. Send only the minimum data needed.
 

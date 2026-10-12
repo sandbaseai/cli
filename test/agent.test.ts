@@ -6,7 +6,7 @@ import { PassThrough } from "node:stream";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { httpError, resolveEndpoint, SandBaseError, SandBaseMCPClient, type FetchLike } from "../src/agent/client.js";
-import { formatPrice, resolveSchema, runAgentCommand } from "../src/agent/commands.js";
+import { formatPrice, resolveSchema, runAgentCommand, uploadUrlFor } from "../src/agent/commands.js";
 import { probeEndpoint } from "../src/agent/probe.js";
 import { compareVersions, updateNotice } from "../src/agent/update.js";
 
@@ -16,7 +16,7 @@ function connectTimeout(): Error { const error = new TypeError("fetch failed") a
 function fakeFetch(handler: (call: Call) => Reply | Error): { fetch: FetchLike; calls: Call[] } {
   const calls: Call[] = [];
   const fetch: FetchLike = async (url, init) => {
-    const request = JSON.parse(init.body) as { id: number; method: string; params?: Record<string, unknown> };
+    const request = JSON.parse(String(init.body)) as { id: number; method: string; params?: Record<string, unknown> };
     const call = { url, method: request.method, params: request.params, authorization: init.headers.authorization };
     calls.push(call);
     const reply = handler(call);
@@ -71,7 +71,9 @@ test("network and HTTP failures carry a code and a next step", async () => {
   const { fetch } = fakeFetch(() => connectTimeout());
   const result = await cli("balance", [], env, fetch);
   assert.equal(result.code, 1); assert.match(result.err, /Error \[NETWORK\]: Cannot reach SandBase at api\.sandbase\.ai \(connection timed out\)/); assert.match(result.err, /Next: .*sandbase doctor/); assert.doesNotMatch(result.err, /FALLBACK/);
-  assert.equal(httpError(402, '{"error":"API key spending limit exceeded"}', "api.sandbase.ai").code, "INSUFFICIENT_BALANCE");
+  const limit = httpError(402, '{"error":"API key spending limit exceeded"}', "api.sandbase.ai");
+  assert.equal(limit.code, "SPENDING_LIMIT"); assert.match(limit.hint ?? "", /console\/keys/); assert.doesNotMatch(limit.hint ?? "", /connect|Top up at/);
+  assert.equal(httpError(402, '{"error":"insufficient balance"}', "api.sandbase.ai").code, "INSUFFICIENT_BALANCE");
   assert.match(httpError(401, "<html>", "api.sandbase.ai").hint ?? "", /connect/);
   const json = await cli("balance", ["-j"], env, fetch);
   assert.equal(JSON.parse(json.out).error.code, "NETWORK"); assert.doesNotMatch(json.out + json.err, /test-credential-value/);
@@ -223,7 +225,7 @@ test("bridge keeps the server usable offline and turns tool failures into visibl
   const [listed, failed, broke] = await bridge(env, mixed.fetch, [{ jsonrpc: "2.0", id: 1, method: "tools/list" }, { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "sandbase_run", arguments: {} } }, { jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "sandbase_account", arguments: {} } }]);
   assert.equal(listed!.result.tools[0].description, "live");
   assert.equal(failed!.result.isError, true); assert.match(failed!.result.content[0].text, /capability call failed\. The upstream provider failed\. Retry once/);
-  assert.equal(broke!.result.isError, true); assert.match(broke!.result.content[0].text, /\(402\): API key spending limit exceeded.*console\/billing/);
+  assert.equal(broke!.result.isError, true); assert.match(broke!.result.content[0].text, /spending limit.*console\/keys.*\(402: API key spending limit exceeded\)/);
 
   const cachedOffline = await bridge(env, offline.fetch, [{ jsonrpc: "2.0", id: 9, method: "tools/list" }]);
   assert.equal(cachedOffline[0]!.result.tools[0].description, "live", "offline tools/list serves the last live list");
@@ -329,7 +331,52 @@ test("setup refreshes the bridge and SandBase-owned Skills but leaves edited Ski
     const lines: string[] = [];
     assert.equal(await setup(new FileCredentialStore(env.SANDBASE_HOME!), line => void lines.push(line)), true);
     assert.match(lines.join("\n"), /bridge: status=updated/); assert.match(lines.join("\n"), /claude-code: skill=updated/); assert.match(lines.join("\n"), /kiro: skill=modified/);
-    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.4/);
+    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.5/);
     assert.match(await readFile(join(kiroDir, "SKILL.md"), "utf8"), /user edit/);
   } finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
+});
+
+test("upload posts the file as multipart to /v1/upload with the connected credential and prints the URL", async () => {
+  const env = await home(); await connected(env);
+  const file = join(env.HOME!, "photo.png"); await writeFile(file, Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+  const seen: Array<{ url: string; authorization: string | undefined; body: unknown }> = [];
+  const fetch: FetchLike = async (url, init) => { seen.push({ url, authorization: init.headers.authorization, body: init.body }); return { ok: true, status: 200, headers: { get: () => "application/json" }, text: async () => JSON.stringify({ url: "https://cdn.example/uploads/x.png", type: "image/png", size: 4 }) }; };
+  const text = await cli("upload", [file], env, fetch);
+  assert.equal(text.code, 0); assert.match(text.out, /URL: https:\/\/cdn\.example\/uploads\/x\.png/); assert.match(text.out, /Anyone with the URL/);
+  assert.equal(seen[0]!.url, "https://api.sandbase.ai/v1/upload"); assert.equal(seen[0]!.authorization, "Bearer test-credential-value");
+  const form = seen[0]!.body as FormData; const part = form.get("file") as File;
+  assert.equal(part.name, "photo.png"); assert.equal(part.type, "image/png"); assert.equal(part.size, 4);
+  const json = await cli("upload", [file, "-j"], env, fetch);
+  assert.equal(JSON.parse(json.out).url, "https://cdn.example/uploads/x.png");
+  assert.equal(uploadUrlFor("https://www.sandbase.ai/v1/mcp"), "https://www.sandbase.ai/v1/upload");
+});
+test("upload rejects unsupported, missing and oversized files before any request, and explains a scope 403", async () => {
+  const env = await home(); await connected(env);
+  let calls = 0;
+  const denied: FetchLike = async () => { calls++; return { ok: false, status: 403, headers: { get: () => "application/json" }, text: async () => '{"error":{"code":"insufficient_scope","message":"API key scope does not allow this request"}}' }; };
+  const doc = join(env.HOME!, "notes.pdf"); await writeFile(doc, "x");
+  assert.equal((await cli("upload", [doc], env, denied)).code, 2);
+  assert.equal((await cli("upload", [join(env.HOME!, "missing.png")], env, denied)).code, 2);
+  assert.equal((await cli("upload", [], env, denied)).code, 2);
+  const big = join(env.HOME!, "big.gif"); await writeFile(big, Buffer.alloc(20 * 1024 * 1024 + 1));
+  const tooBig = await cli("upload", [big], env, denied);
+  assert.equal(tooBig.code, 2); assert.match(tooBig.err, /limit is 20 MB/);
+  assert.equal(calls, 0);
+  const png = join(env.HOME!, "a.png"); await writeFile(png, "x");
+  const scope = await cli("upload", [png], env, denied);
+  assert.equal(scope.code, 1); assert.match(scope.err, /FORBIDDEN/); assert.match(scope.err, /SANDBASE_API_KEY/); assert.match(scope.err, /never paste/);
+});
+
+test("upload follows SANDBASE_MCP_URL, maps 402/404, and rejects a response without a URL", async () => {
+  const env: NodeJS.ProcessEnv = { ...(await home()), SANDBASE_MCP_URL: "https://www.example.test/v1/mcp" }; await connected(env);
+  const png = join(env.HOME!, "a.png"); await writeFile(png, "x");
+  const urls: string[] = [];
+  const reply = (status: number, body: string): FetchLike => async url => { urls.push(url); return { ok: status < 300, status, headers: { get: () => "application/json" }, text: async () => body }; };
+  const limit = await cli("upload", [png, "-j"], env, reply(402, '{"error":"API key spending limit exceeded"}'));
+  assert.equal(limit.code, 1); assert.equal(JSON.parse(limit.out).error.code, "SPENDING_LIMIT");
+  assert.equal(urls[0], "https://www.example.test/v1/upload");
+  const missing = await cli("upload", [png, "-j"], env, reply(404, "not found"));
+  assert.equal(JSON.parse(missing.out).error.code, "NOT_FOUND"); assert.doesNotMatch(missing.out, /v1\/mcp/);
+  const empty = await cli("upload", [png, "-j"], env, reply(200, "{}"));
+  assert.equal(JSON.parse(empty.out).error.code, "INVALID_RESPONSE");
 });
