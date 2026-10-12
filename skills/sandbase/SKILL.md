@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.5
+version: 0.3.6
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -129,7 +129,7 @@ Always move both to the latest; never downgrade one to match the other. If they 
 
 - Add `-j` for JSON output. Errors then look like `{"error": {"code", "message", "hint"}}`; follow `hint`.
 - `-w` waits with backoff (default `--timeout 300` seconds). If the run is still going when the timeout elapses, the CLI prints the `runs get` command to resume — use it rather than re-running (re-running is billed again).
-- `-o` writes only the tool's output (no envelope). Files/URLs in the output are also listed in text mode.
+- `-o` writes only the tool's output (no envelope). In text mode, `Files:` lists the files the run produced; URLs inside data results are in the output itself.
 - Exit code is `0` on success or still-running, `1` on failure (including a failed run), `2` on bad usage.
 - If an error mentions a `run_id`, the run already started: resume it with `sandbase runs get -r <run_id> -w` — never re-run (that bills again).
 - To store an API key without exposing it: `printf %s "$KEY" | sandbase keys add -k -`.
@@ -203,7 +203,9 @@ Do not use SandBase for purely local work (editing files, reasoning over code al
 - Chinese works and aliases are expanded: `推特`, `小红书`, `抖音`, `文生视频`, `图片生成`.
 - Narrow with `type` (`llm`, `api`, `multimodal`, `embedding`, `service`) or `vendor` (`openai`, `twitter`, `kling`).
 - Split multi-source tasks: one discover per source ("twitter posts", then "reddit posts"), then run each.
+- If no tool matches every word, discover returns the closest matches with a hint saying so; check their descriptions before using one.
 - Zero results come with `hints`; read them before rephrasing.
+- `inspect` hints name the inputs that take a file URL; for a local file use `sandbase upload` (§3).
 
 ---
 
