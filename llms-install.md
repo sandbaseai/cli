@@ -16,7 +16,7 @@ This read-only command prints the 25 supported client targets. It does not open
 a browser or change local configuration:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
 ## Install with Homebrew
@@ -29,20 +29,20 @@ sandbase catalog --json
 sandbase connect --client <client-id>
 ```
 
-The formula installs the immutable v0.1.17 archive and verifies its published
+The formula installs the latest release archive and verifies its published
 SHA-256 before installation.
 
 ## Connect a client
 
-Alternatively, run the immutable v0.1.17 GitHub Release directly while npm
+Alternatively, run the latest GitHub Release directly while npm
 `latest` is being updated:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client <client-id>
+npx -y @sandbaseai/cli@latest connect --client <client-id>
 ```
 
-For an offline/integrity check, the archive's SHA-256 is
-`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`.
+For an offline integrity check, compare the tarball against the SHA-256 published
+on its [release page](https://github.com/sandbaseai/cli/releases/latest).
 
 Common client IDs include `codex`, `claude-code`, `cursor`, `gemini-cli`,
 `windsurf`, and `opencode`. To configure every supported client detected on the
@@ -56,7 +56,7 @@ permissions and adds only the SandBase-owned MCP entry.
 ## Verify
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client <client-id>
+npx -y @sandbaseai/cli@latest doctor --client <client-id>
 ```
 
 Restart the target client after a successful connection so it reloads its MCP
@@ -67,7 +67,7 @@ configuration. The client should then expose six SandBase tools:
 ## Remove the managed entry
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client <client-id>
+npx -y @sandbaseai/cli@latest unregister --client <client-id>
 ```
 
 This removes only the SandBase-owned configuration. It leaves unrelated and

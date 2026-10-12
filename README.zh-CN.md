@@ -26,6 +26,18 @@
 
 **SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型与 API。不用管理 API Key，不用折腾配置。
 
+把这一行发给你的 agent，它会自己读取 Skill、运行 `connect`，只需你在浏览器里确认一次登录：
+
+```
+set up https://www.sandbase.ai/SKILL.md
+```
+
+想自己动手：
+
+```sh
+npx -y @sandbaseai/cli@latest connect
+```
+
 在 macOS 或 Linux 上使用官方 Homebrew Formula：
 
 ```sh
@@ -33,29 +45,21 @@ brew install sandbaseai/tap/sandbaseai-cli
 sandbase connect
 ```
 
-或者直接运行不可变的 v0.1.17 发布包：
-
-```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
-```
-
 想先验证兼容性、暂不登录也不修改本地配置？运行只读目录命令，确认当前版本支持的 25 个客户端：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
 <p align="center">
-  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp" alt="SandBase CLI v0.1.17 只读目录审计显示 25 个客户端目标" width="49%"></a>
-  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp" alt="SandBase CLI v0.1.17 doctor 对空白隔离配置按预期安全失败" width="49%"></a>
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp" alt="SandBase CLI 只读目录审计显示 25 个客户端目标" width="49%"></a>
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp" alt="SandBase CLI doctor 对空白隔离配置按预期安全失败" width="49%"></a>
 </p>
-<p align="center"><sub>来自不可变 v0.1.17 发布包的证据：不写配置的目录审计，以及针对空白隔离配置的受限 doctor 检查。</sub></p>
+<p align="center"><sub>证据：不写配置的目录审计，以及针对空白隔离配置的受限 doctor 检查。</sub></p>
 
-这里使用的是不可变的 GitHub `v0.1.17` 发布包；其 SHA-256 为
-`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`。
-目前 npm 的 `latest` 标签仍是 v0.1.14，因此在可信发布启用完成前，请使用上面的版本化 GitHub 地址。
+每个 GitHub 发布版都会随包公布自己的 SHA-256，可据此校验并固定到某个确切版本。
 
-项目已进入[官方 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)，并被[中国独立开发者项目（程序员版）](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)独立收录。
+项目已进入[官方 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)，并被[中国独立开发者项目（程序员版）](https://github.com/1c7/chinese-independent-developer/blob/master/pages/README-Programmer-Edition.md#sandbase---github)独立收录。
 
 查看[中文项目页](https://sandbaseai.github.io/cli/zh/)和[中文工作流指南](https://github.com/sandbaseai/cli/discussions/48)。如果 SandBase CLI 对你有帮助，请[给仓库一个 Star](https://github.com/sandbaseai/cli)，让更多开发者发现它。
 
@@ -124,15 +128,15 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 无需登录或修改任何文件，即可预览完整兼容性目录：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
 ```sh
 # 一次连接所有检测到的客户端
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 
 # 或者指定某个客户端
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
+npx -y @sandbaseai/cli@latest connect --client cursor
 ```
 
 ### OpenClaw 快速开始
@@ -140,8 +144,8 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 直接指定 OpenClaw，并在使用前让 CLI 回读验证由 SandBase 管理的 MCP 服务与 Skill：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client openclaw
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client openclaw
+npx -y @sandbaseai/cli@latest connect --client openclaw
+npx -y @sandbaseai/cli@latest doctor --client openclaw
 ```
 
 当 `doctor` 确认凭证、MCP bridge 和 Skill 均已配置后，重启 OpenClaw，
@@ -150,7 +154,7 @@ SandBase 管理、但同样名为 `sandbase` 的 MCP 服务，安装器会保持
 以后若要移除由 SandBase 管理的 MCP 条目和本地凭证：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client openclaw
+npx -y @sandbaseai/cli@latest unregister --client openclaw
 ```
 
 OpenClaw 目前没有受支持的 Skill 移除命令，因此 `unregister` 会明确报告这一限制，
@@ -161,8 +165,8 @@ OpenClaw 目前没有受支持的 Skill 移除命令，因此 `unregister` 会�
 SandBase 可以在同一次授权事务中安装由它管理的 Hermes Skill 和本地 MCP 条目：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client hermes
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client hermes
+npx -y @sandbaseai/cli@latest connect --client hermes
+npx -y @sandbaseai/cli@latest doctor --client hermes
 ```
 
 `doctor` 会验证所有权明确的本地凭证、MCP 条目与 Skill。随后重启 Hermes，
@@ -172,7 +176,7 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 共用的 bridge：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client hermes
+npx -y @sandbaseai/cli@latest unregister --client hermes
 ```
 
 该集成已被独立收录于
@@ -197,6 +201,14 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 4. Agent 按需调用工具。没有后台进程。
 
 ---
+
+## 价格
+
+- **数据 API（搜索、社交、抓取、电商、金融）免费调用。**
+- discover、inspect、运行状态、余额、文件上传均免费。
+- 模型（LLM、图像、视频、音频）按次或按百万 token 计费。
+
+`sandbase inspect <工具名>` 会显示当前价格，`base_price: 0` 表示免费。价格可能变动，请以实时返回为准。
 
 ## 命令
 
@@ -265,7 +277,7 @@ discover → inspect → run
 ## 开始使用
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 然后让你的 Agent 做一些它以前做不到的事。
