@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.3
+version: 0.3.4
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -26,6 +26,26 @@ There are **two transports** with the same capabilities. Pick one before doing a
 
 ---
 
+## 0. Set up
+
+Do this when the user asks you to set up SandBase (for example "set up https://www.sandbase.ai/SKILL.md"), or when §1 finds neither transport. You run the steps yourself; the user only approves a sign-in in their browser.
+
+1. Check Node.js 20 or newer: `node --version`. If it is missing or older, ask the user to install it from https://nodejs.org and stop.
+2. Connect this client. Run in a shell, with your client id:
+
+   ```sh
+   npx -y @sandbaseai/cli@latest connect --client <client-id>
+   ```
+
+   Client ids: `claude-code`, `codex`, `cursor`, `windsurf`, `kiro`, `kiro-cli`, `gemini-cli`, `opencode`, `qwen-code`, `warp`, `cursor-cli`, `kimi-cli`, `amp`, `crush`, `hermes`, `openclaw`, `iflow-cli`, `antigravity`, `trae`, `qoder`, `workbuddy`, `pi`, `claude-desktop`, `cowork`, `chatgpt`. If you are not sure which one you are, omit `--client` to configure every installed client.
+   - It opens the browser for sign-in (new users get an account in the same step). Tell the user to approve it. If there is no browser, it prints a URL — show that URL to the user.
+   - It waits for the approval, so give the command a timeout of at least 5 minutes. If your shell cannot wait that long, ask the user to run the same command in their own terminal.
+   - Never ask the user to paste an API key into the chat.
+3. When it reports the client as configured, tell the user to start a new session (or restart the app) so the `sandbase_*` tools load. Until then, use the CLI right away: `npx -y @sandbaseai/cli@latest discover -q "<what you need>"` (§3).
+4. Keep this Skill installed. `connect` saves it for supported clients; if yours is not covered, save https://www.sandbase.ai/SKILL.md to your skills directory and enable it so it loads in future sessions.
+
+---
+
 ## 1. Pick your transport
 
 | Condition | Use | Setup |
@@ -33,19 +53,9 @@ There are **two transports** with the same capabilities. Pick one before doing a
 | You have tools named `sandbase_discover`, `sandbase_run`, … | **MCP** (preferred) | None |
 | No `sandbase_*` tools, but you can run shell commands | **CLI** | §3 |
 | The MCP tools return "SandBase is unreachable" | **CLI** for `sandbase doctor`, then tell the user what it reports | §3 |
-| Neither | Tell the user how to connect (§1.1), then stop | — |
+| Neither | Set up (§0) | §0 |
 
 **Exception:** when you expect a **large result** (hundreds of rows, long transcripts, many files) and have a shell, use the CLI with `-o result.json` even if MCP is connected. MCP results land in your context; `-o` writes them to disk. Discovery and inspection are small, so use MCP for those regardless.
-
-### 1.1 If neither transport is available
-
-Tell the user to run this once in a terminal, approve the browser sign-in, and restart their AI client:
-
-```sh
-npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz connect
-```
-
-It configures the local MCP bridge and this Skill for every supported client it finds. No API key to paste. For checksum-verified installs, use the immutable assets on the [GitHub Releases page](https://github.com/sandbaseai/cli/releases).
 
 ---
 
@@ -79,10 +89,10 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 ## 3. Transport B — CLI (fallback)
 
 ```sh
-sandbase --version || npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz --version
+sandbase --version || npx -y @sandbaseai/cli@latest --version
 ```
 
-If `sandbase` is not installed, prefix every command with `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz` (or install it: `npm install -g https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz`). If the CLI prints "Update available", run `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz setup` — it refreshes the CLI's MCP bridge and this Skill.
+If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cli@latest` (or install it: `npm install -g @sandbaseai/cli@latest`). If the CLI prints "Update available", run `npx -y @sandbaseai/cli@latest setup` — it refreshes the CLI's MCP bridge and this Skill.
 
 **Authentication** is automatic once the user has run `connect` (it reuses that browser sign-in). Otherwise the CLI reports `AUTH_REQUIRED` with the exact fix; an API key also works via `SANDBASE_API_KEY` or `sandbase keys add -k <key>`. Never ask the user to paste a key into the chat.
 
@@ -149,7 +159,7 @@ Tool failures come back as error results whose text names the cause **and the ne
 | Message contains | Do this |
 |---|---|
 | "unreachable" / `NETWORK` | Stop retrying. Tell the user to check network/proxy/VPN and run `sandbase doctor`. |
-| "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y https://github.com/sandbaseai/cli/releases/latest/download/sandbaseai-cli.tgz connect`. |
+| "sign-in expired" / "rejected the saved sign-in" / 401 / `AUTH_FAILED` | Ask the user to run `npx -y @sandbaseai/cli@latest connect`. |
 | "insufficient" / 402 | Tell the user to top up at https://www.sandbase.ai/console/billing. |
 | "not found" / "unknown tool" | Re-run `sandbase_discover`; copy `tool_name` exactly. |
 | "invalid params" / schema | Re-run `sandbase_inspect`; pass exactly its `inputSchema` fields. |
