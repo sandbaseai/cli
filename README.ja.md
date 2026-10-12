@@ -25,8 +25,16 @@
 
 **SandBaseがそれを変えます。** 1コマンドで、[Model Context Protocol](https://modelcontextprotocol.io)を通じてエージェントを2,000以上のAIモデルとAPIに接続。APIキー管理不要。設定の手間なし。
 
+この 1 行をエージェントに渡すと、Skill を読み込み `connect` まで自分で実行します。ブラウザでの承認だけお願いします：
+
+```
+set up https://www.sandbase.ai/SKILL.md
+```
+
+自分で実行する場合：
+
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 macOS または Linux では、公式 Homebrew Formula も利用できます：
@@ -100,20 +108,17 @@ sandbase connect
 サインインやファイル変更なしで、完全な互換性カタログを確認できます：
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
-このコマンドは変更されない GitHub `v0.1.17` リリースアーカイブを使用します。SHA-256：
-`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`
-
-npm の `latest` は現在も v0.1.14 のため、Trusted Publishing が有効になるまでは上記のバージョン固定 GitHub URL を使用してください。
+各 GitHub リリースには SHA-256 が併記されており、特定バージョンに固定して検証できます。
 
 ```sh
 # 検出されたすべてのクライアントを一度に接続
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 
 # 特定のクライアントを指定
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
+npx -y @sandbaseai/cli@latest connect --client cursor
 ```
 
 ---
@@ -134,6 +139,14 @@ npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cl
 4. エージェントがオンデマンドでツール呼び出し。デーモンなし。
 
 ---
+
+## 料金
+
+- **データ API（検索、ソーシャル、スクレイピング、EC、金融）は無料。**
+- discover、inspect、実行ステータス、残高、ファイルアップロードも無料。
+- モデル（LLM、画像、動画、音声）は 1 回ごと、または 100 万トークンごとの課金。
+
+`sandbase inspect <tool>` は常に現在の価格を表示します。`base_price: 0` は無料です。価格は変わるため、実際のレスポンスを信頼してください。
 
 ## コマンド
 
@@ -184,7 +197,7 @@ discover → inspect → run
 ## 始めよう
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 そして、エージェントに今までできなかったことを頼んでみてください。
@@ -200,7 +213,7 @@ SandBase でセットアップ時間を短縮できたら、[リポジトリに 
 - [SandBase プラットフォーム](https://sandbase.ai)
 - [ドキュメント](https://www.sandbase.ai/docs/)
 - [Claude Code・Codex向け実践チュートリアル](https://github.com/sandbaseai/cli/discussions/49)
-- [公式 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
+- [公式 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
 - [npm パッケージ](https://www.npmjs.com/package/@sandbaseai/cli)
 - [ダッシュボード](https://sandbase.ai/console)
 

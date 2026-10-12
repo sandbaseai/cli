@@ -4,17 +4,17 @@ SandBase CLI configures MCP clients and stores local credentials, so security an
 
 ## Supported versions
 
-Security fixes are provided in the latest verified GitHub release. The npm `latest` tag may temporarily lag while trusted publishing is being enabled.
+Security fixes ship in the latest release, published to both npm and GitHub Releases.
 
 | Version | Supported |
 | --- | --- |
-| [v0.1.17](https://github.com/sandbaseai/cli/releases/tag/v0.1.17) | Yes |
+| [Latest release](https://github.com/sandbaseai/cli/releases/latest) | Yes |
 | Earlier versions | No |
 
-Install or diagnose the supported release from its immutable artifact:
+Install or diagnose the supported release:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor
+npx -y @sandbaseai/cli@latest doctor
 ```
 
 ## Reporting a vulnerability

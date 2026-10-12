@@ -25,8 +25,16 @@ Votre assistant de codage IA est intelligent, mais il est enfermé dans une boî
 
 **SandBase change la donne.** Une commande connecte votre agent à 2 000+ modèles IA et APIs via le [MCP](https://modelcontextprotocol.io). Pas de clés API à gérer. Pas de prise de tête.
 
+Collez cette ligne dans votre agent, il fait le reste : il lit la Skill, exécute `connect` et vous demande seulement d’approuver la connexion dans le navigateur :
+
+```
+set up https://www.sandbase.ai/SKILL.md
+```
+
+Pour le faire vous-même :
+
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 Ou installez la formule Homebrew officielle sur macOS ou Linux :
@@ -77,20 +85,25 @@ Le catalogue, les prix, la latence et la disponibilité peuvent évoluer. Utilis
 Vous voulez vérifier la compatibilité avant de vous connecter ou de modifier la configuration locale ? Exécutez le catalogue en lecture seule pour confirmer les 25 clients pris en charge :
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
-Cette commande utilise l’archive immuable de la version GitHub `v0.1.17`. SHA-256 :
-`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`
-
-Le tag npm `latest` pointe encore vers la v0.1.14 ; jusqu’à l’activation de Trusted Publishing, utilisez l’URL GitHub versionnée ci-dessus.
+Chaque version GitHub publie son propre SHA-256 : vous pouvez donc épingler et vérifier une archive exacte.
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
+npx -y @sandbaseai/cli@latest connect
+npx -y @sandbaseai/cli@latest connect --client cursor
 ```
 
 ---
+
+## Tarifs
+
+- **Les API de données (recherche, réseaux sociaux, scraping, e-commerce, finance) sont gratuites.**
+- La découverte, l’inspection, le statut des exécutions, le solde et l’envoi de fichiers sont également gratuits.
+- Les modèles (LLM, image, vidéo, audio) sont facturés à l’appel ou au million de tokens.
+
+`sandbase inspect <tool>` affiche toujours le prix actuel ; `base_price: 0` signifie gratuit. Les prix peuvent changer : fiez-vous à la réponse réelle.
 
 ## Commandes
 
@@ -126,7 +139,7 @@ sandbase catalog --json               # Lister les clients
 ## Commencer
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 **[Créer un compte gratuit →](https://sandbase.ai)**
@@ -136,7 +149,7 @@ Si SandBase vous fait gagner du temps de configuration, [ajoutez une étoile au 
 ## Guide pratique
 
 - [Claude Code et Codex : découvrir, vérifier le prix, puis exécuter](https://github.com/sandbaseai/cli/discussions/52)
-- [Registre MCP officiel](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
+- [Registre MCP officiel](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
 
 ## Licence
 

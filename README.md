@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>Give your AI agent superpowers. One command. 2,000+ AI models and APIs.</strong>
+    <strong>Give your AI agent superpowers. One line. 2,000+ AI models and APIs — data APIs are free.</strong>
   </p>
   <p align="center">
     English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -30,8 +30,18 @@ Building directly over HTTP instead of MCP? Start with the [SandBase API quickst
 or compare the unified [LLM, image, and video API](https://blog.sandbase.ai/unified-ai-api-llm-image-video-2026/)
 with specialized model gateways.
 
+## Setup
+
+Paste this into your agent and let it do the rest:
+
+```
+set up https://www.sandbase.ai/SKILL.md
+```
+
+It reads the SandBase Skill, runs `connect` itself, and asks you to approve one browser sign-in. Prefer to drive it yourself:
+
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 Or install the official Homebrew formula on macOS or Linux:
@@ -43,39 +53,46 @@ sandbase connect
 
 See the [Homebrew launch announcement and macOS/Linux CI evidence](https://github.com/sandbaseai/cli/discussions/55).
 
-For a reproducible install, verify the immutable release archive before
-running it. The SHA-256 for `sandbaseai-cli-0.1.17.tgz` is
-`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`.
-
-```sh
-curl -fL -o sandbaseai-cli-0.1.17.tgz \
-  https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz
-echo '1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa  sandbaseai-cli-0.1.17.tgz' | shasum -a 256 -c -
-npx -y ./sandbaseai-cli-0.1.17.tgz connect
-```
-
 Approve the browser authorization once; each supported client can then discover,
 inspect, and run available SandBase models and APIs through the local MCP bridge.
+Start a new session afterwards so the `sandbase_*` tools load.
 
-Want to inspect compatibility before signing in or changing configuration? The current
-[`v0.1.17` GitHub release](https://github.com/sandbaseai/cli/releases/tag/v0.1.17)
-includes a verified 25-client catalog:
+Every GitHub release publishes its own SHA-256 next to the tarball, so you can pin
+and verify an exact build instead of tracking `latest`:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+V=$(npm view @sandbaseai/cli version)
+curl -fL -O "https://github.com/sandbaseai/cli/releases/download/v$V/sandbaseai-cli-$V.tgz"
+shasum -a 256 "sandbaseai-cli-$V.tgz"   # compare against the checksum on the release page
+npx -y "./sandbaseai-cli-$V.tgz" connect
+```
+
+Want to inspect compatibility before signing in or changing configuration? The
+client catalog is a read-only command — it writes nothing and needs no account:
+
+```sh
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
 <p align="center">
-  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp" alt="Read-only SandBase CLI v0.1.17 catalog audit showing 25 client targets" width="49%"></a>
-  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp" alt="SandBase CLI v0.1.17 doctor failing closed for an empty isolated profile" width="49%"></a>
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/catalog-audit-5eea5978a1ed.webp" alt="Read-only SandBase CLI catalog audit showing 25 client targets" width="49%"></a>
+  <a href="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp"><img src="https://static.sandbase.ai/blog/screenshots/sandbase-cli-mcp-bridge-25-ai-clients/doctor-readback-3c86ac73e463.webp" alt="SandBase CLI doctor failing closed for an empty isolated profile" width="49%"></a>
 </p>
-<p align="center"><sub>Evidence captured from the immutable v0.1.17 release: a no-write catalog audit and a bounded doctor check against an empty isolated profile.</sub></p>
+<p align="center"><sub>A no-write catalog audit and a bounded doctor check against an empty isolated profile.</sub></p>
 
 Homebrew users can run the same read-only check with `sandbase catalog --json`.
 
-The npm `latest` tag currently serves v0.1.14 while tokenless trusted publishing is
-being enabled. The GitHub release tarball is built from the immutable `v0.1.17` tag;
-its SHA-256 is published with the release.
+## What It Costs
+
+| | Price |
+|---|---|
+| **Data APIs** — search, social, scraping, e-commerce, finance | **Free** |
+| Discovery, inspection, run status, balance, file upload | **Free** |
+| Models — LLM, image, video, audio | Paid per call or per million tokens |
+
+`sandbase inspect <tool>` always shows the current price before you run anything;
+`base_price: 0` means the call is free. Prices can change, so trust the live
+response over any example in this file.
 
 Visit the [official SandBase CLI project page](https://sandbaseai.github.io/cli/) for a compact overview.
 For a security-focused walkthrough of client detection, MCP tools, and rollback,
@@ -127,8 +144,8 @@ other catalog capabilities:
 1. Use `sandbase_discover` to find candidates by task or capability.
 2. Use `sandbase_inspect` to read the current input schema, pricing, and
    execution requirements.
-3. Confirm the selected endpoint, parameters, and possible cost before calling
-   `sandbase_run`.
+3. Confirm the selected endpoint and parameters before calling `sandbase_run`.
+   Data API calls are free; confirm the cost first when the tool is a model.
 4. For asynchronous work, use `sandbase_run_get` with the returned `run_id`
    instead of creating a duplicate run.
 5. Use `sandbase_runs` to review recent run status and recorded cost.
@@ -139,6 +156,9 @@ For example, start with a non-billable discovery request:
 > Find image models suitable for a square product illustration. Compare the
 > required inputs and current pricing for the best two candidates. Do not run
 > either model yet.
+
+Discovery and inspection never cost anything, so an agent can always survey the
+catalog before it spends.
 
 After reviewing the live response, explicitly approve the endpoint and inputs
 you want to run. Catalog entries, schemas, pricing, latency, and availability
@@ -187,15 +207,15 @@ Works with every major AI coding tool:
 Preview the complete compatibility catalog without signing in or changing any files:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
 ```sh
 # Connect all detected clients at once
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 
 # Or target one specific client
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
+npx -y @sandbaseai/cli@latest connect --client cursor
 ```
 
 ### OpenClaw quickstart
@@ -204,8 +224,8 @@ Target OpenClaw directly, then ask the CLI to read back the managed MCP server
 and SandBase Skill before you rely on them:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client openclaw
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client openclaw
+npx -y @sandbaseai/cli@latest connect --client openclaw
+npx -y @sandbaseai/cli@latest doctor --client openclaw
 ```
 
 After `doctor` reports the credential, MCP bridge, and Skill as configured,
@@ -215,7 +235,7 @@ leaves it untouched instead of overwriting it. To remove the managed MCP entry
 and local credential later:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client openclaw
+npx -y @sandbaseai/cli@latest unregister --client openclaw
 ```
 
 OpenClaw currently exposes no supported Skill removal command, so `unregister`
@@ -227,8 +247,8 @@ SandBase can install both its managed Hermes Skill and local MCP entry in one
 authorization transaction:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client hermes
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz doctor --client hermes
+npx -y @sandbaseai/cli@latest connect --client hermes
+npx -y @sandbaseai/cli@latest doctor --client hermes
 ```
 
 `doctor` verifies the owned local credential, MCP entry, and Skill. Restart
@@ -238,7 +258,7 @@ SandBase Skill or MCP tools. A pre-existing, non-SandBase MCP entry named
 Skill, and local credential while retaining the shared bridge for other clients:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz unregister --client hermes
+npx -y @sandbaseai/cli@latest unregister --client hermes
 ```
 
 The integration is independently listed by
@@ -298,12 +318,13 @@ Sync tools (LLMs, most data APIs) return their result directly; async tools (ima
 
 | Tool | Purpose |
 |------|---------|
-| `sandbase_discover` | Search all 2,000+ available AI models and APIs |
-| `sandbase_inspect` | Get input schema, pricing, and ready-to-use template |
-| `sandbase_run` | Execute a model or API endpoint |
-| `sandbase_run_get` | Poll status/result of an async run (video gen, etc.) |
-| `sandbase_runs` | List your recent API calls with cost breakdown |
-| `sandbase_account` | Check account balance (free, no cost) |
+| `sandbase_discover` | Search all 2,000+ available AI models and APIs — free |
+| `sandbase_inspect` | Get input schema, current price, and a ready-to-run template — free |
+| `sandbase_run` | Execute a model or API endpoint — free for data APIs, paid for models |
+| `sandbase_run_get` | Poll status/result of an async run (video gen, etc.) — free |
+| `sandbase_runs` | List your recent runs with their cost — free |
+| `sandbase_account` | Check account balance — free |
+| `sandbase_run_cancel` | Cancel an Agent Service run — free |
 
 **Recommended workflow:**
 
@@ -332,12 +353,12 @@ discover → inspect → run
 ## Get Started
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 Then ask your agent to do something it couldn't before.
 
-**[Create a free account →](https://sandbase.ai)**
+**[Create a free account →](https://sandbase.ai)** — data APIs are free to call.
 
 If SandBase saves you setup time, [star the repository](https://github.com/sandbaseai/cli) — it helps more agent users discover the project.
 

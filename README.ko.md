@@ -25,8 +25,16 @@ AI 코딩 어시스턴트는 똑똑하지만 상자 안에 갇혀 있습니다. 
 
 **SandBase가 이를 바꿉니다.** 한 줄 명령어로 에이전트를 2,000개 이상의 AI 모델과 API에 [MCP](https://modelcontextprotocol.io)를 통해 연결합니다. API 키 관리 불필요. 설정 고민 없음.
 
+이 한 줄을 에이전트에 붙여넣으면 Skill을 읽고 `connect`까지 직접 실행합니다. 브라우저 로그인만 승인해 주세요:
+
+```
+set up https://www.sandbase.ai/SKILL.md
+```
+
+직접 실행하려면:
+
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 macOS 또는 Linux에서는 공식 Homebrew Formula로 설치할 수도 있습니다.
@@ -77,23 +85,28 @@ sandbase connect
 로그인하거나 로컬 설정을 변경하지 않고 먼저 호환성만 확인하려면 읽기 전용 카탈로그 명령으로 현재 지원되는 25개 클라이언트를 확인하세요:
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz catalog --json
+npx -y @sandbaseai/cli@latest catalog --json
 ```
 
-이 명령은 변경되지 않는 GitHub `v0.1.17` 릴리스 아카이브를 사용합니다. SHA-256:
-`1ad535b2899ca460b57b3c268aef278fee28fd28e649a89b92951514fd71fffa`
-
-npm의 `latest` 태그는 아직 v0.1.14이므로 Trusted Publishing이 활성화될 때까지 위의 버전 고정 GitHub URL을 사용하세요.
+모든 GitHub 릴리스는 SHA-256을 함께 게시하므로 특정 버전에 고정해 검증할 수 있습니다.
 
 ```sh
 # 감지된 모든 클라이언트 한번에 연결
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 
 # 특정 클라이언트 지정
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect --client cursor
+npx -y @sandbaseai/cli@latest connect --client cursor
 ```
 
 ---
+
+## 가격
+
+- **데이터 API(검색, 소셜, 스크래핑, 커머스, 금융)는 무료입니다.**
+- discover, inspect, 실행 상태, 잔액, 파일 업로드도 무료입니다.
+- 모델(LLM, 이미지, 비디오, 오디오)은 호출당 또는 100만 토큰당 과금됩니다.
+
+`sandbase inspect <tool>`은 현재 가격을 보여 주며 `base_price: 0`은 무료를 뜻합니다. 가격은 변경될 수 있으니 실제 응답을 기준으로 하세요.
 
 ## 명령어
 
@@ -131,7 +144,7 @@ sandbase catalog --json               # 지원 클라이언트 목록
 ## 시작하기
 
 ```sh
-npx -y https://github.com/sandbaseai/cli/releases/download/v0.1.17/sandbaseai-cli-0.1.17.tgz connect
+npx -y @sandbaseai/cli@latest connect
 ```
 
 **[무료 계정 만들기 →](https://sandbase.ai)**
@@ -141,7 +154,7 @@ SandBase로 설정 시간을 절약했다면 [프로젝트에 Star를 남겨 주
 ## 실전 가이드
 
 - [Claude Code·Codex: 모델/API 탐색, 가격 확인, 실행](https://github.com/sandbaseai/cli/discussions/51)
-- [공식 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers/io.github.sandbaseai%2Fcli/versions/0.1.17)
+- [공식 MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli)
 
 ## 라이선스
 
