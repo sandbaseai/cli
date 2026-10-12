@@ -12,7 +12,7 @@ export const DEFAULT_MCP_URL = "https://api.sandbase.ai/v1/mcp";
 export const UNREACHABLE_HINT = "Check this machine's network, proxy, or VPN, then run `sandbase doctor` and retry.";
 
 export type ErrorCode =
-  | "AUTH_REQUIRED" | "AUTH_FAILED" | "INSUFFICIENT_BALANCE" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED"
+  | "AUTH_REQUIRED" | "AUTH_FAILED" | "INSUFFICIENT_BALANCE" | "SPENDING_LIMIT" | "FORBIDDEN" | "NOT_FOUND" | "RATE_LIMITED"
   | "INVALID_INPUT" | "NETWORK" | "UPSTREAM" | "RUN_FAILED" | "INVALID_RESPONSE" | "TOOL_ERROR" | "USAGE";
 
 export class SandBaseError extends Error {
@@ -23,6 +23,7 @@ export function webUrl(env = process.env): string { return (env.SANDBASE_WEB_URL
 export function billingUrl(env = process.env): string { return `${webUrl(env)}/console/billing`; }
 export function keysUrl(env = process.env): string { return `${webUrl(env)}/console/keys`; }
 export const CONNECT_COMMAND = "npx -y @sandbaseai/cli@latest connect";
+export function spendingLimitHint(env = process.env): string { return `Stop and tell the user: this key's spending limit is reached. Topping up does not lift it; they can raise or remove the limit at ${keysUrl(env)}, then retry.`; }
 
 export function validMcpUrl(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined;
@@ -100,9 +101,12 @@ export function describeNetworkFailure(error: unknown): string {
 /** Map a server/tool error message to the most useful next step. */
 export function hintForMessage(message: string, env = process.env): string | undefined {
   const text = message.toLowerCase();
+  // "API key spending limit exceeded" mentions the key but is not a sign-in problem, and
+  // topping up does not lift it, so it is checked before both auth and balance.
+  if (/spending limit/.test(text)) return spendingLimitHint(env);
   // Auth first: "API key not found" is a sign-in problem, not a misspelled tool.
   if (/unauthori[sz]ed|api key|credential|revoked|expired|authenticat|sign-in|signin/.test(text)) return `Sign in again with \`${CONNECT_COMMAND}\`, or check SANDBASE_API_KEY.`;
-  if (/insufficient (balance|credit|funds)|payment required|spending limit|top up/.test(text)) return `Top up at ${billingUrl(env)}, then retry.`;
+  if (/insufficient (balance|credit|funds)|payment required|top up/.test(text)) return `Top up at ${billingUrl(env)}, then retry.`;
   if (/rate.?limit|too many requests|429/.test(text)) return "Rate limited. Wait 10-30 seconds, then retry once.";
   if (/run .*not found|task not found/.test(text)) return "Use the run_id printed by `sandbase run` (or find it with `sandbase runs list`). Agent Service runs also need --service <svc_id>.";
   if (/invalid service request|unknown tool|tool(?: '[^']*')? (?:was )?not found|model not found|tool name is required/.test(text)) return "Check the exact name with `sandbase discover -q \"<what you need>\"` (MCP: sandbase_discover). Names look like sandbase_twitter_web_search_timeline.";
@@ -116,7 +120,8 @@ export function httpError(status: number, body: string, host: string, env = proc
   try { const parsed = JSON.parse(body) as { error?: unknown; message?: unknown }; const e = parsed.error; message = typeof e === "string" ? e : e && typeof e === "object" && typeof (e as { message?: unknown }).message === "string" ? (e as { message: string }).message : typeof parsed.message === "string" ? parsed.message : ""; } catch { /* gateway HTML or empty body: the status carries the meaning */ }
   const detail = message ? `: ${message}` : "";
   if (status === 401) return new SandBaseError("AUTH_FAILED", `SandBase rejected the saved sign-in or API key (401)${detail}.`, `Sign in again with \`${CONNECT_COMMAND}\`, or create a new key at ${keysUrl(env)}.`, status);
-  if (status === 402) return new SandBaseError("INSUFFICIENT_BALANCE", `Insufficient balance or spending limit reached (402)${detail}.`, `Top up at ${billingUrl(env)}, then retry.`, status);
+  if (status === 402 && /spending limit/i.test(message)) return new SandBaseError("SPENDING_LIMIT", `This credential reached the spending limit set on it in the SandBase Dashboard (402)${detail}.`, spendingLimitHint(env), status);
+  if (status === 402) return new SandBaseError("INSUFFICIENT_BALANCE", `Insufficient balance (402)${detail}.`, `Top up at ${billingUrl(env)}, then retry.`, status);
   if (status === 403) return new SandBaseError("FORBIDDEN", `This credential is not allowed to call ${host} (403)${detail}.`, `Use a credential issued by \`${CONNECT_COMMAND}\` or a full API key from ${keysUrl(env)}.`, status);
   if (status === 404) return new SandBaseError("NOT_FOUND", `MCP endpoint not found on ${host} (404)${detail}.`, "Check SANDBASE_MCP_URL; it must end in /v1/mcp.", status);
   if (status === 429) return new SandBaseError("RATE_LIMITED", `Rate limited (429)${detail}.`, "Wait 10-30 seconds, then retry once.", status);
@@ -138,7 +143,7 @@ function parseRpcBody(text: string, contentType: string, id: number): RpcRespons
 }
 
 export interface ToolOutput { data: Record<string, unknown>; text: string }
-export type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body: string; signal: AbortSignal }) => Promise<{ ok: boolean; status: number; headers: { get(name: string): string | null }; text(): Promise<string> }>;
+export type FetchLike = (url: string, init: { method: string; headers: Record<string, string>; body: string | FormData; signal: AbortSignal }) => Promise<{ ok: boolean; status: number; headers: { get(name: string): string | null }; text(): Promise<string> }>;
 
 export class SandBaseMCPClient {
   private session: string | undefined;
@@ -185,7 +190,7 @@ export class SandBaseMCPClient {
   }
 }
 
-const serverErrorCodes: Record<string, ErrorCode> = { tool_not_found: "NOT_FOUND", run_not_found: "NOT_FOUND", invalid_arguments: "INVALID_INPUT", insufficient_balance: "INSUFFICIENT_BALANCE", rate_limited: "RATE_LIMITED", unauthorized: "AUTH_FAILED", run_failed: "RUN_FAILED", upstream_error: "UPSTREAM", internal_error: "UPSTREAM" };
+const serverErrorCodes: Record<string, ErrorCode> = { tool_not_found: "NOT_FOUND", run_not_found: "NOT_FOUND", invalid_arguments: "INVALID_INPUT", insufficient_balance: "INSUFFICIENT_BALANCE", spending_limit: "SPENDING_LIMIT", rate_limited: "RATE_LIMITED", unauthorized: "AUTH_FAILED", run_failed: "RUN_FAILED", upstream_error: "UPSTREAM", internal_error: "UPSTREAM" };
 
 export function toolOutput(result: unknown, env = process.env): ToolOutput {
   const value = (result || {}) as { structuredContent?: unknown; content?: Array<{ type?: string; text?: string }>; isError?: boolean };

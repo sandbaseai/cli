@@ -286,6 +286,7 @@ sandbase inspect sandbase_twitter_web_search_timeline       # fields, price, rea
 sandbase run sandbase_twitter_web_search_timeline -i '{"keyword":"AI agents"}'
 sandbase run <video_tool> -i '{"prompt":"..."}' -w -o result.json   # wait with backoff, save output to disk
 sandbase runs get -r <run_id> -w -o result.json            # resume a long run instead of re-running it
+sandbase upload ./photo.png                                # local image/audio/video -> public URL for tools that take a URL
 sandbase runs list | sandbase balance
 ```
 

@@ -3,14 +3,14 @@
 // agent without MCP (or with a broken MCP session) still has a working path,
 // and so large results can go straight to disk with -o instead of the context.
 import { constants as fsConstants } from "node:fs";
-import { access, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, resolve as resolvePath } from "node:path";
+import { access, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { basename, dirname, extname, resolve as resolvePath } from "node:path";
 import { parseArgs } from "node:util";
 import { atomicWrite } from "../fs-safe.js";
-import { CONNECT_COMMAND, keyFilePath, keysUrl, readStoredKey, resolveEndpoint, SandBaseError, SandBaseMCPClient, toolOutput, validMcpUrl, type FetchLike } from "./client.js";
+import { CONNECT_COMMAND, describeNetworkFailure, httpError, keyFilePath, keysUrl, readStoredKey, resolveEndpoint, SandBaseError, SandBaseMCPClient, toolOutput, validMcpUrl, type FetchLike } from "./client.js";
 import { updateNotice } from "./update.js";
 
-export const agentCommands = ["discover", "inspect", "run", "runs", "balance", "keys"] as const;
+export const agentCommands = ["discover", "inspect", "run", "runs", "upload", "balance", "keys"] as const;
 export type AgentCommand = typeof agentCommands[number];
 export function isAgentCommand(value: string | undefined): value is AgentCommand { return agentCommands.includes(value as AgentCommand); }
 
@@ -22,6 +22,7 @@ export const agentUsage = `SandBase agent commands (same capabilities as the san
   sandbase run <tool_name> [-i '<json>' | -f input.json] [-w] [--timeout 300] [-o result.json] [-j]
   sandbase runs get -r <run_id> [--service <svc_id>] [-w] [--timeout 300] [-o result.json] [-j]
   sandbase runs list [-l 10] [--model <model>] [--service <svc_id>] [-j]
+  sandbase upload <file> [-j]   (local image/audio/video → public URL for tools that take a URL)
   sandbase balance [-j]
   sandbase keys add -k - (reads the key from stdin) | keys list | keys remove
 Global: --client <client> picks a connected client's credential; SANDBASE_API_KEY overrides all; -j prints JSON.`;
@@ -338,6 +339,47 @@ async function runs(argv: string[], out: Output, env: NodeJS.ProcessEnv, deps: R
   throw new SandBaseError("USAGE", "Use `sandbase runs get -r <run_id>` or `sandbase runs list`.");
 }
 
+// What /v1/upload accepts, by extension. Server limits are 20/50/500 MB; video is
+// capped at 100 MB here because the API sits behind Cloudflare's request-body limit.
+const MB = 1024 * 1024;
+const uploadTypes: Record<string, { mime: string; kind: "image" | "audio" | "video"; max: number }> = {
+  ".jpg": { mime: "image/jpeg", kind: "image", max: 20 * MB }, ".jpeg": { mime: "image/jpeg", kind: "image", max: 20 * MB }, ".png": { mime: "image/png", kind: "image", max: 20 * MB }, ".webp": { mime: "image/webp", kind: "image", max: 20 * MB }, ".gif": { mime: "image/gif", kind: "image", max: 20 * MB },
+  ".mp3": { mime: "audio/mpeg", kind: "audio", max: 50 * MB }, ".m4a": { mime: "audio/mp4", kind: "audio", max: 50 * MB }, ".wav": { mime: "audio/wav", kind: "audio", max: 50 * MB }, ".ogg": { mime: "audio/ogg", kind: "audio", max: 50 * MB }, ".aac": { mime: "audio/aac", kind: "audio", max: 50 * MB }, ".flac": { mime: "audio/flac", kind: "audio", max: 50 * MB },
+  ".mp4": { mime: "video/mp4", kind: "video", max: 100 * MB }, ".mov": { mime: "video/quicktime", kind: "video", max: 100 * MB }, ".webm": { mime: "video/webm", kind: "video", max: 100 * MB },
+};
+export function uploadUrlFor(mcpUrl: string): string { const url = new URL(mcpUrl); url.pathname = url.pathname.replace(/\/mcp$/, "/upload"); url.search = ""; return url.href; }
+
+async function upload(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetchImpl?: FetchLike): Promise<number> {
+  const { values, positionals } = parse(argv, { file: { type: "string", short: "f" } });
+  const path = (values.file ?? positionals[0] ?? "").trim();
+  if (!path) throw new SandBaseError("USAGE", "Pass the local file to upload.", "Example: sandbase upload ./photo.png");
+  const type = uploadTypes[extname(path).toLowerCase()];
+  if (!type) throw new SandBaseError("USAGE", `Cannot upload ${basename(path)}: only images (jpg, png, webp, gif), audio (mp3, m4a, wav, ogg, aac, flac) and video (mp4, mov, webm) are accepted.`);
+  let size: number;
+  try { const info = await stat(path); if (!info.isFile()) throw new Error("not a file"); size = info.size; }
+  catch { throw new SandBaseError("USAGE", `Cannot read ${path}: it does not exist or is not a file.`); }
+  if (size > type.max) throw new SandBaseError("USAGE", `${basename(path)} is ${Math.ceil(size / MB)} MB; the ${type.kind} limit is ${type.max / MB} MB.`, type.kind === "video" ? "Trim or compress the video, or pass a URL where it is already hosted." : "Compress the file, or pass a URL where it is already hosted.");
+  const endpoint = await resolveEndpoint(values.client ? { client: values.client } : {}, env);
+  const target = uploadUrlFor(endpoint.url);
+  const host = new URL(target).host;
+  const form = new FormData();
+  form.append("file", new Blob([await readFile(path)], { type: type.mime }), basename(path));
+  let response;
+  try {
+    response = await (fetchImpl ?? (globalThis.fetch as unknown as FetchLike))(target, { method: "POST", headers: { authorization: `Bearer ${endpoint.credential}`, "x-sandbase-client": "cli" }, body: form, signal: AbortSignal.timeout(600_000) });
+  } catch (error) { throw new SandBaseError("NETWORK", `Upload to ${host} failed (${describeNetworkFailure(error)}).`, "Check the network, then retry; nothing is billed for uploads."); }
+  const text = await response.text();
+  if (response.status === 403 && /insufficient_scope/.test(text)) throw new SandBaseError("FORBIDDEN", `This sign-in cannot upload files on ${host} yet (403).`, `Ask the user for a full API key from ${keysUrl(env)} and run the upload with SANDBASE_API_KEY set (never paste the key into chat).`, 403);
+  if (!response.ok) throw httpError(response.status, text, host, env);
+  let data: Record<string, unknown>;
+  try { data = JSON.parse(text) as Record<string, unknown>; } catch { data = {}; }
+  const inner = (data.data && typeof data.data === "object" ? data.data : data) as Record<string, unknown>;
+  if (typeof inner.url !== "string" || !inner.url) throw new SandBaseError("INVALID_RESPONSE", `Expected an uploaded file URL from ${host}.`, "Retry once; run `sandbase doctor` if it persists.");
+  if (out.json) { out.data(inner); return 0; }
+  out.print([`Uploaded ${basename(path)} (${inner.type ?? type.mime}, ${Math.max(1, Math.round(size / 1024))} KB)`, `URL: ${inner.url}`, ...(inner.duration_seconds ? [`Duration: ${trimNumber(inner.duration_seconds)}s`] : []), "", "Pass this URL to the tool's image/audio/video URL field. Anyone with the URL can read the file."].join("\n"));
+  return 0;
+}
+
 async function balance(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetchImpl?: FetchLike): Promise<number> {
   const { values } = parse(argv, {});
   const api = await client(values, env, fetchImpl);
@@ -405,6 +447,7 @@ export async function runAgentCommand(command: AgentCommand, argv: string[], dep
       : command === "inspect" ? await inspect(argv, out, env, deps.fetchImpl)
       : command === "run" ? await run(argv, out, env, timing, deps.fetchImpl)
       : command === "runs" ? await runs(argv, out, env, timing, deps.fetchImpl)
+      : command === "upload" ? await upload(argv, out, env, deps.fetchImpl)
       : command === "balance" ? await balance(argv, out, env, deps.fetchImpl)
       : await keys(argv, out, env, deps);
     if (!json) await notice();
