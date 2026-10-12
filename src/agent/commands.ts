@@ -370,6 +370,7 @@ async function upload(argv: string[], out: Output, env: NodeJS.ProcessEnv, fetch
   } catch (error) { throw new SandBaseError("NETWORK", `Upload to ${host} failed (${describeNetworkFailure(error)}).`, "Check the network, then retry; nothing is billed for uploads."); }
   const text = await response.text();
   if (response.status === 403 && /insufficient_scope/.test(text)) throw new SandBaseError("FORBIDDEN", `This sign-in cannot upload files on ${host} yet (403).`, `Ask the user for a full API key from ${keysUrl(env)} and run the upload with SANDBASE_API_KEY set (never paste the key into chat).`, 403);
+  if (response.status === 404) throw new SandBaseError("NOT_FOUND", `${host} does not accept file uploads (404).`, "Pass a URL where the file is already hosted instead.", 404);
   if (!response.ok) throw httpError(response.status, text, host, env);
   let data: Record<string, unknown>;
   try { data = JSON.parse(text) as Record<string, unknown>; } catch { data = {}; }

@@ -366,3 +366,17 @@ test("upload rejects unsupported, missing and oversized files before any request
   const scope = await cli("upload", [png], env, denied);
   assert.equal(scope.code, 1); assert.match(scope.err, /FORBIDDEN/); assert.match(scope.err, /SANDBASE_API_KEY/); assert.match(scope.err, /never paste/);
 });
+
+test("upload follows SANDBASE_MCP_URL, maps 402/404, and rejects a response without a URL", async () => {
+  const env: NodeJS.ProcessEnv = { ...(await home()), SANDBASE_MCP_URL: "https://www.example.test/v1/mcp" }; await connected(env);
+  const png = join(env.HOME!, "a.png"); await writeFile(png, "x");
+  const urls: string[] = [];
+  const reply = (status: number, body: string): FetchLike => async url => { urls.push(url); return { ok: status < 300, status, headers: { get: () => "application/json" }, text: async () => body }; };
+  const limit = await cli("upload", [png, "-j"], env, reply(402, '{"error":"API key spending limit exceeded"}'));
+  assert.equal(limit.code, 1); assert.equal(JSON.parse(limit.out).error.code, "SPENDING_LIMIT");
+  assert.equal(urls[0], "https://www.example.test/v1/upload");
+  const missing = await cli("upload", [png, "-j"], env, reply(404, "not found"));
+  assert.equal(JSON.parse(missing.out).error.code, "NOT_FOUND"); assert.doesNotMatch(missing.out, /v1\/mcp/);
+  const empty = await cli("upload", [png, "-j"], env, reply(200, "{}"));
+  assert.equal(JSON.parse(empty.out).error.code, "INVALID_RESPONSE");
+});

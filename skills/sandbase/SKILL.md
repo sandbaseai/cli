@@ -89,8 +89,8 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 | Status | Meaning | Do this |
 |---|---|---|
 | `pending` | Accepted, waiting to start | Poll every 5–10 s |
-| `running` | Executing, or finished and still copying its files | Poll every 5–10 s |
-| `completed` / `succeeded` | Done; `output` holds the result | Use or save the output |
+| `running` | Executing (on the first `sandbase_run` reply this also covers a job whose files are still being copied) | Poll every 5–10 s |
+| `completed` / `succeeded` | Done; `output` holds the result | Use or save the output. If `output` is missing, read `hints`: "still being transferred" means poll again in a few seconds; "no stored output" means stop polling |
 | `failed` | Ended with an error; read `error` | Fix the input (inspect) and retry once, or pick another tool |
 | `timeout` | Hit the provider's time limit | Retry once with a smaller job, or pick another tool |
 | `cancelled` | Stopped on request (Agent Services only) | Nothing to poll |
