@@ -74,12 +74,35 @@ function hintLines(hints: unknown): string[] {
   return [String(hints)];
 }
 function printHints(out: Output, ...sources: unknown[]): void { const lines = sources.flatMap(hintLines); if (lines.length) out.print(["", "Hints:", ...lines.map(line => `  - ${line}`)].join("\n")); }
-function collectUrls(value: unknown, found = new Set<string>()): Set<string> {
-  if (found.size >= 20) return found;
-  if (typeof value === "string") { if (/^https?:\/\/\S+$/.test(value)) found.add(value); }
-  else if (Array.isArray(value)) for (const item of value) collectUrls(item, found);
-  else if (value && typeof value === "object") for (const item of Object.values(value)) collectUrls(item, found);
-  return found;
+/**
+ * Files the run produced. The server returns media outputs as `[{url, …}]`
+ * (content_type is only added when it can be inferred), so an entry counts as a
+ * file when it has a `url` and carries no content of its own. A scraped page's
+ * `{url, markdown}`, a tweet row, or a nested avatar is content, not a file.
+ */
+export function generatedFiles(output: unknown): string[] {
+  const isUrl = (value: unknown): value is string => typeof value === "string" && /^https?:\/\/\S+$/.test(value);
+  // Keys that make an object a data row rather than a produced file.
+  const contentKeys = ["text", "markdown", "md", "html", "content", "title", "body", "snippet", "caption", "summary", "data", "items", "results", "children", "comments", "author", "user"];
+  const fileEntry = (entry: unknown): string | undefined => {
+    if (isUrl(entry)) return entry;
+    if (!entry || typeof entry !== "object" || Array.isArray(entry)) return undefined;
+    const record = entry as Record<string, unknown>;
+    if (!isUrl(record.url)) return undefined;
+    return contentKeys.some(key => record[key] !== undefined) ? undefined : record.url as string;
+  };
+  const list = (value: unknown): string[] => {
+    const entries = Array.isArray(value) ? value : [value];
+    return entries.map(fileEntry).filter((url): url is string => !!url);
+  };
+  let files = list(output);
+  // {images: [{url}], seed: 1} / {video: {url}}: a media-named key holds the files.
+  if (!files.length && output && typeof output === "object" && !Array.isArray(output)) {
+    for (const [key, value] of Object.entries(output)) {
+      if (/^(image|video|audio|file|media|clip|frame)s?$/i.test(key)) files = files.concat(list(value));
+    }
+  }
+  return [...new Set(files)].slice(0, 20);
 }
 function shellQuote(value: string): string { return `'${value.replace(/'/g, `'\\''`)}'`; }
 type OptionSpec = Record<string, { type: "string" | "boolean"; short?: string }>;
@@ -171,8 +194,8 @@ function printRun(out: Output, view: RunView, outputFile?: string): void {
   if (view.idempotency_key) lines.push(`Idempotency key: ${view.idempotency_key}  (reuse it with the same input when retrying this service run)`);
   if (view.cost === undefined && view.cost_status === "settling") lines.push("Cost: settling (see `sandbase runs list` shortly)");
   if (phase === "succeeded" && hasOutput(view)) {
-    const urls = [...collectUrls(view.output)];
-    if (urls.length) lines.push("Files:", ...urls.map(url => `  ${url}`));
+    const files = generatedFiles(view.output);
+    if (files.length) lines.push("Files:", ...files.map(url => `  ${url}`));
     if (outputFile) lines.push(`Saved output to ${outputFile}`);
     else { const text = typeof view.output === "string" ? view.output : JSON.stringify(view.output, null, 2); lines.push("Output:", text.length > 6000 ? `${text.slice(0, 6000)}\n…(truncated ${text.length - 6000} chars; rerun \`sandbase runs get -r ${view.run_id ?? "<run_id>"} -o result.json\` to save everything)` : text); }
   }

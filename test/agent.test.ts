@@ -6,7 +6,7 @@ import { PassThrough } from "node:stream";
 import { pathToFileURL } from "node:url";
 import test from "node:test";
 import { httpError, resolveEndpoint, SandBaseError, SandBaseMCPClient, type FetchLike } from "../src/agent/client.js";
-import { formatPrice, resolveSchema, runAgentCommand, uploadUrlFor } from "../src/agent/commands.js";
+import { formatPrice, generatedFiles, resolveSchema, runAgentCommand, uploadUrlFor } from "../src/agent/commands.js";
 import { probeEndpoint } from "../src/agent/probe.js";
 import { compareVersions, updateNotice } from "../src/agent/update.js";
 
@@ -331,7 +331,7 @@ test("setup refreshes the bridge and SandBase-owned Skills but leaves edited Ski
     const lines: string[] = [];
     assert.equal(await setup(new FileCredentialStore(env.SANDBASE_HOME!), line => void lines.push(line)), true);
     assert.match(lines.join("\n"), /bridge: status=updated/); assert.match(lines.join("\n"), /claude-code: skill=updated/); assert.match(lines.join("\n"), /kiro: skill=modified/);
-    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.5/);
+    assert.match(await readFile(join(claudeDir, "SKILL.md"), "utf8"), /version: 0\.3\.6/);
     assert.match(await readFile(join(kiroDir, "SKILL.md"), "utf8"), /user edit/);
   } finally { for (const [key, value] of Object.entries(previous)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } }
 });
@@ -379,4 +379,24 @@ test("upload follows SANDBASE_MCP_URL, maps 402/404, and rejects a response with
   assert.equal(JSON.parse(missing.out).error.code, "NOT_FOUND"); assert.doesNotMatch(missing.out, /v1\/mcp/);
   const empty = await cli("upload", [png, "-j"], env, reply(200, "{}"));
   assert.equal(JSON.parse(empty.out).error.code, "INVALID_RESPONSE");
+});
+test("Files lists what a run produced, not every URL inside data results", () => {
+  assert.deepEqual(generatedFiles([{ url: "https://cdn/x.mp4", content_type: "video/mp4" }]), ["https://cdn/x.mp4"]);
+  // Media entries carry any number of extra fields; a marker is what identifies a file.
+  assert.deepEqual(generatedFiles([{ url: "https://cdn/1.png", content_type: "image/png", file_name: "1.png", file_size: 12, width: 1024, height: 1024, seed: 7, nsfw: false }]), ["https://cdn/1.png"]);
+  assert.deepEqual(generatedFiles([{ url: "https://example.com/page", markdown: "# hi", html: "<h1>hi</h1>" }]), []);
+  // content_type is only present when the server could infer it from the URL.
+  assert.deepEqual(generatedFiles([{ url: "https://cdn/abc123?token=x" }]), ["https://cdn/abc123?token=x"]);
+  // One caption entry must not hide the file, and a long run is truncated, not dropped.
+  assert.deepEqual(generatedFiles([{ url: "https://cdn/a.mp4", content_type: "video/mp4" }, { text: "caption" }]), ["https://cdn/a.mp4"]);
+  assert.equal(generatedFiles(Array.from({ length: 25 }, (_, i) => ({ url: `https://cdn/${i}.png`, content_type: "image/png" }))).length, 20);
+  assert.deepEqual(generatedFiles({ urls: ["https://example.com/a", "https://example.com/b"] }), []);
+  assert.deepEqual(generatedFiles({ output: { url: "https://example.com/page", markdown: "x" } }), []);
+  assert.deepEqual(generatedFiles("https://cdn/a.png"), ["https://cdn/a.png"]);
+  assert.deepEqual(generatedFiles({ images: [{ url: "https://cdn/1.png" }, { url: "https://cdn/2.png" }], seed: 3 }), ["https://cdn/1.png", "https://cdn/2.png"]);
+  assert.deepEqual(generatedFiles({ video: { url: "https://cdn/v.mp4" } }), ["https://cdn/v.mp4"]);
+  assert.deepEqual(generatedFiles({ result: { url: "https://example.com/page", markdown: "x" } }), []);
+  const tweets = [{ id: "1", text: "hi", user: { avatar: "https://pbs/a.jpg" }, media: [{ url: "https://video/1.mp4" }] }];
+  assert.deepEqual(generatedFiles(tweets), []);
+  assert.deepEqual(generatedFiles({ text: "see https://x.com" }), []);
 });
