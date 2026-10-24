@@ -123,7 +123,7 @@ sandbase catalog --json               # Lister les clients
 | `sandbase_run` | Exécuter un modèle ou une API |
 | `sandbase_run_get` | Vérifier le statut des tâches asynchrones |
 | `sandbase_runs` | Voir les appels récents et les coûts |
-| `sandbase_account` | Vérifier le solde (gratuit) |
+| `sandbase_account` | Vérifier le solde et les appels gratuits aux API de données du jour (`free_api_quota`) (gratuit) |
 
 ---
 

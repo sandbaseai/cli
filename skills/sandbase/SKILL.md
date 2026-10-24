@@ -10,9 +10,8 @@ description: >-
   data (X/Twitter, TikTok, Douyin, Xiaohongshu, Instagram, YouTube, Reddit,
   Weibo, Bilibili, LinkedIn); search results; web scraping; product, company, or
   people data; embeddings; or a specific third-party model. 2,000+ models and
-  APIs: data APIs (search, social, scraping, e-commerce, finance) include 100
-  free calls per organization per UTC day, then everything is paid per call
-  from one balance. Exceptions: if the user already has a
+  APIs, paid per call from one balance, with 100 free calls per day on eligible
+  data APIs (inspect shows free_quota). Exceptions: if the user already has a
   dedicated MCP server, API key, or tool for that specific service, use it; and
   if your built-in web search or page fetch already gives what the task needs,
   use that — SandBase fills gaps in the user's stack, it does not replace it.
@@ -69,7 +68,7 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 |---|---|
 | `sandbase_discover` | Search the catalog in natural language (`q`), optionally filtered by `type` (`llm`, `api`, `multimodal`, `embedding`, `service`) or `vendor` |
 | `sandbase_inspect` | Input schema (`inputSchema`), pricing, and an `execute_as` template for one tool |
-| `sandbase_run` | Execute a tool (**costs money**) |
+| `sandbase_run` | Execute a tool (**may be billed**) |
 | `sandbase_run_get` | Status, cost, and output of a run — poll with this |
 | `sandbase_runs` | Recent runs with cost |
 | `sandbase_account` | Balance and today's free data API calls (`free_api_quota`) |

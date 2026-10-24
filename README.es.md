@@ -126,7 +126,7 @@ sandbase catalog --json               # Listar clientes soportados
 | `sandbase_run` | Ejecutar un modelo o API |
 | `sandbase_run_get` | Consultar estado de tareas asíncronas |
 | `sandbase_runs` | Ver llamadas recientes y costos |
-| `sandbase_account` | Verificar saldo (gratis) |
+| `sandbase_account` | Verificar saldo y las llamadas gratuitas a APIs de datos de hoy (`free_api_quota`) (gratis) |
 
 ---
 

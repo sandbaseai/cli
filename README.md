@@ -325,7 +325,7 @@ Sync tools (LLMs, most data APIs) return their result directly; async tools (ima
 |------|---------|
 | `sandbase_discover` | Search all 2,000+ available AI models and APIs — free |
 | `sandbase_inspect` | Get input schema, current price, and a ready-to-run template — free |
-| `sandbase_run` | Execute a model or API endpoint — data APIs: 100 free calls/day per organization, then paid per call; models: paid per call |
+| `sandbase_run` | Execute a model or API endpoint — eligible data APIs: 100 free calls/day per organization, then paid per call; models: paid per call |
 | `sandbase_run_get` | Poll status/result of an async run (video gen, etc.) — free |
 | `sandbase_runs` | List your recent runs with their cost — free |
 | `sandbase_account` | Check account balance and today's free data API calls (`free_api_quota`) — free |

@@ -248,7 +248,7 @@ sandbase runs list | sandbase balance
 | `sandbase_run` | 执行模型或 API |
 | `sandbase_run_get` | 轮询异步任务状态/结果（视频生成等） |
 | `sandbase_runs` | 查看最近的 API 调用记录和费用 |
-| `sandbase_account` | 查看账户余额（免费，不扣费） |
+| `sandbase_account` | 查看账户余额和今日免费数据 API 调用次数（`free_api_quota`），免费，不扣费 |
 
 **Agent 自动遵循的调用流程：**
 

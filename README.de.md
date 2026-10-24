@@ -123,7 +123,7 @@ sandbase catalog --json               # Unterstützte Clients auflisten
 | `sandbase_run` | Modell oder API ausführen |
 | `sandbase_run_get` | Status asynchroner Aufgaben abfragen |
 | `sandbase_runs` | Letzte API-Aufrufe und Kosten anzeigen |
-| `sandbase_account` | Kontostand prüfen (kostenlos) |
+| `sandbase_account` | Kontostand und heutige kostenlose Daten-API-Aufrufe (`free_api_quota`) prüfen (kostenlos) |
 
 ---
 

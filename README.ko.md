@@ -128,7 +128,7 @@ sandbase catalog --json               # 지원 클라이언트 목록
 | `sandbase_run` | 모델 또는 API 실행 |
 | `sandbase_run_get` | 비동기 작업 상태/결과 조회 |
 | `sandbase_runs` | 최근 API 호출 및 비용 확인 |
-| `sandbase_account` | 계정 잔액 확인 (무료) |
+| `sandbase_account` | 계정 잔액과 오늘의 무료 데이터 API 호출(`free_api_quota`) 확인 (무료) |
 
 ---
 

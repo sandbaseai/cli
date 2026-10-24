@@ -168,7 +168,7 @@ sandbase catalog --json               # 対応クライアント一覧
 | `sandbase_run` | モデルまたはAPIエンドポイントを実行 |
 | `sandbase_run_get` | 非同期タスクのステータス/結果をポーリング |
 | `sandbase_runs` | 最近のAPI呼び出しとコストを一覧表示 |
-| `sandbase_account` | アカウント残高を確認（無料） |
+| `sandbase_account` | アカウント残高と本日の無料データ API 呼び出し（`free_api_quota`）を確認（無料） |
 
 **エージェントが自動的に従うワークフロー：**
 
