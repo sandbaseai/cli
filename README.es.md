@@ -102,11 +102,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## Precios
 
-- **Las APIs de datos (búsqueda, redes sociales, scraping, e-commerce, finanzas) son gratuitas.**
-- Descubrir, inspeccionar, consultar estado, saldo y subir archivos también es gratis.
+- Las APIs de datos (búsqueda, redes sociales, scraping, e-commerce, finanzas) incluyen 100 llamadas gratis al día por organización (compartidas entre las APIs elegibles, se reinician a las 00:00 UTC); después se pagan por llamada, al precio que muestra `sandbase inspect`.
+- Descubrir, inspeccionar, consultar estado, saldo y subir archivos es gratis.
 - Los modelos (LLM, imagen, vídeo, audio) se pagan por llamada o por millón de tokens.
 
-`sandbase inspect <tool>` muestra siempre el precio actual; `base_price: 0` significa gratis. Los precios pueden cambiar: confía en la respuesta real.
+`sandbase inspect <tool>` muestra siempre el precio actual y, en las APIs elegibles, `pricing.free_quota`; `sandbase balance --json` muestra las llamadas gratis que quedan hoy en `free_api_quota`. Los precios pueden cambiar: confía en la respuesta real.
 
 ## Comandos
 
@@ -126,7 +126,7 @@ sandbase catalog --json               # Listar clientes soportados
 | `sandbase_run` | Ejecutar un modelo o API |
 | `sandbase_run_get` | Consultar estado de tareas asíncronas |
 | `sandbase_runs` | Ver llamadas recientes y costos |
-| `sandbase_account` | Verificar saldo (gratis) |
+| `sandbase_account` | Verificar saldo y las llamadas gratuitas a APIs de datos de hoy (`free_api_quota`) (gratis) |
 
 ---
 
@@ -145,7 +145,7 @@ sandbase catalog --json               # Listar clientes soportados
 npx -y @sandbaseai/cli@latest connect
 ```
 
-**[Crear cuenta gratis →](https://sandbase.ai)**
+**[Crear cuenta →](https://sandbase.ai)**
 
 Si SandBase te ahorra tiempo de configuración, [dale una estrella al proyecto](https://github.com/sandbaseai/cli). Así será más fácil que otros usuarios de agentes lo descubran.
 

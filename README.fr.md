@@ -99,11 +99,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## Tarifs
 
-- **Les API de données (recherche, réseaux sociaux, scraping, e-commerce, finance) sont gratuites.**
-- La découverte, l’inspection, le statut des exécutions, le solde et l’envoi de fichiers sont également gratuits.
+- Les API de données (recherche, réseaux sociaux, scraping, e-commerce, finance) incluent 100 appels gratuits par jour et par organisation (partagés entre les API éligibles, remis à zéro à 00:00 UTC), puis sont facturées à l’appel, au prix affiché par `sandbase inspect`.
+- La découverte, l’inspection, le statut des exécutions, le solde et l’envoi de fichiers sont gratuits.
 - Les modèles (LLM, image, vidéo, audio) sont facturés à l’appel ou au million de tokens.
 
-`sandbase inspect <tool>` affiche toujours le prix actuel ; `base_price: 0` signifie gratuit. Les prix peuvent changer : fiez-vous à la réponse réelle.
+`sandbase inspect <tool>` affiche toujours le prix actuel et, pour les API éligibles, `pricing.free_quota` ; `sandbase balance --json` indique les appels gratuits restants du jour dans `free_api_quota`. Les prix peuvent changer : fiez-vous à la réponse réelle.
 
 ## Commandes
 
@@ -123,7 +123,7 @@ sandbase catalog --json               # Lister les clients
 | `sandbase_run` | Exécuter un modèle ou une API |
 | `sandbase_run_get` | Vérifier le statut des tâches asynchrones |
 | `sandbase_runs` | Voir les appels récents et les coûts |
-| `sandbase_account` | Vérifier le solde (gratuit) |
+| `sandbase_account` | Vérifier le solde et les appels gratuits aux API de données du jour (`free_api_quota`) (gratuit) |
 
 ---
 
@@ -142,7 +142,7 @@ sandbase catalog --json               # Lister les clients
 npx -y @sandbaseai/cli@latest connect
 ```
 
-**[Créer un compte gratuit →](https://sandbase.ai)**
+**[Créer un compte →](https://sandbase.ai)**
 
 Si SandBase vous fait gagner du temps de configuration, [ajoutez une étoile au projet](https://github.com/sandbaseai/cli). Cela aidera d’autres utilisateurs d’agents à le découvrir.
 

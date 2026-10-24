@@ -142,11 +142,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## 料金
 
-- **データ API（検索、ソーシャル、スクレイピング、EC、金融）は無料。**
-- discover、inspect、実行ステータス、残高、ファイルアップロードも無料。
+- データ API（検索、ソーシャル、スクレイピング、EC、金融）は組織ごとに 1 日 100 回まで無料（UTC 基準でリセット、対象 API 全体で共有）。それ以降は 1 回ごとの課金で、料金は `sandbase inspect` で表示されます。
+- discover、inspect、実行ステータス、残高、ファイルアップロードは無料。
 - モデル（LLM、画像、動画、音声）は 1 回ごと、または 100 万トークンごとの課金。
 
-`sandbase inspect <tool>` は常に現在の価格を表示します。`base_price: 0` は無料です。価格は変わるため、実際のレスポンスを信頼してください。
+`sandbase inspect <tool>` は常に現在の価格を表示し、無料枠の対象 API には `pricing.free_quota` が表示されます。今日の残り無料回数は `sandbase balance --json` の `free_api_quota` で確認できます。価格は変わるため、実際のレスポンスを信頼してください。
 
 ## コマンド
 
@@ -168,7 +168,7 @@ sandbase catalog --json               # 対応クライアント一覧
 | `sandbase_run` | モデルまたはAPIエンドポイントを実行 |
 | `sandbase_run_get` | 非同期タスクのステータス/結果をポーリング |
 | `sandbase_runs` | 最近のAPI呼び出しとコストを一覧表示 |
-| `sandbase_account` | アカウント残高を確認（無料） |
+| `sandbase_account` | アカウント残高と本日の無料データ API 呼び出し（`free_api_quota`）を確認（無料） |
 
 **エージェントが自動的に従うワークフロー：**
 
@@ -202,7 +202,7 @@ npx -y @sandbaseai/cli@latest connect
 
 そして、エージェントに今までできなかったことを頼んでみてください。
 
-**[無料アカウント作成 →](https://sandbase.ai)**
+**[アカウント作成 →](https://sandbase.ai)**
 
 SandBase でセットアップ時間を短縮できたら、[リポジトリに Star を付けてください](https://github.com/sandbaseai/cli)。より多くのエージェントユーザーがこのプロジェクトを見つけやすくなります。
 
