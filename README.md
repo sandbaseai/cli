@@ -1,7 +1,7 @@
 <p align="center">
   <h1 align="center">@sandbaseai/cli</h1>
   <p align="center">
-    <strong>Give your AI agent superpowers. One line. 2,000+ AI models and APIs — data APIs are free.</strong>
+    <strong>Give your AI agent superpowers. One line. 2,000+ AI models and APIs, paid per call from one balance.</strong>
   </p>
   <p align="center">
     English | <a href="./README.zh-CN.md">中文</a> | <a href="./README.ja.md">日本語</a> | <a href="./README.ko.md">한국어</a> | <a href="./README.es.md">Español</a> | <a href="./README.fr.md">Français</a> | <a href="./README.de.md">Deutsch</a> | <a href="./README.pt-BR.md">Português</a>
@@ -86,7 +86,7 @@ Homebrew users can run the same read-only check with `sandbase catalog --json`.
 
 | | Price |
 |---|---|
-| **Data APIs** — search, social, scraping, e-commerce, finance | **Free** |
+| Data APIs — search, social, scraping, e-commerce, finance | Paid per call (price shown by `sandbase inspect`) |
 | Discovery, inspection, run status, balance, file upload | **Free** |
 | Models — LLM, image, video, audio | Paid per call or per million tokens |
 
@@ -145,7 +145,8 @@ other catalog capabilities:
 2. Use `sandbase_inspect` to read the current input schema, pricing, and
    execution requirements.
 3. Confirm the selected endpoint and parameters before calling `sandbase_run`.
-   Data API calls are free; confirm the cost first when the tool is a model.
+   Data APIs and models are both billed per call; confirm the cost shown by
+   `sandbase_inspect` before paid runs.
 4. For asynchronous work, use `sandbase_run_get` with the returned `run_id`
    instead of creating a duplicate run.
 5. Use `sandbase_runs` to review recent run status and recorded cost.
@@ -320,7 +321,7 @@ Sync tools (LLMs, most data APIs) return their result directly; async tools (ima
 |------|---------|
 | `sandbase_discover` | Search all 2,000+ available AI models and APIs — free |
 | `sandbase_inspect` | Get input schema, current price, and a ready-to-run template — free |
-| `sandbase_run` | Execute a model or API endpoint — free for data APIs, paid for models |
+| `sandbase_run` | Execute a model or API endpoint — paid per call |
 | `sandbase_run_get` | Poll status/result of an async run (video gen, etc.) — free |
 | `sandbase_runs` | List your recent runs with their cost — free |
 | `sandbase_account` | Check account balance — free |
@@ -358,7 +359,7 @@ npx -y @sandbaseai/cli@latest connect
 
 Then ask your agent to do something it couldn't before.
 
-**[Create a free account →](https://sandbase.ai)** — data APIs are free to call.
+**[Create an account →](https://sandbase.ai)**
 
 If SandBase saves you setup time, [star the repository](https://github.com/sandbaseai/cli) — it helps more agent users discover the project.
 

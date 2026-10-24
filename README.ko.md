@@ -102,8 +102,8 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## 가격
 
-- **데이터 API(검색, 소셜, 스크래핑, 커머스, 금융)는 무료입니다.**
-- discover, inspect, 실행 상태, 잔액, 파일 업로드도 무료입니다.
+- 데이터 API(검색, 소셜, 스크래핑, 커머스, 금융)는 호출당 과금되며, 가격은 `sandbase inspect`에 표시됩니다.
+- discover, inspect, 실행 상태, 잔액, 파일 업로드는 무료입니다.
 - 모델(LLM, 이미지, 비디오, 오디오)은 호출당 또는 100만 토큰당 과금됩니다.
 
 `sandbase inspect <tool>`은 현재 가격을 보여 주며 `base_price: 0`은 무료를 뜻합니다. 가격은 변경될 수 있으니 실제 응답을 기준으로 하세요.
@@ -147,7 +147,7 @@ sandbase catalog --json               # 지원 클라이언트 목록
 npx -y @sandbaseai/cli@latest connect
 ```
 
-**[무료 계정 만들기 →](https://sandbase.ai)**
+**[계정 만들기 →](https://sandbase.ai)**
 
 SandBase로 설정 시간을 절약했다면 [프로젝트에 Star를 남겨 주세요](https://github.com/sandbaseai/cli). 더 많은 에이전트 사용자가 프로젝트를 발견하는 데 도움이 됩니다.
 

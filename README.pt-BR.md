@@ -102,8 +102,8 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## Preços
 
-- **As APIs de dados (busca, redes sociais, scraping, e-commerce, finanças) são gratuitas.**
-- Descobrir, inspecionar, status de execução, saldo e upload de arquivos também são gratuitos.
+- As APIs de dados (busca, redes sociais, scraping, e-commerce, finanças) são cobradas por chamada, pelo preço exibido em `sandbase inspect`.
+- Descobrir, inspecionar, status de execução, saldo e upload de arquivos são gratuitos.
 - Modelos (LLM, imagem, vídeo, áudio) são cobrados por chamada ou por milhão de tokens.
 
 `sandbase inspect <tool>` sempre mostra o preço atual; `base_price: 0` significa gratuito. Preços mudam: confie na resposta real.
@@ -145,7 +145,7 @@ sandbase catalog --json               # Listar clientes suportados
 npx -y @sandbaseai/cli@latest connect
 ```
 
-**[Criar conta grátis →](https://sandbase.ai)**
+**[Criar conta →](https://sandbase.ai)**
 
 Se o SandBase economizou seu tempo de configuração, [dê uma estrela ao projeto](https://github.com/sandbaseai/cli). Isso ajuda mais usuários de agentes a encontrá-lo.
 

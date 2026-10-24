@@ -204,8 +204,8 @@ npx -y @sandbaseai/cli@latest unregister --client hermes
 
 ## 价格
 
-- **数据 API（搜索、社交、抓取、电商、金融）免费调用。**
-- discover、inspect、运行状态、余额、文件上传均免费。
+- 数据 API（搜索、社交、抓取、电商、金融）按次计费，价格以 `sandbase inspect` 显示为准。
+- discover、inspect、运行状态、余额、文件上传免费，不扣费。
 - 模型（LLM、图像、视频、音频）按次或按百万 token 计费。
 
 `sandbase inspect <工具名>` 会显示当前价格，`base_price: 0` 表示免费。价格可能变动，请以实时返回为准。
@@ -282,7 +282,7 @@ npx -y @sandbaseai/cli@latest connect
 
 然后让你的 Agent 做一些它以前做不到的事。
 
-**[注册免费账号 →](https://sandbase.ai)**
+**[注册账号 →](https://sandbase.ai)**
 
 如果 SandBase 帮你节省了配置时间，欢迎[为项目点个 Star](https://github.com/sandbaseai/cli)——这会让更多 Agent 用户发现它。
 

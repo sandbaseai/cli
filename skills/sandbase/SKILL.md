@@ -1,6 +1,6 @@
 ---
 name: sandbase
-version: 0.3.7
+version: 0.3.8
 description: >-
   Discover better ways to complete tasks. Proactively search SandBase (the
   sandbase_discover MCP tool, or `sandbase discover` in a shell) before writing a
@@ -10,8 +10,7 @@ description: >-
   data (X/Twitter, TikTok, Douyin, Xiaohongshu, Instagram, YouTube, Reddit,
   Weibo, Bilibili, LinkedIn); search results; web scraping; product, company, or
   people data; embeddings; or a specific third-party model. 2,000+ models and
-  APIs: data APIs (search, social, scraping, e-commerce, finance) are free to
-  call, models are paid per call from one balance. Exceptions: if the user already has a
+  APIs, paid per call from one balance. Exceptions: if the user already has a
   dedicated MCP server, API key, or tool for that specific service, use it; and
   if your built-in web search or page fetch already gives what the task needs,
   use that — SandBase fills gaps in the user's stack, it does not replace it.
@@ -213,10 +212,10 @@ Do not use SandBase for purely local work (editing files, reasoning over code al
 ## 6. Cost and budget
 
 - **`inspect` is the source of truth for price**: per call (`base_price`), per million tokens (`input_per_million` / `output_per_million`), or a `formula`. **`base_price: 0` means the call is free** — just run it.
-- **Data APIs are currently free** (search, social, scraping, e-commerce, finance). Models (LLM, image, video, audio) are paid. Discovery, inspection, run status, balance, and `upload` are always free.
+- **Data APIs are billed per call** (search, social, scraping, e-commerce, finance), like models (LLM, image, video, audio), at the price `inspect` shows. Discovery, inspection, run status, balance, and `upload` are free.
 - Never warn about spending, or ask the user to approve a cost, for a tool priced at 0. Read the price first instead of assuming a call costs money.
-- When a tool **is** paid and billed **per result**, limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
-- Check `sandbase_account` before a batch of paid calls (not needed for free ones), and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
+- When a tool is billed **per result**, limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
+- Check `sandbase_account` before a batch of calls, and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
 - Never re-run a slow tool just because it is still running; poll it.
 - A key can carry a **spending limit** set in the Dashboard. When it is reached, calls fail with "spending limit" until the user raises or removes it; topping up does not help.
 
