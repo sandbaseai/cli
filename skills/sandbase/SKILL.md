@@ -211,9 +211,9 @@ Do not use SandBase for purely local work (editing files, reasoning over code al
 
 ## 6. Cost and budget
 
-- **`inspect` is the source of truth for price**: per call (`base_price`), per million tokens (`input_per_million` / `output_per_million`), or a `formula`. **`base_price: 0` means the call is free** — just run it.
+- **`inspect` is the source of truth for price**: per call (`base_price`), per million tokens (`input_per_million` / `output_per_million`), or a `formula`.
 - **Data APIs are billed per call** (search, social, scraping, e-commerce, finance), like models (LLM, image, video, audio), at the price `inspect` shows. Discovery, inspection, run status, balance, and `upload` are free.
-- Never warn about spending, or ask the user to approve a cost, for a tool priced at 0. Read the price first instead of assuming a call costs money.
+- Read the price with `inspect` before running instead of guessing what a call costs.
 - When a tool is billed **per result**, limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
 - Check `sandbase_account` before a batch of calls, and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
 - Never re-run a slow tool just because it is still running; poll it.

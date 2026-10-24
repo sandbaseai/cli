@@ -208,7 +208,7 @@ npx -y @sandbaseai/cli@latest unregister --client hermes
 - discover、inspect、运行状态、余额、文件上传免费，不扣费。
 - 模型（LLM、图像、视频、音频）按次或按百万 token 计费。
 
-`sandbase inspect <工具名>` 会显示当前价格，`base_price: 0` 表示免费。价格可能变动，请以实时返回为准。
+`sandbase inspect <工具名>` 会显示当前价格。价格可能变动，请以实时返回为准。
 
 ## 命令
 

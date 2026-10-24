@@ -90,9 +90,8 @@ Homebrew users can run the same read-only check with `sandbase catalog --json`.
 | Discovery, inspection, run status, balance, file upload | **Free** |
 | Models — LLM, image, video, audio | Paid per call or per million tokens |
 
-`sandbase inspect <tool>` always shows the current price before you run anything;
-`base_price: 0` means the call is free. Prices can change, so trust the live
-response over any example in this file.
+`sandbase inspect <tool>` always shows the current price before you run anything.
+Prices can change, so trust the live response over any example in this file.
 
 Visit the [official SandBase CLI project page](https://sandbaseai.github.io/cli/) for a compact overview.
 For a security-focused walkthrough of client detection, MCP tools, and rollback,

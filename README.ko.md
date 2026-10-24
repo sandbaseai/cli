@@ -106,7 +106,7 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 - discover, inspect, 실행 상태, 잔액, 파일 업로드는 무료입니다.
 - 모델(LLM, 이미지, 비디오, 오디오)은 호출당 또는 100만 토큰당 과금됩니다.
 
-`sandbase inspect <tool>`은 현재 가격을 보여 주며 `base_price: 0`은 무료를 뜻합니다. 가격은 변경될 수 있으니 실제 응답을 기준으로 하세요.
+`sandbase inspect <tool>`은 현재 가격을 보여 줍니다. 가격은 변경될 수 있으니 실제 응답을 기준으로 하세요.
 
 ## 명령어
 

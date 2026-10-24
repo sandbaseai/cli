@@ -103,7 +103,7 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 - La découverte, l’inspection, le statut des exécutions, le solde et l’envoi de fichiers sont gratuits.
 - Les modèles (LLM, image, vidéo, audio) sont facturés à l’appel ou au million de tokens.
 
-`sandbase inspect <tool>` affiche toujours le prix actuel ; `base_price: 0` signifie gratuit. Les prix peuvent changer : fiez-vous à la réponse réelle.
+`sandbase inspect <tool>` affiche toujours le prix actuel ; Les prix peuvent changer : fiez-vous à la réponse réelle.
 
 ## Commandes
 
