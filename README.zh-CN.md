@@ -204,11 +204,11 @@ npx -y @sandbaseai/cli@latest unregister --client hermes
 
 ## 价格
 
-- 数据 API（搜索、社交、抓取、电商、金融）按次计费，价格以 `sandbase inspect` 显示为准。
+- 数据 API（搜索、社交、抓取、电商、金融）每个组织每天 100 次免费调用（按 UTC 日重置，所有适用的数据 API 共享），超出后按次计费，价格以 `sandbase inspect` 显示为准。
 - discover、inspect、运行状态、余额、文件上传免费，不扣费。
 - 模型（LLM、图像、视频、音频）按次或按百万 token 计费。
 
-`sandbase inspect <工具名>` 会显示当前价格。价格可能变动，请以实时返回为准。
+`sandbase inspect <工具名>` 会显示当前价格，适用每日免费额度的数据 API 会带有 `pricing.free_quota`；`sandbase balance --json` 的 `free_api_quota` 显示今天剩余的免费次数。价格可能变动，请以实时返回为准。
 
 ## 命令
 

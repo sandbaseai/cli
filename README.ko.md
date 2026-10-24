@@ -102,11 +102,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## 가격
 
-- 데이터 API(검색, 소셜, 스크래핑, 커머스, 금융)는 호출당 과금되며, 가격은 `sandbase inspect`에 표시됩니다.
+- 데이터 API(검색, 소셜, 스크래핑, 커머스, 금융)는 조직당 하루 100회 무료(UTC 기준 초기화, 대상 API 전체 공유)이며, 이후에는 호출당 과금됩니다. 가격은 `sandbase inspect`에 표시됩니다.
 - discover, inspect, 실행 상태, 잔액, 파일 업로드는 무료입니다.
 - 모델(LLM, 이미지, 비디오, 오디오)은 호출당 또는 100만 토큰당 과금됩니다.
 
-`sandbase inspect <tool>`은 현재 가격을 보여 줍니다. 가격은 변경될 수 있으니 실제 응답을 기준으로 하세요.
+`sandbase inspect <tool>`은 현재 가격을 보여 주며, 무료 한도 대상 API에는 `pricing.free_quota`가 표시됩니다. 오늘 남은 무료 호출 수는 `sandbase balance --json`의 `free_api_quota`에서 확인할 수 있습니다. 가격은 변경될 수 있으니 실제 응답을 기준으로 하세요.
 
 ## 명령어
 

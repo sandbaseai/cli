@@ -142,11 +142,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## 料金
 
-- データ API（検索、ソーシャル、スクレイピング、EC、金融）は 1 回ごとの課金。料金は `sandbase inspect` で表示されます。
+- データ API（検索、ソーシャル、スクレイピング、EC、金融）は組織ごとに 1 日 100 回まで無料（UTC 基準でリセット、対象 API 全体で共有）。それ以降は 1 回ごとの課金で、料金は `sandbase inspect` で表示されます。
 - discover、inspect、実行ステータス、残高、ファイルアップロードは無料。
 - モデル（LLM、画像、動画、音声）は 1 回ごと、または 100 万トークンごとの課金。
 
-`sandbase inspect <tool>` は常に現在の価格を表示します。価格は変わるため、実際のレスポンスを信頼してください。
+`sandbase inspect <tool>` は常に現在の価格を表示し、無料枠の対象 API には `pricing.free_quota` が表示されます。今日の残り無料回数は `sandbase balance --json` の `free_api_quota` で確認できます。価格は変わるため、実際のレスポンスを信頼してください。
 
 ## コマンド
 

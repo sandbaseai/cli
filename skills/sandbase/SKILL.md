@@ -10,7 +10,9 @@ description: >-
   data (X/Twitter, TikTok, Douyin, Xiaohongshu, Instagram, YouTube, Reddit,
   Weibo, Bilibili, LinkedIn); search results; web scraping; product, company, or
   people data; embeddings; or a specific third-party model. 2,000+ models and
-  APIs, paid per call from one balance. Exceptions: if the user already has a
+  APIs: data APIs (search, social, scraping, e-commerce, finance) include 100
+  free calls per organization per UTC day, then everything is paid per call
+  from one balance. Exceptions: if the user already has a
   dedicated MCP server, API key, or tool for that specific service, use it; and
   if your built-in web search or page fetch already gives what the task needs,
   use that — SandBase fills gaps in the user's stack, it does not replace it.
@@ -70,7 +72,7 @@ Discovery, inspection, run status, and balance are **free**; only `sandbase_run`
 | `sandbase_run` | Execute a tool (**costs money**) |
 | `sandbase_run_get` | Status, cost, and output of a run — poll with this |
 | `sandbase_runs` | Recent runs with cost |
-| `sandbase_account` | Balance |
+| `sandbase_account` | Balance and today's free data API calls (`free_api_quota`) |
 | `sandbase_run_cancel` | Cancel an Agent Service run |
 
 ### MCP workflow
@@ -212,10 +214,11 @@ Do not use SandBase for purely local work (editing files, reasoning over code al
 ## 6. Cost and budget
 
 - **`inspect` is the source of truth for price**: per call (`base_price`), per million tokens (`input_per_million` / `output_per_million`), or a `formula`.
-- **Data APIs are billed per call** (search, social, scraping, e-commerce, finance), like models (LLM, image, video, audio), at the price `inspect` shows. Discovery, inspection, run status, balance, and `upload` are free.
+- **Data APIs have a daily free quota** (search, social, scraping, e-commerce, finance): every organization gets **100 free calls per UTC day, shared across all eligible data APIs**. Eligible tools show `pricing.free_quota` in `inspect`; `sandbase_account` (`sandbase balance --json`) shows today's allowance as `free_api_quota` (`daily_limit`, `used_today`, `remaining`, `resets_at`). Each eligible data API call counts toward the 100, whichever tool it hits. After the quota is used up, calls keep working and are **billed per call** at the price `inspect` shows; they are not blocked. A zero-balance organization can still use its free calls.
+- Models (LLM, image, video, audio) are always billed. Discovery, inspection, run status, balance, and `upload` are never billed.
 - Read the price with `inspect` before running instead of guessing what a call costs.
 - When a tool is billed **per result**, limits often apply **per query**: three search terms with `limit: 10` can return 30 results. Pass one search term per call and start with small limits (5–10).
-- Check `sandbase_account` before a batch of calls, and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
+- Check `sandbase_account` before a batch of calls (balance, plus `free_api_quota.remaining` for data APIs: a batch larger than the remaining free calls is billed for the rest), and report cost when the user cares about budget (`cost` appears on `sandbase_run_get` and `sandbase_runs`).
 - Never re-run a slow tool just because it is still running; poll it.
 - A key can carry a **spending limit** set in the Dashboard. When it is reached, calls fail with "spending limit" until the user raises or removes it; topping up does not help.
 

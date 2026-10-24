@@ -99,11 +99,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## Preise
 
-- Daten-APIs (Suche, Social Media, Scraping, E-Commerce, Finanzen) werden pro Aufruf berechnet, zum Preis, den `sandbase inspect` anzeigt.
+- Daten-APIs (Suche, Social Media, Scraping, E-Commerce, Finanzen): 100 kostenlose Aufrufe pro Tag und Organisation (geteilt über alle berechtigten APIs, Reset um 00:00 UTC), danach Abrechnung pro Aufruf zum Preis, den `sandbase inspect` anzeigt.
 - Suchen, Inspizieren, Laufstatus, Guthaben und Datei-Upload sind kostenlos.
 - Modelle (LLM, Bild, Video, Audio) werden pro Aufruf oder pro Million Tokens berechnet.
 
-`sandbase inspect <tool>` zeigt immer den aktuellen Preis; Preise können sich ändern — verlasse dich auf die echte Antwort.
+`sandbase inspect <tool>` zeigt immer den aktuellen Preis und bei berechtigten APIs `pricing.free_quota`; `sandbase balance --json` zeigt die heute verbleibenden Gratis-Aufrufe als `free_api_quota`. Preise können sich ändern — verlasse dich auf die echte Antwort.
 
 ## Befehle
 

@@ -102,11 +102,11 @@ npx -y @sandbaseai/cli@latest connect --client cursor
 
 ## Preços
 
-- As APIs de dados (busca, redes sociais, scraping, e-commerce, finanças) são cobradas por chamada, pelo preço exibido em `sandbase inspect`.
+- As APIs de dados (busca, redes sociais, scraping, e-commerce, finanças) incluem 100 chamadas grátis por dia por organização (compartilhadas entre as APIs elegíveis, reiniciadas às 00:00 UTC); depois, são cobradas por chamada, pelo preço exibido em `sandbase inspect`.
 - Descobrir, inspecionar, status de execução, saldo e upload de arquivos são gratuitos.
 - Modelos (LLM, imagem, vídeo, áudio) são cobrados por chamada ou por milhão de tokens.
 
-`sandbase inspect <tool>` sempre mostra o preço atual; Preços mudam: confie na resposta real.
+`sandbase inspect <tool>` sempre mostra o preço atual e, nas APIs elegíveis, `pricing.free_quota`; `sandbase balance --json` mostra as chamadas grátis restantes do dia em `free_api_quota`. Preços mudam: confie na resposta real.
 
 ## Comandos
 
