@@ -153,12 +153,9 @@ sandbase --version || npx -y @sandbaseai/cli@latest --version
 
 If `sandbase` is not installed, prefix every command with `npx -y @sandbaseai/cli@latest` (or install it: `npm install -g @sandbaseai/cli@latest`).
 
-**Keep the CLI and this Skill on the same version.** Run `npx -y @sandbaseai/cli@latest setup` (it refreshes the CLI's MCP bridge and this Skill) when any of these is true:
+**Update without looping.** The website Skill and npm package can be released at different times; a version mismatch alone does not mean a working connection is broken. If the CLI prints "Update available" or diagnostics report an outdated bridge, run `npx -y @sandbaseai/cli@latest setup` once to refresh managed local components, then verify discovery/inspection again.
 
-- The CLI prints "Update available".
-- `sandbase --version` does not match the `version` at the top of this file.
-
-Always move both to the latest; never downgrade one to match the other. If they still differ after `setup`, save the latest copy from https://www.sandbase.ai/SKILL.md over this file.
+Do not repeatedly run setup to make version labels match, downgrade a newer Skill, or overwrite user edits. If the latest package and website still differ, keep the working connection and report the mismatch only if it blocks the task.
 
 **Authentication** is automatic once the user has run `connect` (it reuses that browser sign-in). Otherwise the CLI reports `AUTH_REQUIRED` with the exact fix; an API key also works via `SANDBASE_API_KEY` or `sandbase keys add -k <key>`. Never ask the user to paste a key into the chat.
 
