@@ -13,7 +13,7 @@ async function environment() {
 }
 
 test("Cursor and Codex converge on one owned shared native Skill", async () => {
-  const env = await environment();
+  const env = { ...await environment(), SANDBASE_API_KEY: 'sk-test-not-a-real-key-do-not-embed' };
   assert.equal(skillTiers.cursor, "s3_promotion");
   assert.equal(skillTiers.codex, "s3_promotion");
   const cursor = await installSkill("cursor", env); const codex = await installSkill("codex", env);
@@ -21,7 +21,11 @@ test("Cursor and Codex converge on one owned shared native Skill", async () => {
   assert.equal(skillPath("cursor", env), sharedSkillPath(env)); assert.equal(skillPath("codex", env), sharedSkillPath(env));
   const content = await readFile(sharedSkillPath(env), "utf8");
   assert.match(content, /^name: sandbase$/m); assert.doesNotMatch(content, /disable-model-invocation/); assert.match(content, /sandbase-cli-managed: sandbase/);
-  assert.doesNotMatch(content, /(?:sk-|cln-|authorization|credential|\/Users\/|C:\\Users\\)/i);
+  // Documentation may explain authorization and credentials. The installed
+  // artifact must remain the bundled text, without interpolating local secrets.
+  assert.equal(content, await readFile(join(process.cwd(), 'skills', 'sandbase', 'SKILL.md'), 'utf8'));
+  assert.ok(!content.includes(env.SANDBASE_API_KEY));
+  assert.ok(!content.includes(env.HOME!));
   const again = await installSkill("cursor", env); assert.equal(again.state, "already_configured"); assert.equal(again.changed, false);
 });
 
