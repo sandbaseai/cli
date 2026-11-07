@@ -27,9 +27,54 @@ There are **two transports** with the same capabilities. Pick one before doing a
 
 ---
 
+## Quick start: from setup to a working feature
+
+For a person reading this file: paste `set up https://www.sandbase.ai/SKILL.md` into **your AI assistant's chat**, then describe what you want to build or share the SandBase API page you are looking at. This sentence is not a terminal command. Do not paste your API key into chat. [Quickstart for people and agents](https://www.sandbase.ai/quickstart.md) complements the [existing onboarding guide](https://www.sandbase.ai/docs/getting-started/quickstart).
+
+For the agent: use the user's language and carry their requested task through setup, implementation, and verification. A request to set up SandBase alone does not authorize an invented project or a billed demo. If the goal is missing, ask one focused question: “What would you like to build or what data do you need?” Reuse information already supplied.
+
+### Start from the user's current situation
+
+| Situation | What to do |
+|---|---|
+| No account yet | Follow §0 for a supported client with a shell; the user completes browser sign-in. First login creates a personal workspace. A team is optional, not a prerequisite. If shell access is unavailable, use the client-specific [setup guide](https://www.sandbase.ai/console/setup). |
+| Account exists, no key | AI-tool browser authorization in §0 does not require a key pasted into chat. For direct HTTP code, guide the user to [API Keys](https://www.sandbase.ai/console/keys) in their intended workspace and store the key locally as `SANDBASE_API_KEY`. |
+| Key already created | Reuse an existing configured environment or credential store without printing its contents. Do not create another key or force a new organization. Creating a key alone does not install tools or implement an integration. |
+| SandBase tools already available | Use §1 to choose the existing MCP or CLI connection. Verify discovery/inspection works before claiming tools are usable; do not reinstall a working connection. A working CLI does not prove MCP is loaded in the client's current session. |
+| An existing app or repository | Inspect its framework, commands, API layer, and local instructions. Add the requested integration using its conventions; do not replace the project with a new template. |
+| A new feature with no project | Establish the intended result and target environment, then build the smallest runnable implementation. If the user only wants a data result, return that result without creating an app. |
+| A specific API page or platform | Preserve that URL and task. Discover the matching tool and inspect its live schema/price. A vendor directory such as Similarweb is a list of choices, not one callable endpoint. Ask only for missing inputs such as domain, period, or desired metric. |
+| Direct HTTP rather than AI tools | Keep that choice. Use the selected endpoint's API documentation for its exact method, path, authentication, parameters, and response. MCP installation is not required for HTTP integration. |
+| Browser-only use or a hosted Agent | Follow the corresponding path in the onboarding guide: try a request on the website, or create a hosted Agent when that is the user's goal. Installing this Skill does not itself create a hosted Agent. |
+
+Before authorization or a billed run, establish which workspace the user intends to use. Keys, balance, and usage belong to that workspace. Do not create a team, invite people, change billing, or switch accounts merely to complete setup. If a client cannot execute commands or load tools, explain the limitation and provide its supported setup path; do not claim the feature can run there.
+
+### Continue from connection to development
+
+1. **Clarify the deliverable.** Reuse the user's task and API URL. Ask for information that blocks implementation, not a full onboarding questionnaire. If only setup was requested, verify the connection and report readiness for a chosen task.
+2. **Connect only when needed.** Use §0–§3. Let the user complete browser authorization; never request passwords or keys in chat. Explain any required new client session. Continue with the working CLI when available rather than claiming unavailable MCP tools work.
+3. **Select and inspect.** Discover the relevant model/API, then inspect its actual input schema, price, and execution template. Explain the chosen capability and applicable cost. Do not assume every API has free quota, invent a request route, or treat a provider's native fields as SandBase fields.
+4. **Implement the requested feature.** Put calls behind the existing server/API layer or in a local script, with secrets in the local environment or secret store. Keep keys out of browser bundles, source control, logs, and generated examples. Include input validation, timeouts, and useful error messages. Poll async jobs according to §2–§3 instead of starting duplicate runs.
+5. **Verify one bounded request when authorized.** Use the user's task and budget; obtain missing paid-call authorization when needed. Discovery and inspection are free and sufficient to check those operations, but are not proof that a data/model call succeeds. If live testing is unavailable, finish useful implementation and offline checks, and identify the remaining live check explicitly.
+6. **Finish the user flow.** Connect the real response to the requested output: a saved file, script result, or app view. Handle loading, empty results, and failure where applicable. Inspect actual response fields; do not present a guessed schema or mock data as a live result.
+7. **Hand over something runnable.** Give the start/run command, where to configure credentials without showing their value, the files changed, what was tested, and the next action if anything remains blocked. Deploy or publish only when requested.
+
+### What counts as success
+
+Report these states separately:
+
+- **Configured:** authorization/configuration completed for the intended client/workspace; a restart or client readback may still be needed.
+- **Tools usable:** a discovery/inspection operation succeeded through the transport actually in use.
+- **First call verified:** the selected business request reached a successful terminal status and its actual output was checked. A run ID, HTTP 200 with an embedded error, or an empty dataset is not proof of the requested result.
+- **Feature working:** the requested script/app path runs with the integration and its relevant error handling checked. If only offline tests passed, say so.
+
+For example, when a user says “I have a key and want Similarweb website traffic,” keep that context, establish their domain and desired period/metric, inspect an appropriate Similarweb endpoint, and implement the requested script or app feature. Do not make them create another key, silently run a paid example, or stop at sending them another documentation link.
+
+---
+
 ## 0. Set up
 
-Do this when the user asks you to set up SandBase (for example "set up https://www.sandbase.ai/SKILL.md"), or when §1 finds neither transport. You run the steps yourself; the user only approves a sign-in in their browser.
+Do this when setup is needed after checking the user's existing connection in §1. With shell access, run the steps yourself; the user completes sign-in in their browser. Without a shell, follow the client-specific setup guide instead of attempting terminal commands or claiming installation succeeded.
 
 1. Check Node.js 20 or newer: `node --version`. If it is missing or older, ask the user to install it from https://nodejs.org and stop.
 2. Connect this client. Run in a shell, with your client id:
@@ -38,7 +83,7 @@ Do this when the user asks you to set up SandBase (for example "set up https://w
    npx -y @sandbaseai/cli@latest connect --client <client-id>
    ```
 
-   Client ids: `claude-code`, `codex`, `cursor`, `windsurf`, `kiro`, `kiro-cli`, `gemini-cli`, `opencode`, `qwen-code`, `warp`, `cursor-cli`, `kimi-cli`, `amp`, `crush`, `hermes`, `openclaw`, `iflow-cli`, `antigravity`, `trae`, `qoder`, `workbuddy`, `pi`, `claude-desktop`, `cowork`, `chatgpt`. If you are not sure which one you are, omit `--client` to configure every installed client.
+   Client ids: `claude-code`, `codex`, `cursor`, `windsurf`, `kiro`, `kiro-cli`, `gemini-cli`, `opencode`, `qwen-code`, `warp`, `cursor-cli`, `kimi-cli`, `amp`, `crush`, `hermes`, `openclaw`, `iflow-cli`, `antigravity`, `trae`, `qoder`, `workbuddy`, `pi`, `claude-desktop`, `cowork`, `chatgpt`. If you are not sure which client the user wants to connect, ask which app they are using. Keep `--client` scoped to that app; configure all installed clients only when requested.
    - It opens the browser for sign-in (new users get an account in the same step). Tell the user to approve it. If there is no browser, it prints a URL — show that URL to the user.
    - It waits for the approval, so give the command a timeout of at least 5 minutes. If your shell cannot wait that long, ask the user to run the same command in their own terminal.
    - Never ask the user to paste an API key into the chat.
