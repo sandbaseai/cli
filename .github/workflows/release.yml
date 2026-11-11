@@ -1,10 +1,10 @@
 name: Release to npm
 
+# Keep this name: publish-mcp-registry.yml runs after "Release to npm" completes.
 on:
   push:
     tags:
-      - 'v*.*.*'
-  workflow_dispatch:
+      - 'v*'
 
 permissions:
   contents: read
@@ -20,47 +20,83 @@ jobs:
     environment: npm-production
     permissions:
       contents: read
+      # publishConfig.provenance=true signs the tarball with the GitHub OIDC identity.
+      # Authentication to the registry is the NPM_TOKEN secret, not OIDC.
       id-token: write
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
+      # Writes $RUNNER_TEMP/.npmrc containing only the ${NODE_AUTH_TOKEN} placeholder.
+      # The token itself is passed as an env var to the publish step and never written to disk.
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
-      - name: Install trusted-publishing capable npm
-        run: npm install --global npm@^11.15.0
-      - name: Verify immutable release identity
+
+      - name: Verify tag matches package.json
         shell: bash
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
-          package_version="$(node -p "require('./package.json').version")"
-          if [ "$version" != "$package_version" ]; then
-            echo "Tag version does not match package.json" >&2
+          tag_version="${GITHUB_REF_NAME#v}"
+          if ! [[ "$tag_version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Tag $GITHUB_REF_NAME is not v<semver> (for example v1.2.3)"
             exit 1
           fi
           package_name="$(node -p "require('./package.json').name")"
+          package_version="$(node -p "require('./package.json').version")"
+          lock_version="$(node -p "require('./package-lock.json').version")"
           if [ "$package_name" != "@sandbaseai/cli" ]; then
-            echo "package.json name must be @sandbaseai/cli" >&2
+            echo "::error::package.json name is $package_name, expected @sandbaseai/cli"
             exit 1
           fi
-          if npm view "@sandbaseai/cli@$version" version 2>/dev/null; then
-            echo "Version already exists and cannot be overwritten" >&2
+          if [ "$tag_version" != "$package_version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $package_version"
             exit 1
           fi
-      - name: Install frozen dependencies
+          if [ "$lock_version" != "$package_version" ]; then
+            echo "::error::package-lock.json version $lock_version does not match package.json version $package_version"
+            exit 1
+          fi
+          if [ "$(node -p "require('./package.json').publishConfig?.access")" != "public" ]; then
+            echo "::error::publishConfig.access must be public for the scoped package"
+            exit 1
+          fi
+          if npm view "$package_name@$package_version" version >/dev/null 2>&1; then
+            echo "::error::$package_name@$package_version is already published and cannot be overwritten"
+            exit 1
+          fi
+          # This file is excluded because it contains the pattern itself.
+          if git grep -l -I -E '_authToken|npm_[A-Za-z0-9]{36}' -- ':!.github/workflows/release.yml'; then
+            echo "::error::The tracked files above contain an npm auth token or _authToken entry"
+            exit 1
+          fi
+
+      - name: Install dependencies
         run: npm ci --ignore-scripts
-      - name: Rebuild and audit package
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Test
+        run: npm test
+
+      - name: Audit package contents
+        run: npm run audit:package
+
+      - name: Publish to npm
+        shell: bash
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
-          npm run lint
-          npm test
-          npm run build
-          npm run audit:package
-      - name: Publish with trusted publishing and provenance
-        # Do not set NODE_AUTH_TOKEN here. npm exchanges the GitHub OIDC token
-        # for a short-lived publishing credential tied to this exact workflow.
-        run: npm publish --ignore-scripts --access public --tag latest
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::NPM_TOKEN secret is not configured"
+            exit 1
+          fi
+          npm publish --ignore-scripts --access public --tag latest
