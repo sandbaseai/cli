@@ -22,11 +22,17 @@
 
 ---
 
-Your AI coding assistant is smart, but it's trapped in a box. It can't search the web, check social media, generate images, or access real-time data — unless you wire up each API yourself.
+## Start here
 
-**SandBase changes that.** One command connects your agent to 2,000+ AI models and APIs through the [Model Context Protocol](https://modelcontextprotocol.io). No API keys to manage. No configuration headaches.
+Requires **Node.js 20 or newer**. Use CLI / MCP to connect your AI tools, or discover and call APIs directly from your terminal.
 
-Building directly over HTTP instead of MCP? Start with the [SandBase API quickstart](https://www.sandbase.ai/docs/getting-started/)
+- **Website, API or agent setup**: [Quick Start](https://www.sandbase.ai/docs/getting-started/quickstart).
+- **Python, TypeScript, Go and HTTP examples**: [SandBase SDK and catalog repository](https://github.com/sandbaseai/sandbase).
+- **Reusable workflows and browser utilities**: [Skills](https://www.sandbase.ai/skills) · [Tools](https://www.sandbase.ai/tools).
+
+Connect your AI assistant to SandBase models and data APIs through the [Model Context Protocol](https://modelcontextprotocol.io). Search, work with social data, and generate media using one SandBase connection, without separate provider accounts.
+
+Building directly over HTTP instead of MCP? Start with the [SandBase API quickstart](https://www.sandbase.ai/docs/getting-started/quickstart)
 or compare the unified [LLM, image, and video API](https://blog.sandbase.ai/unified-ai-api-llm-image-video-2026/)
 with specialized model gateways.
 
@@ -106,7 +112,7 @@ AI agents and automated installers can use the concise
 ## SandBase Open-Source Stack
 
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — self-hosted agent runtime with persistent sessions, sandbox isolation, approvals, audit, and replay.
-- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 installable Skills for research, social intelligence, marketing, and business workflows.
+- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — installable Skills for research, social intelligence, marketing, and business workflows.
 - **[SandBase for Codex](https://github.com/sandbaseai/sandbase-codex-plugin)** — official Codex plugin packaging the SandBase MCP bridge and guided Agent Skill; its required HOL security scan passes on `main`.
 
 Discover the authenticated remote bridge in the [official MCP Registry](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.sandbaseai%2Fcli),
@@ -183,8 +189,8 @@ catalog example, read the [GitHub connector discover-and-inspect dogfooding note
 | **Web Search** | Google, Exa, Tavily, Scholar | Research anything in real-time |
 | **Social Media** | Twitter/X, YouTube, Reddit, Instagram, TikTok, Xiaohongshu, Weibo, Bilibili | Monitor trends, pull posts, analyze content |
 | **Scraping** | Firecrawl, Exa Content | Extract data from any public webpage |
-| **AI Models** | GPT-4o, Claude, Gemini, DeepSeek, Qwen, Llama | Run any model without managing keys |
-| **Image Gen** | Flux, DALL-E, Ideogram, Recraft | Create logos, illustrations, mockups |
+| **AI Models** | GPT, Claude, Gemini, DeepSeek, Qwen, Llama | Run any model without managing keys |
+| **Image Gen** | GPT Image, FLUX, Seedream, Ideogram | Create logos, illustrations, mockups |
 | **Video Gen** | Kling, MiniMax, Runway, Luma | Generate short clips and animations |
 | **Audio** | ElevenLabs, Whisper | Text-to-speech, transcription |
 | **E-commerce** | Taobao, Amazon | Product research, price comparison |
@@ -289,6 +295,21 @@ The integration is independently listed by
 
 ---
 
+## Install, upgrade and troubleshoot
+
+A one-off `npx ... connect` does not permanently install the `sandbase` command. Prefix subsequent commands with `npx -y @sandbaseai/cli@latest`, or install it globally:
+
+```sh
+npm install -g @sandbaseai/cli@latest
+sandbase connect
+sandbase discover -q "Twitter posts" -t api
+sandbase inspect sandbase_twitter_web_search_timeline
+```
+
+Discovery and inspection do not start billable work. Review the inputs and current price before using `sandbase run`. Upgrade through the same method you installed with: npm users can repeat the install command above; Homebrew users run `brew update`, then `brew upgrade sandbaseai/tap/sandbaseai-cli`. Avoid mixing both installation methods.
+
+After upgrading, run `sandbase setup` and `sandbase doctor --client <client-id>`, then restart your AI client or open a new session. Complete any requested sign-in in your browser. Without a local AI client, obtain an [API key](https://www.sandbase.ai/console/keys), supply it as `SANDBASE_API_KEY`, and use terminal commands directly. Keep the run ID for async work and resume with `sandbase runs get -r <run_id> -w` instead of submitting it again.
+
 ## Commands
 
 ### CLI Commands
@@ -312,7 +333,8 @@ sandbase run sandbase_twitter_web_search_timeline -i '{"keyword":"AI agents"}'
 sandbase run <video_tool> -i '{"prompt":"..."}' -w -o result.json   # wait with backoff, save output to disk
 sandbase runs get -r <run_id> -w -o result.json            # resume a long run instead of re-running it
 sandbase upload ./photo.png                                # local image/audio/video -> public URL for tools that take a URL
-sandbase runs list | sandbase balance
+sandbase runs list
+sandbase balance
 ```
 
 `-j` prints JSON; errors are `{"error":{"code","message","hint"}}` with the next step in `hint`. Exit codes: `0` success or still running, `1` failure (including a failed run), `2` usage.
@@ -347,7 +369,7 @@ discover → inspect → run
 
 ## Security
 
-- **Zero secrets in URLs or CLI args** — OAuth device flow with PKCE
+- **Browser authorization without pasting keys** — The `connect` flow uses PKCE; manual `keys add -k` places the key in shell history, so prefer `connect` or a securely supplied environment variable
 - **Restricted file permissions** — Credentials stored with `0600`
 - **Ownership-aware updates** — Existing JSONC comments and user-managed MCP entries are preserved
 - **Exact rollback** — On failure or `unregister`, only configuration owned by SandBase is removed
