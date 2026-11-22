@@ -22,9 +22,15 @@
 
 ---
 
-你的 AI 编程助手很聪明，但它被困在一个盒子里。它不能搜索网页、查看社交媒体、生成图片、或获取实时数据 — 除非你自己逐个对接每个 API。
+## 从这里开始
 
-**SandBase 改变了这一切。** 一行命令，通过 [Model Context Protocol](https://modelcontextprotocol.io) 将你的 Agent 连接到 2,000+ AI 模型与 API。不用管理 API Key，不用折腾配置。
+需要 **Node.js 20 或更新版本**。CLI / MCP 用于把 SandBase 接入本地 AI 工具，也可以直接在终端发现和调用 API。
+
+- **平台使用、API 调用、Agent 接入**：[Quick Start](https://www.sandbase.ai/docs/getting-started/quickstart)。
+- **Python、TypeScript、Go 与 HTTP 示例**：[SandBase SDK 与目录仓库](https://github.com/sandbaseai/sandbase)。
+- **可复用工作流与网页工具**：[Skills](https://www.sandbase.ai/skills) · [Tools](https://www.sandbase.ai/tools)。
+
+通过 [Model Context Protocol](https://modelcontextprotocol.io) 将 AI 助手连接到 SandBase 的模型和数据 API。一套连接即可搜索网页、处理社媒数据和生成媒体，无需分别注册上游服务。
 
 把这一行发给你的 agent，它会自己读取 Skill、运行 `connect`，只需你在浏览器里确认一次登录：
 
@@ -68,7 +74,7 @@ npx -y @sandbaseai/cli@latest catalog --json
 ## SandBase 开源技术栈
 
 - **[SandBase Harness](https://github.com/sandbaseai/sandbase-harness)** — 自托管 Agent Runtime，提供持久会话、沙箱隔离、审批、审计与回放。
-- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 88 个可安装 Skills，覆盖研究、社交情报、营销和商业工作流。
+- **[SandBase Agent Skills](https://github.com/sandbaseai/sandbase-skills)** — 可安装 Skills，覆盖研究、社交情报、营销和商业工作流。
 - **[SandBase for Codex](https://github.com/sandbaseai/sandbase-codex-plugin)** — 官方 Codex 插件，封装 SandBase MCP 桥接器和引导式 Agent Skill。
 
 ---
@@ -99,8 +105,8 @@ npx -y @sandbaseai/cli@latest catalog --json
 | **网页搜索** | Google、Exa、Tavily、Scholar | 实时搜索任何信息 |
 | **社交媒体** | Twitter/X、YouTube、Reddit、Instagram、TikTok、小红书、微博、B站 | 监控趋势、获取帖子、分析内容 |
 | **网页抓取** | Firecrawl、Exa Content | 从任何公开网页提取数据 |
-| **AI 模型** | GPT-4o、Claude、Gemini、DeepSeek、Qwen、Llama | 调用任何模型，无需自己管 Key |
-| **图像生成** | Flux、DALL-E、Ideogram、Recraft | Logo、插画、原型图 |
+| **AI 模型** | GPT、Claude、Gemini、DeepSeek、Qwen、Llama | 调用任何模型，无需自己管 Key |
+| **图像生成** | GPT Image、FLUX、Seedream、Ideogram | Logo、插画、原型图 |
 | **视频生成** | Kling、MiniMax、Runway、Luma | 短视频、动画 |
 | **音频** | ElevenLabs、Whisper | 文字转语音、语音转文字 |
 | **电商** | 淘宝、Amazon | 选品调研、价格对比 |
@@ -210,6 +216,21 @@ npx -y @sandbaseai/cli@latest unregister --client hermes
 
 `sandbase inspect <工具名>` 会显示当前价格，适用每日免费额度的数据 API 会带有 `pricing.free_quota`；`sandbase balance --json` 的 `free_api_quota` 显示今天剩余的免费次数。价格可能变动，请以实时返回为准。
 
+## 安装、升级与排错
+
+仅运行一次 `npx ... connect` 不会永久安装 `sandbase` 命令。后续命令也可以加上 `npx -y @sandbaseai/cli@latest` 前缀，或者安装到本地：
+
+```sh
+npm install -g @sandbaseai/cli@latest
+sandbase connect
+sandbase discover -q "Twitter posts" -t api
+sandbase inspect sandbase_twitter_web_search_timeline
+```
+
+发现和检查不会启动付费任务。确认输入与当前价格后再执行 `sandbase run`。请按安装方式升级：npm 用户重新运行上面的安装命令；Homebrew 用户运行 `brew update` 后执行 `brew upgrade sandbaseai/tap/sandbaseai-cli`，不要混用两种安装方式。
+
+升级后运行 `sandbase setup`、`sandbase doctor --client <client-id>`，再重启 AI 客户端或新开会话。需要登录时由你在浏览器中确认；没有本地 AI 客户端时，可使用 [API Key](https://www.sandbase.ai/console/keys) 配置 `SANDBASE_API_KEY`，直接运行终端命令。异步任务保留 run ID，用 `sandbase runs get -r <run_id> -w` 继续查询，避免重复执行。
+
 ## 命令
 
 ### CLI 命令
@@ -232,7 +253,8 @@ sandbase inspect sandbase_twitter_web_search_timeline       # 参数、价格、
 sandbase run sandbase_twitter_web_search_timeline -i '{"keyword":"AI agents"}'
 sandbase run <视频工具> -i '{"prompt":"..."}' -w -o result.json   # 带退避等待完成，结果写入文件
 sandbase runs get -r <run_id> -w -o result.json            # 续查长任务，不要重新运行
-sandbase runs list | sandbase balance
+sandbase runs list
+sandbase balance
 ```
 
 `-j` 输出 JSON；错误格式为 `{"error":{"code","message","hint"}}`，`hint` 给出下一步。退出码：`0` 成功或仍在运行，`1` 失败（含任务失败），`2` 参数错误。

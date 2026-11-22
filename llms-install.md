@@ -8,7 +8,7 @@ requiring separate provider API keys.
 
 - Node.js 20 or newer
 - A graphical browser for the one-time authorization flow
-- A supported client from the catalog below
+- A supported AI client for MCP setup, or a SandBase API key for standalone terminal use
 
 ## Verify before installing
 
@@ -34,8 +34,7 @@ SHA-256 before installation.
 
 ## Connect a client
 
-Alternatively, run the latest GitHub Release directly while npm
-`latest` is being updated:
+Alternatively, run the published npm CLI without a global installation:
 
 ```sh
 npx -y @sandbaseai/cli@latest connect --client <client-id>
@@ -60,9 +59,9 @@ npx -y @sandbaseai/cli@latest doctor --client <client-id>
 ```
 
 Restart the target client after a successful connection so it reloads its MCP
-configuration. The client should then expose six SandBase tools:
+configuration. The client should then expose these SandBase tools:
 `sandbase_discover`, `sandbase_inspect`, `sandbase_run`, `sandbase_run_get`,
-`sandbase_runs`, and `sandbase_account`.
+`sandbase_runs`, `sandbase_account`, and `sandbase_run_cancel` (Agent Service runs only).
 
 ## Remove the managed entry
 
@@ -74,3 +73,16 @@ This removes only the SandBase-owned configuration. It leaves unrelated and
 user-managed MCP entries unchanged.
 
 Source: https://github.com/sandbaseai/cli
+
+## Use the terminal directly
+
+`npx` does not permanently install the executable. Continue using the full prefix:
+
+```sh
+npx -y @sandbaseai/cli@latest discover -q "Twitter posts" -t api
+npx -y @sandbaseai/cli@latest inspect sandbase_twitter_web_search_timeline
+```
+
+These commands inspect the catalog without starting a run. Review current inputs and prices before executing work. To get a persistent `sandbase` command, install with `npm install -g @sandbaseai/cli@latest` or Homebrew. Do not mix installation methods. After an upgrade, run `sandbase setup`, then `sandbase doctor --client <client-id>` and restart your client.
+
+For website, API and agent instructions, use [Quick Start](https://www.sandbase.ai/docs/getting-started/quickstart). SDKs and HTTP examples live in [sandbaseai/sandbase](https://github.com/sandbaseai/sandbase).
